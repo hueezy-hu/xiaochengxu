@@ -123,6 +123,7 @@ exports.main = async (event = {}, context = {}) => {
       case 'assignVerifier': return await adminOnly(openid, ['superAdmin'], (admin) => invokeV16FulfillmentAction('assignVerifier', event, admin))
       case 'contactOrder': return await adminOnly(openid, ['superAdmin', 'verifier'], (admin) => invokeV16FulfillmentAction('contactOrder', event, admin))
       case 'placeOrderAtLocation': return await adminOnly(openid, ['superAdmin', 'verifier'], (admin) => invokeV16FulfillmentAction('placeOrderAtLocation', event, admin))
+      case 'finishNoShow': return await adminOnly(openid, ['superAdmin', 'verifier'], (admin) => invokeV16FulfillmentAction('finishNoShow', event, admin))
       case 'endPickupSession': return await adminOnly(openid, ['superAdmin', 'verifier'], (admin) => invokeV16FulfillmentAction('endPickupSession', event, admin))
       case 'retryRefunds': return await adminOnly(openid, ['superAdmin'], () => retryRefunds(event, openid))
       default: return fail('未知操作: ' + (action || '(empty)'))
