@@ -22,10 +22,10 @@
 
 ## 环境状态
 
-- `MOCK_PAY=true`：仅内部演示，不等于真实支付上线。
+- `MOCK_PAY`：云函数环境变量控制，**默认 true**（内部演示）。禁止在代码写死生产 `false`；仅资料齐全且你确认后才可在云端设为 `false`。
 - 首个超级管理员：云函数环境变量 `SUPER_ADMIN_OPENID=<openid>`。
-- 订阅消息：在 `config/system` 配置 `groupResultTemplateId` 和 `pickupTemplateId`。
-- 真实支付接入时必须保持 `time_expire=3min`，补齐回调验签、迟到成功兜底、真实退款和对账。
+- 订阅消息：在 `config/system` 配置 `groupResultTemplateId` 和 `pickupTemplateId`；未配置时 outbox 记「跳过-无模板」，不伪造发送成功。
+- 真实支付：须 `time_expire=3min`、回调验签、迟到成功兜底、真实退款和对账；详见 `docs/V1.7-第三阶段审计.md`。
 
 ## 本地验证
 

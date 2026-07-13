@@ -1,6 +1,6 @@
 # MOCK 模式测试指引（V1.6）
 
-适用前提：`cloudfunctions/api/index.js` 中 `MOCK_PAY=true`。此模式不调用真实微信支付；不能用来证明正式支付已完成。
+适用前提：云函数环境未设置 `MOCK_PAY=false`（默认 true）。此模式不调用真实微信支付；不能用来证明正式支付已完成。
 
 ## 1. 安全与准备
 

@@ -19,9 +19,10 @@
 - 后端：微信云开发（云函数 + 云数据库 + 云存储），单入口云函数
   `cloudfunctions/api/index.js` 按 event.action 路由；纯业务逻辑抽在
   `domain.js`（有单测 `tests/domain.test.js`，改 domain 必须同步改测试）
-- 支付：`MOCK_PAY = true`（index.js 顶部）。当前个人主体无商户号，
-  点支付直接成功；真实支付代码路径已写好（cloudPay + payCallback），
-  办完个体户执照后切 false 并补回调验签；真实支付下单须设 time_expire=3分钟
+- 支付：`MOCK_PAY = resolveMockPay(process.env)`，**默认 true**。当前个人主体无商户号，
+  点支付直接成功；`mockPay=false` 时 payOrder 拒绝冒充成功。payCallback 验签与 cloudPay
+  下单尚未联调完成（仅有 helpers + 退款 retry 骨架）；办完执照后云端设 MOCK_PAY=false
+  并补齐验签；真实下单 time_expire 必须对齐 3 分钟预占
 - 手机号：`MANUAL_PHONE = true`。个人主体手动填写；非个人主体切
   getPhoneNumber 一键授权（与真实支付同一门槛）。尾号后 4 位兼作核销凭证
 - 二维码：`miniprogram/libs/weapp-qrcode.js` 本地引入，禁止外网依赖
@@ -111,15 +112,17 @@
 
 ## 8. 待办与展望（做完要移进第 9 节）
 
-- 真实支付接入（等个体户执照 + 商户号）：MOCK_PAY→false、
-  payCallback 验签、退款真实化
+- 真实支付接入（等个体户执照 + 商户号）：云端 MOCK_PAY→false、
+  cloudPay 下单、payCallback 验签、迟到成功兜底、退款真实化与对账
 - 上线前：申请2个订阅模板并填 config
   （成团结果 / 自提提醒）；非个人主体切 getPhoneNumber（MANUAL_PHONE→false）
 - 在微信开发者工具和真机完成购买、退款、尾号核销、扫码核销、无人放置和权限冒烟
+- 同版部署前备份数据库并执行迁移方案（见 docs/）
 - V2：取货券 canvas 海报生成、团长激励、周期购、自定义凸起 tabBar
 
 ## 9. 变更日志（每轮交付追加一行，格式：日期 | 改了什么 | 动了哪些文件）
 
+- 2026-07-13 | 第三阶段本地准备：MOCK_PAY 环境开关（默认 true）、payment-helpers（time_expire/回调分类）、notificationOutbox 发送器骨架与单测；产出审计/迁移/冒烟文档；不部署不改云数据 | runtime-config、payment-helpers、notification-outbox、index.js、tests、docs/
 - 2026-07-13 | 完成 V1.7 内部演示版全栈改造：3分钟多SKU预占、按人成团、双时点生命周期、两段制退款、尾号/二维码核销、照片交付、双交付模式、营业三态、菜单库与商家端；同步契约与上线验收 | cloudfunctions/api、miniprogram、README.md、ACTIONS.md、V1.7-上线验收.md、tests
 - 2026-07-13 | Open Design 提取 v3 设计系统并增量产出 V1.7 版 16 屏高保真可交互设计稿，补齐购物车/结算/3分钟预占及商家端交付流程 | 设计稿v4-V1.7.html、TAILAN-DESIGN.md、docs/open-design、scripts/tests/v17-design-prototype.test.js
 - 2026-07-13 | 需求对齐产出 PRD V1.7（3分钟预占/5人成团按人/22:00锁定/尾号核销+重复预警/双交付模式+拍照/两段制退款/发布只选SKU+勾站/10点软截止+休息态+催开团/权限多站/2订阅模板/手机号双逻辑）；同步修 CLAUDE.md，ACTIONS.md 待重修 | banlan-cake-prd-v1.7.md、CLAUDE.md

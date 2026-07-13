@@ -24,14 +24,16 @@ const { createAdminCatalogRepository } = require('./src/repositories/admin-catal
 const { createAdminCatalogActions } = require('./src/services/admin-catalog-actions')
 const { ERROR_CODES: V16_ERROR_CODES, failure: v16Failure } = require('./src/shared/response')
 const { resolveEntryContext } = require('./src/shared/entry-context')
+const { resolveMockPay } = require('./src/shared/runtime-config')
+const { createNotificationOutbox } = require('./src/services/notification-outbox')
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
 const _ = db.command
 const { transactionDoc } = createCloudDbHelpers({ db, command: _ })
 
-// PRD 8 / 目标补充：true 用于无商户号时跑通全流程；false 走 cloudPay。
-const MOCK_PAY = true
+// PRD 8：MOCK_PAY 由云函数环境变量控制，默认 true。禁止在代码里写死生产 false。
+const MOCK_PAY = resolveMockPay(process.env)
 
 const cloudOrderRepository = createOrderRepository({ db, command: _ })
 const v16OrderActions = createOrderActions({
@@ -178,7 +180,57 @@ async function invokeV16BatchAction(action, event, openid) {
 
 async function runLifecycleTick(event = {}) {
   await ensureCollections()
-  return await v16LifecycleActions.lifecycleTick({ system: true, requestId: event.requestId || `lifecycle-${now()}` })
+  const lifecycle = await v16LifecycleActions.lifecycleTick({ system: true, requestId: event.requestId || `lifecycle-${now()}` })
+  let notifications = { processed: 0, sent: 0, skipped: 0, failed: 0 }
+  try {
+    notifications = await processNotificationOutbox()
+  } catch (err) {
+    notifications = { processed: 0, sent: 0, skipped: 0, failed: 0, error: err.message || String(err) }
+  }
+  if (lifecycle && lifecycle.ok === false) return lifecycle
+  return { ...lifecycle, notifications }
+}
+
+async function processNotificationOutbox() {
+  const cfg = await getDoc('config', 'system')
+  const outbox = createNotificationOutbox({
+    listPending: async (limit) => {
+      const res = await db.collection('notificationOutbox').where({ status: '待发送' }).limit(limit).get()
+      return res.data || []
+    },
+    saveNotice: async (id, row) => {
+      const data = { ...row }
+      delete data._id
+      await db.collection('notificationOutbox').doc(id).set({ data: { ...data } })
+    },
+    listOrdersForNotice: async (notice) => {
+      if (notice.orderId) {
+        const order = await getDoc('orders', notice.orderId)
+        return order ? [order] : []
+      }
+      if (notice.batchStationId) {
+        const res = await db.collection('orders').where({ batchStationId: notice.batchStationId }).limit(100).get()
+        return res.data || []
+      }
+      return []
+    },
+    getStation: async (stationId) => (stationId ? getDoc('stations', stationId) : null),
+    getConfig: async () => cfg || {},
+    sendSubscribeMessage: async (payload) => {
+      if (!cloud.openapi || !cloud.openapi.subscribeMessage || !cloud.openapi.subscribeMessage.send) {
+        throw new Error('subscribeMessage API unavailable')
+      }
+      await cloud.openapi.subscribeMessage.send({
+        touser: payload.touser,
+        templateId: payload.templateId,
+        page: payload.page,
+        data: payload.data,
+        miniprogramState: 'formal'
+      })
+    },
+    now
+  })
+  return await outbox.processPendingNotifications()
 }
 
 async function invokeV16FulfillmentAction(action, event, actor) {
