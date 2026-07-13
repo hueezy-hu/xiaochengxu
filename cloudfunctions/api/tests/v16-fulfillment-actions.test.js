@@ -155,6 +155,22 @@ test('assignVerifier writes batch and station scope', async () => {
   assert.deepEqual(created.authorizationScopes, [{ batchId: 'b1', stationIds: ['st1'] }])
 })
 
+test('assignVerifier merges multiple stations and batches without dropping prior scopes', async () => {
+  const repository = createRepository(seed())
+  const actions = createFulfillmentActions({ repository, now: () => 1200 })
+  await actions.assignVerifier({ actor: superAdmin, targetOpenid: 'v2', batchId: 'b1', stationIds: ['st1'] })
+  await actions.assignVerifier({ actor: superAdmin, targetOpenid: 'v2', batchId: 'b1', stationIds: ['st2'] })
+  const result = await actions.assignVerifier({ actor: superAdmin, targetOpenid: 'v2', batchId: 'b2', stationIds: ['st3'] })
+  const created = Object.values(repository.state.admins)[0]
+  assert.equal(result.ok, true)
+  assert.deepEqual(created.authorizationScopes, [
+    { batchId: 'b1', stationIds: ['st1', 'st2'] },
+    { batchId: 'b2', stationIds: ['st3'] }
+  ])
+  assert.deepEqual(created.batchIds, ['b1', 'b2'])
+  assert.deepEqual(created.stationIds, ['st1', 'st2', 'st3'])
+})
+
 test('index routes V1.7 fulfillment actions and removes obsolete postpone/refund-review semantics', async () => {
   const index = fs.readFileSync(path.resolve(__dirname, '..', 'index.js'), 'utf8')
   for (const action of ['assignVerifier', 'getVerifierWorkspace', 'contactOrder', 'placeOrderAtLocation', 'finishNoShow', 'endPickupSession']) assert.match(index, new RegExp(`case ['"]${action}['"]:`))

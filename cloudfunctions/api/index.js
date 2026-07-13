@@ -195,8 +195,11 @@ async function processNotificationOutbox() {
   const cfg = await getDoc('config', 'system')
   const outbox = createNotificationOutbox({
     listPending: async (limit) => {
-      const res = await db.collection('notificationOutbox').where({ status: '待发送' }).limit(limit).get()
-      return res.data || []
+      const active = (await db.collection('notificationOutbox').where({ status: _.in(['待发送', '发送失败']) }).limit(limit).get()).data || []
+      const hasTemplate = Boolean(cfg && (cfg.groupResultTemplateId || cfg.pickupTemplateId))
+      if (active.length >= limit || !hasTemplate) return active
+      const skipped = (await db.collection('notificationOutbox').where({ status: '跳过-无模板' }).limit(limit - active.length).get()).data || []
+      return [...active, ...skipped]
     },
     saveNotice: async (id, row) => {
       const data = { ...row }
@@ -543,7 +546,7 @@ async function buildMinePayload(openid) {
   ])
   const user = userRows.data[0] || null
   const orders = ordersRes.data
-  const forming = orders.filter((order) => ['待支付', '待配送确认'].includes(order.status)).length
+  const forming = orders.filter((order) => ['预占中', '待配送确认'].includes(order.status)).length
   const pickup = orders.filter((order) => ['待自提', '已放置待自取'].includes(order.status)).length
   return {
     user,

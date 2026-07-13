@@ -130,6 +130,7 @@ function createOrderActions({ repository, now = Date.now, mockPay = true } = {})
         inventoryBySkuId[sku._id] = inventory
         orderItems.push({
           skuId: sku._id,
+          productId: sku.productId || '',
           name: sku.name,
           spec: sku.spec || '',
           quantity: item.quantity,
@@ -321,7 +322,7 @@ function createOrderActions({ repository, now = Date.now, mockPay = true } = {})
     const t = Number(now())
     if (input.system !== true) return failure(input, t, ERROR_CODES.FORBIDDEN, '仅系统生命周期任务可批量清理待支付订单')
     if (typeof repository.listPendingOrderIds !== 'function') return failure(input, t, ERROR_CODES.INTERNAL_ERROR, '仓储未实现待支付订单查询')
-    const ids = await repository.listPendingOrderIds(Math.min(100, Math.max(1, Number(input.limit || 100))))
+    const ids = await repository.listPendingOrderIds(Math.min(100, Math.max(1, Number(input.limit || 100))), t)
     let expired = 0
     let released = 0
     for (const orderId of ids) {

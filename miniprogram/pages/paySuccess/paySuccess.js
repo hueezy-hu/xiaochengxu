@@ -68,7 +68,7 @@ Page({
       pickupTemplateId: config.ok ? (config.pickupTemplateId || '') : ''
     })
     app.call('myOrders').then((r) => {
-      if (r.ok) app.updateOrderBadge((r.orders || []).filter((o) => ['待支付', '待配送确认', '待自提'].includes(o.status)).length)
+      if (r.ok) app.updateOrderBadge((r.orders || []).filter((o) => ['预占中', '待配送确认', '待自提'].includes(o.status)).length)
     })
   },
 

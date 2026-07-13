@@ -3,8 +3,8 @@ const { createCloudDbHelpers } = require('./cloud-db')
 function createOrderRepository({ db, command } = {}) {
   const { transactionDoc, unwrapTransactionResult } = createCloudDbHelpers({ db, command })
   return {
-    async listPendingOrderIds(limit = 100) {
-      const rows = (await db.collection('orders').where({ status: '预占中' }).limit(limit).get()).data || []
+    async listPendingOrderIds(limit = 100, expiredBefore = Date.now()) {
+      const rows = (await db.collection('orders').where({ status: '预占中', expiresAt: command.lte(expiredBefore) }).limit(limit).get()).data || []
       return rows.map((row) => row._id)
     },
     async runTransaction(work) {

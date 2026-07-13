@@ -14,7 +14,7 @@ Page({
     const res = await app.call('createOrder', { batchStationId: this.data.batchStationId, items, contactName, phone, clientRequestId: this.data.clientRequestId })
     this.setData({ submitting: false })
     if (!res.ok) { wx.showModal({ title: '无法发起支付', content: res.msg || '请返回购物车检查商品', showCancel: false }); return }
-    wx.redirectTo({ url: `/pages/payment/payment?orderId=${res.orderId}&batchStationId=${this.data.batchStationId}&expiresAt=${res.expiresAt || ''}` })
+    wx.redirectTo({ url: `/pages/payment/payment?orderId=${res.orderId}&batchStationId=${this.data.batchStationId}&expiresAt=${res.expiresAt || ''}&serverNow=${res.serverNow || ''}` })
   },
   goBack() { wx.navigateBack() }
 })

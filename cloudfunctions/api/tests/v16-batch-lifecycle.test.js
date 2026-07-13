@@ -157,6 +157,10 @@ test('12:00 confirms stations with five people and refunds stations below five i
   assert.equal(repository.state.batchStations.s5.status, '已确认配送'); assert.equal(repository.state.orders.o5.status, '待自提')
   assert.equal(repository.state.batchStations.s4.status, '已关闭'); assert.deepEqual(refunded, ['o4'])
   assert.equal(repository.state.batches.b1.status, '配送进行中')
+  const notices = Object.values(repository.state.notifications)
+  assert(notices.some((row) => row.batchStationId === 's5' && row.type === 'deliveryConfirmed'))
+  assert(notices.some((row) => row.batchStationId === 's5' && row.type === 'pickupReminder'))
+  assert(notices.some((row) => row.batchStationId === 's4' && row.type === 'groupResult' && row.groupSuccess === false))
 })
 
 test('12:00 keeps station and batch in closing state when any refund fails', async () => {
@@ -204,6 +208,7 @@ test('manual confirmation is allowed only after cutoff and before noon, requires
   const lifecycle = createLifecycleActions({ repository, orderActions: { expirePendingOrders: async () => ({ ok: true }), systemRefundOrder: async () => { throw new Error('must skip') } }, now: () => D1NOON })
   await lifecycle.lifecycleTick({ system: true })
   assert.equal(repository.state.batchStations.s1.status, '已确认配送'); assert.equal(repository.state.orders.o1.status, '待自提')
+  assert(Object.values(repository.state.notifications).some((row) => row.batchStationId === 's1' && row.type === 'pickupReminder'))
 })
 
 test('manual confirmation cannot revive a closing station', async () => {
@@ -224,6 +229,7 @@ test('closeBatchStation and closeBatch require reasons and never refund delivere
   assert.equal((await actions.closeBatchStation({ batchStationId: 's1', reason: '' })).ok, false)
   const result = await actions.closeBatch({ batchId: 'b1', reason: '商家无法交付', openid: 'admin' })
   assert.equal(result.ok, true); assert.deepEqual(refunded, ['a']); assert.equal(repository.state.batches.b1.status, '已结束')
+  assert(Object.values(repository.state.notifications).some((row) => row.batchStationId === 's1' && row.type === 'groupResult' && row.groupSuccess === false))
 })
 
 test('manual close does not report closed or end batch while a refund is incomplete', async () => {

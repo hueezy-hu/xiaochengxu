@@ -58,6 +58,9 @@ function createLifecycleActions({ repository, orderActions, now = Date.now } = {
         await tx.saveNotification(id('notice', `${current._id}:delivery-confirmed`), {
           type: 'deliveryConfirmed', batchStationId: current._id, status: '待发送', createdAt: t, updatedAt: t
         })
+        await tx.saveNotification(id('notice', `${current._id}:pickup-reminder`), {
+          type: 'pickupReminder', batchStationId: current._id, status: '待发送', createdAt: t, updatedAt: t
+        })
         return { confirmed: 1, closed: 0, refunded: 0 }
       })
     }
@@ -92,6 +95,10 @@ function createLifecycleActions({ repository, orderActions, now = Date.now } = {
       await tx.saveOperationLog(id('op', `${station._id}:auto-close`), {
         action: 'closeBatchStationAtNoon', batchId: batch._id, batchStationId: station._id,
         operatorOpenid: 'system', reason: '取货日12:00未达到5人', createdAt: t
+      })
+      await tx.saveNotification(id('notice', `${station._id}:group-failed`), {
+        type: 'groupResult', groupSuccess: false, batchStationId: station._id,
+        status: '待发送', createdAt: t, updatedAt: t
       })
     })
     return { confirmed: 0, closed: 1, refunded, incomplete: 0 }

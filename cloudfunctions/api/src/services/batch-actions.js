@@ -159,6 +159,7 @@ function createBatchActions({ repository, now = Date.now, systemRefundOrder } = 
       for (const order of orders) await tx.saveOrder(order._id, { status: '待自提', deliveryConfirmedAt: t, updatedAt: t })
       await tx.saveOperationLog(id('op', `${station._id}:manual-confirm`), { action: 'manualConfirmDelivery', batchId: station.batchId, batchStationId: station._id, operatorOpenid: input.openid || '', reason: String(input.reason).trim(), createdAt: t })
       await tx.saveNotification(id('notice', `${station._id}:delivery-confirmed`), { type: 'deliveryConfirmed', batchStationId: station._id, status: '待发送', createdAt: t, updatedAt: t })
+      await tx.saveNotification(id('notice', `${station._id}:pickup-reminder`), { type: 'pickupReminder', batchStationId: station._id, status: '待发送', createdAt: t, updatedAt: t })
       return { batchStationId: station._id, status: '已确认配送', updatedOrders: orders.length }
     })
     return result.error ? failure(input, t, ERROR_CODES.ORDER_STATE_CONFLICT, result.error) : success(input, t, result)
@@ -191,6 +192,7 @@ function createBatchActions({ repository, now = Date.now, systemRefundOrder } = 
     await repository.runTransaction(async (tx) => {
       await tx.saveBatchStation(input.batchStationId, { status: '已关闭', closedAt: t, updatedAt: t })
       await tx.saveOperationLog(id('op', `${input.batchStationId}:close`), { action: 'closeBatchStation', batchStationId: input.batchStationId, operatorOpenid: input.openid || '', reason: String(input.reason).trim(), createdAt: t })
+      await tx.saveNotification(id('notice', `${input.batchStationId}:group-failed`), { type: 'groupResult', groupSuccess: false, batchStationId: input.batchStationId, status: '待发送', createdAt: t, updatedAt: t })
     })
     return success(input, t, { batchStationId: input.batchStationId, refunded, status: '已关闭' })
   }

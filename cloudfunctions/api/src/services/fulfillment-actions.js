@@ -106,9 +106,18 @@ function createFulfillmentActions({ repository, now = Date.now } = {}) {
       const existing = await tx.findAdminByOpenid(targetOpenid)
       const target = existing || { _id: id('admin', targetOpenid), openid: targetOpenid, createdAt: t }
       const scope = { batchId: String(input.batchId || ''), stationIds }
-      await tx.saveAdmin(target._id, { openid: target.openid, role: 'verifier', status: 'active', stationIds, batchIds: scope.batchId ? [scope.batchId] : [], authorizationScopes: [scope], createdAt: target.createdAt || t, updatedBy: input.actor.openid, updatedAt: t })
+      const authorizationScopes = (Array.isArray(target.authorizationScopes) ? target.authorizationScopes : []).map((row) => ({
+        batchId: String(row.batchId || ''),
+        stationIds: [...new Set((row.stationIds || []).map(String).filter(Boolean))]
+      }))
+      const matched = authorizationScopes.find((row) => row.batchId === scope.batchId)
+      if (matched) matched.stationIds = [...new Set([...matched.stationIds, ...stationIds])]
+      else authorizationScopes.push(scope)
+      const allStationIds = [...new Set(authorizationScopes.flatMap((row) => row.stationIds))]
+      const batchIds = [...new Set(authorizationScopes.map((row) => row.batchId).filter(Boolean))]
+      await tx.saveAdmin(target._id, { openid: target.openid, role: 'verifier', status: 'active', stationIds: allStationIds, batchIds, authorizationScopes, createdAt: target.createdAt || t, updatedBy: input.actor.openid, updatedAt: t })
       await tx.saveOperationLog(id('op', `${target._id}:assign:${t}`), { action: 'assignVerifier', targetOpenid: target.openid, scope, operatorOpenid: input.actor.openid, createdAt: t })
-      return { targetOpenid: target.openid, authorizationScopes: [scope] }
+      return { targetOpenid: target.openid, authorizationScopes }
     })
     return result.error ? failure(input, t, ERROR_CODES.NOT_FOUND, result.error) : success(input, t, result)
   }
@@ -198,7 +207,6 @@ function createFulfillmentActions({ repository, now = Date.now } = {}) {
       }
       for (const { order, transition } of rows) {
         await tx.saveOrder(order._id, { ...transition.orderPatch, deliveryImages: images, placementLocationNote: locationNote, placementImages: images, placedBy: input.actor.openid, updatedAt: t })
-        await tx.saveNotification(id('notice', `${order._id}:placed`), { type: 'orderPlaced', orderId: order._id, status: '待发送', createdAt: t, updatedAt: t })
       }
       await tx.savePlacementLog(id('placement', `${station._id}:${t}`), { orderIds, batchId: station.batchId, batchStationId: station._id, locationNote, images, operatorOpenid: input.actor.openid, placedAt: t, createdAt: t })
       return { orderIds, status: '已放置待自取', placedAt: t }

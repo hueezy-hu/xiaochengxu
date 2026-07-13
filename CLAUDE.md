@@ -62,7 +62,7 @@
   不填不能参团
 
 > 实现状态：以上 V1.7 规则已落入内部 `MOCK_PAY=true` 演示代码、接口契约和本地测试。
-> 云端部署、真机冒烟、真实支付、退款对账与订阅消息发送器仍未完成，不得声称正式上线。
+> 云端部署、真机冒烟、真实支付、退款对账与订阅模板真机发送验证仍未完成，不得声称正式上线。
 
 ## 4. 环境红线（有过三轮事故，最高优先级）
 
@@ -122,6 +122,7 @@
 
 ## 9. 变更日志（每轮交付追加一行，格式：日期 | 改了什么 | 动了哪些文件）
 
+- 2026-07-14 | 修复本地验收问题：统一预占状态、服务端时钟倒计时、取消反馈、商品引用快照、过期预占筛选、多站授权、两类通知入队及逐订单重试 | miniprogram、order/fulfillment/lifecycle/notification services、repositories、tests、docs
 - 2026-07-13 | 第三阶段本地准备：MOCK_PAY 环境开关（默认 true）、payment-helpers（time_expire/回调分类）、notificationOutbox 发送器骨架与单测；产出审计/迁移/冒烟文档；不部署不改云数据 | runtime-config、payment-helpers、notification-outbox、index.js、tests、docs/
 - 2026-07-13 | 完成 V1.7 内部演示版全栈改造：3分钟多SKU预占、按人成团、双时点生命周期、两段制退款、尾号/二维码核销、照片交付、双交付模式、营业三态、菜单库与商家端；同步契约与上线验收 | cloudfunctions/api、miniprogram、README.md、ACTIONS.md、V1.7-上线验收.md、tests
 - 2026-07-13 | Open Design 提取 v3 设计系统并增量产出 V1.7 版 16 屏高保真可交互设计稿，补齐购物车/结算/3分钟预占及商家端交付流程 | 设计稿v4-V1.7.html、TAILAN-DESIGN.md、docs/open-design、scripts/tests/v17-design-prototype.test.js

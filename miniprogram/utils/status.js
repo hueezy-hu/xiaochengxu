@@ -1,5 +1,5 @@
 const ORDER_STATUS = Object.freeze({
-  PENDING_PAYMENT: '待支付',
+  RESERVED: '预占中',
   CANCELLED: '已取消',
   EXPIRED: '已超时',
   WAITING_DELIVERY_CONFIRMATION: '待配送确认',
@@ -12,14 +12,14 @@ const ORDER_STATUS = Object.freeze({
 })
 
 const BADGE_STATUSES = new Set([
-  ORDER_STATUS.PENDING_PAYMENT,
+  ORDER_STATUS.RESERVED,
   ORDER_STATUS.WAITING_DELIVERY_CONFIRMATION,
   ORDER_STATUS.WAITING_PICKUP,
   ORDER_STATUS.REFUND_FAILED
 ])
 
 function canCancelPending(status) {
-  return status === ORDER_STATUS.PENDING_PAYMENT
+  return status === ORDER_STATUS.RESERVED
 }
 
 function canRequestRefund(status) {

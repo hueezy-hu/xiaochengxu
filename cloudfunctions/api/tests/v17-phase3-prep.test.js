@@ -1,5 +1,7 @@
 const test = require('node:test')
 const assert = require('node:assert/strict')
+const fs = require('node:fs')
+const path = require('node:path')
 const { resolveMockPay, resolveManualPhone, parseBooleanEnv } = require('../src/shared/runtime-config')
 const {
   toWechatTimeExpire,
@@ -128,4 +130,75 @@ test('notification outbox records send failure for retry without inventing succe
   assert.equal(saved[0].status, STATUSES.FAILED)
   assert.match(saved[0].lastError, /template rejected/)
   assert.equal(saved[0].retryCount, 1)
+})
+
+test('notification outbox retries only failed recipients after partial success', async () => {
+  let notice = { _id: 'n4', type: 'groupResult', status: '待发送', batchStationId: 'bs1' }
+  const attempts = []
+  let failSecond = true
+  const outbox = createNotificationOutbox({
+    listPending: async () => ([notice]),
+    saveNotice: async (id, row) => { notice = { ...row, _id: id } },
+    listOrdersForNotice: async () => ([
+      { _id: 'o1', userOpenid: 'u1', subscribeGroupResult: true },
+      { _id: 'o2', userOpenid: 'u2', subscribeGroupResult: true }
+    ]),
+    getConfig: async () => ({ groupResultTemplateId: 'T_GROUP' }),
+    sendSubscribeMessage: async (payload) => {
+      attempts.push(payload.touser)
+      if (payload.touser === 'u2' && failSecond) throw new Error('temporary')
+    },
+    now: () => 5000
+  })
+  const first = await outbox.processPendingNotifications()
+  assert.equal(first.sent, 1)
+  assert.equal(first.failed, 1)
+  assert.equal(notice.status, STATUSES.FAILED)
+  assert.deepEqual(notice.sentOrderIds, ['o1'])
+
+  failSecond = false
+  const second = await outbox.processPendingNotifications()
+  assert.equal(second.sent, 1)
+  assert.equal(second.failed, 0)
+  assert.equal(notice.status, STATUSES.SENT)
+  assert.deepEqual(attempts, ['u1', 'u2', 'u2'])
+})
+
+test('notification outbox can recover notices skipped before templates were configured', async () => {
+  let notice = { _id: 'n5', type: 'pickupReminder', status: '跳过-无模板', orderId: 'o1' }
+  let sent = 0
+  const outbox = createNotificationOutbox({
+    listPending: async () => ([notice]),
+    saveNotice: async (id, row) => { notice = { ...row, _id: id } },
+    listOrdersForNotice: async () => ([{ _id: 'o1', userOpenid: 'u1', subscribePickupNotice: true }]),
+    getConfig: async () => ({ pickupTemplateId: 'T_PICKUP' }),
+    sendSubscribeMessage: async () => { sent += 1 },
+    now: () => 6000
+  })
+  await outbox.processPendingNotifications()
+  assert.equal(sent, 1)
+  assert.equal(notice.status, STATUSES.SENT)
+})
+
+test('cloud outbox loader includes retryable states and fulfillment emits no third template type', () => {
+  const root = path.resolve(__dirname, '..')
+  const index = fs.readFileSync(path.join(root, 'index.js'), 'utf8')
+  const fulfillment = fs.readFileSync(path.join(root, 'src/services/fulfillment-actions.js'), 'utf8')
+  assert.match(index, /status:\s*_\.in\(\['待发送', '发送失败'\]\)/)
+  assert.match(index, /status:\s*'跳过-无模板'/)
+  assert.doesNotMatch(fulfillment, /type:\s*'orderPlaced'/)
+})
+
+test('notification outbox permanently skips unsupported legacy notice types', async () => {
+  const saved = []
+  const outbox = createNotificationOutbox({
+    listPending: async () => ([{ _id: 'legacy', type: 'orderPlaced', status: '跳过-无模板', orderId: 'o1' }]),
+    saveNotice: async (id, row) => { saved.push({ id, ...row }) },
+    listOrdersForNotice: async () => ([{ _id: 'o1', userOpenid: 'u1', subscribePickupNotice: true }]),
+    getConfig: async () => ({ pickupTemplateId: 'T_PICKUP' }),
+    sendSubscribeMessage: async () => { throw new Error('must not send unsupported notice') },
+    now: () => 7000
+  })
+  await outbox.processPendingNotifications()
+  assert.equal(saved[0].status, STATUSES.SKIPPED_UNSUPPORTED)
 })

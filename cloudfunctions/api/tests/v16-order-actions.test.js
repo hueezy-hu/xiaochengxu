@@ -23,8 +23,9 @@ function createMemoryRepository(seed = {}, options = {}) {
 
   return {
     state,
-    async listPendingOrderIds(limit = 100) {
-      return Object.values(state.orders).filter((row) => row.status === '预占中').slice(0, limit).map((row) => row._id)
+    async listPendingOrderIds(limit = 100, expiredBefore) {
+      state.lastPendingQuery = { limit, expiredBefore }
+      return Object.values(state.orders).filter((row) => row.status === '预占中' && Number(row.expiresAt) <= Number(expiredBefore)).slice(0, limit).map((row) => row._id)
     },
     async runTransaction(work) {
       const draft = clone(state)
@@ -62,7 +63,7 @@ function baseSeed(overrides = {}) {
   return {
     batches: { b1: { _id: 'b1', status: '接单中', deadlineAt: 2000000 } },
     batchStations: { s1: { _id: 's1', batchId: 'b1', stationId: 'station-1', status: '拼团中', paidItemCount: 0, paidOrderCount: 0 } },
-    skus: { sku1: { _id: 'sku1', name: 'Cake', spec: '1pc', price: 2800, status: '上架' } },
+    skus: { sku1: { _id: 'sku1', productId: 'product-1', name: 'Cake', spec: '1pc', price: 2800, status: '上架' } },
     inventories: { 'b1:sku1': { _id: 'inv1', batchId: 'b1', skuId: 'sku1', totalQty: 10, availableQty: 10, reservedQty: 0, soldQty: 0, refundedQty: 0, status: '上架' } },
     ...overrides
   }
@@ -108,6 +109,7 @@ test('createOrder trusts server SKU price, reserves inventory and is idempotent'
   assert.equal(repository.state.inventories['b1:sku1'].availableQty, 8)
   assert.equal(repository.state.inventories['b1:sku1'].reservedQty, 2)
   assert.equal(repository.state.orders[first.orderId].items[0].unitPrice, 2800)
+  assert.equal(repository.state.orders[first.orderId].items[0].productId, 'product-1')
   assert.equal(Object.keys(repository.state.orders).length, 1)
 })
 
@@ -296,6 +298,7 @@ test('expirePendingOrders is restricted and releases stale orders one by one', a
   const result = await actions.expirePendingOrders({ system: true, requestId: 'e2' })
   assert.equal(denied.code, ERROR_CODES.FORBIDDEN)
   assert.equal(result.expired, 1)
+  assert.equal(repository.state.lastPendingQuery.expiredBefore, 1000000)
   assert.equal(repository.state.orders.o1.status, '已超时')
   assert.equal(repository.state.inventories['b1:sku1'].reservedQty, 0)
 })

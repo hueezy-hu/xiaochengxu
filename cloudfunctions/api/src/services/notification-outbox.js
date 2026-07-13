@@ -5,7 +5,9 @@ const SENT = '已发送'
 const SKIPPED_NO_TEMPLATE = '跳过-无模板'
 const SKIPPED_NO_AUTH = '跳过-未授权'
 const SKIPPED_NO_TARGET = '跳过-无目标'
+const SKIPPED_UNSUPPORTED = '跳过-不支持类型'
 const FAILED = '发送失败'
+const RETRYABLE_STATUSES = new Set([PENDING, FAILED, SKIPPED_NO_TEMPLATE])
 
 function noticeId(seed) {
   return 'notice-' + crypto.createHash('sha256').update(String(seed)).digest('hex').slice(0, 24)
@@ -15,6 +17,10 @@ function templateIdForType(type, config = {}) {
   if (type === 'deliveryConfirmed' || type === 'groupResult') return String(config.groupResultTemplateId || '').trim()
   if (type === 'pickupReminder' || type === 'pickupNotice') return String(config.pickupTemplateId || '').trim()
   return ''
+}
+
+function isSupportedType(type) {
+  return ['deliveryConfirmed', 'groupResult', 'pickupReminder', 'pickupNotice'].includes(type)
 }
 
 function authFlagForType(type, order = {}) {
@@ -78,13 +84,14 @@ function createNotificationOutbox({
     let failed = 0
     for (const notice of pending || []) {
       if (!notice || !notice._id) continue
-      if (notice.status && notice.status !== PENDING) continue
+      if (notice.status && !RETRYABLE_STATUSES.has(notice.status)) continue
       const templateId = templateIdForType(notice.type, config)
       if (!templateId) {
+        const unsupported = !isSupportedType(notice.type)
         await saveNotice(notice._id, {
           ...notice,
-          status: SKIPPED_NO_TEMPLATE,
-          lastError: '模板ID未配置',
+          status: unsupported ? SKIPPED_UNSUPPORTED : SKIPPED_NO_TEMPLATE,
+          lastError: unsupported ? '通知类型不受支持' : '模板ID未配置',
           processedAt: t,
           updatedAt: t
         })
@@ -107,7 +114,9 @@ function createNotificationOutbox({
       let noticeSkipped = 0
       let noticeFailed = 0
       const errors = []
+      const sentOrderIds = new Set(Array.isArray(notice.sentOrderIds) ? notice.sentOrderIds : [])
       for (const order of orders) {
+        if (sentOrderIds.has(order._id)) continue
         if (!authFlagForType(notice.type, order)) {
           noticeSkipped += 1
           continue
@@ -119,6 +128,7 @@ function createNotificationOutbox({
         try {
           await sendSubscribeMessage(payload)
           noticeSent += 1
+          sentOrderIds.add(order._id)
         } catch (err) {
           noticeFailed += 1
           errors.push((err && err.message) || String(err))
@@ -126,8 +136,8 @@ function createNotificationOutbox({
       }
       let status = SENT
       if (noticeSent === 0 && noticeFailed === 0) status = SKIPPED_NO_AUTH
-      else if (noticeSent === 0 && noticeFailed > 0) status = FAILED
-      // Partial success still marks SENT so authorized users are not re-spammed; failures are logged.
+      if (noticeFailed > 0) status = FAILED
+      if (sentOrderIds.size > 0 && noticeFailed === 0) status = SENT
       await saveNotice(notice._id, {
         ...notice,
         status,
@@ -135,6 +145,7 @@ function createNotificationOutbox({
         sentCount: noticeSent,
         skippedCount: noticeSkipped,
         failedCount: noticeFailed,
+        sentOrderIds: [...sentOrderIds],
         lastError: errors[0] || '',
         retryCount: Number(notice.retryCount || 0) + (noticeFailed > 0 ? 1 : 0),
         processedAt: t,
@@ -153,7 +164,8 @@ function createNotificationOutbox({
     authFlagForType,
     buildSubscribePayload,
     noticeId,
-    STATUSES: { PENDING, SENT, SKIPPED_NO_TEMPLATE, SKIPPED_NO_AUTH, SKIPPED_NO_TARGET, FAILED }
+    STATUSES: { PENDING, SENT, SKIPPED_NO_TEMPLATE, SKIPPED_NO_AUTH, SKIPPED_NO_TARGET, SKIPPED_UNSUPPORTED, FAILED },
+    RETRYABLE_STATUSES
   }
 }
 
@@ -163,5 +175,6 @@ module.exports = {
   templateIdForType,
   authFlagForType,
   buildSubscribePayload,
-  STATUSES: { PENDING, SENT, SKIPPED_NO_TEMPLATE, SKIPPED_NO_AUTH, SKIPPED_NO_TARGET, FAILED }
+  STATUSES: { PENDING, SENT, SKIPPED_NO_TEMPLATE, SKIPPED_NO_AUTH, SKIPPED_NO_TARGET, SKIPPED_UNSUPPORTED, FAILED },
+  RETRYABLE_STATUSES
 }
