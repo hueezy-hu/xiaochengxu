@@ -12,7 +12,7 @@
     <view class="between"><text class="tag">{{product.category || '斑斓经典'}}</text><text class="tag orange">{{stockText}}</text></view>
     <text class="section-title">{{product.name}}</text>
     <text class="text">{{product.description}}</text>
-    <view class="trust-strip"><text>今天拼明天取</text><text>每站累计5件</text><text>交付前可整单退款</text></view>
+    <view class="trust-strip"><text>今天拼明天取</text><text>每站满 5 人</text><text>交付前可整单退款</text></view>
   </view>
 
   <view class="card column gap-sm" style="margin-top: 24rpx;">
@@ -32,6 +32,6 @@
 
   <view class="fixed-bottom"><view class="between" style="width: 100%;">
     <view class="column"><text class="small">合计</text><text class="price" style="font-size: 44rpx;">{{totalText}}</text></view>
-    <view class="btn" style="width: 320rpx;" bindtap="goPickStation">选自提站点</view>
+    <view class="row gap-sm"><view class="btn secondary" style="width: 220rpx;" bindtap="addToCart">加入购物车</view><view class="btn" style="width: 220rpx;" bindtap="buyNow">立即购买</view></view>
   </view></view>
 </view>

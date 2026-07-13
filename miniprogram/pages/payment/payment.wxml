@@ -1,0 +1,6 @@
+<view class="screen">
+  <view class="topbar"><view class="back" bindtap="cancel"></view><text class="nav-title">发起支付</text><view class="menu-pill">•••</view></view>
+  <view class="card column gap-md"><text class="tag orange">库存预占中</text><text class="countdown">{{countdownText}}</text><text class="text">后台预占、无待支付列表。超时或取消后需重新发起，并生成新单号。</text></view>
+  <view wx:if="{{feedback}}" class="notice" style="margin-top:24rpx">{{feedback}}</view>
+  <view class="column gap-sm" style="margin-top:24rpx"><view class="btn {{paying || expired ? 'disabled' : ''}}" bindtap="pay">{{paying ? '支付处理中…' : '微信支付'}}</view><view class="btn secondary" bindtap="cancel">取消支付</view></view>
+</view>

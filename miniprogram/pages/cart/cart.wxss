@@ -1,0 +1,2 @@
+@import "../../styles/common.wxss";
+.cart-row{display:flex;gap:20rpx;align-items:center}.cart-check{width:42rpx;height:42rpx;border:3rpx solid #3E8E5E;border-radius:999rpx;display:flex;align-items:center;justify-content:center;color:#fff}.cart-check.on{background:#3E8E5E}.cart-row.invalid{opacity:.45}.cart-main{flex:1}

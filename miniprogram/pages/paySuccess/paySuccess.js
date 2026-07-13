@@ -2,7 +2,7 @@ const app = getApp()
 
 function buildProgress(batchStation) {
   if (!batchStation) return { paid: 0, threshold: 0, leftCount: 0, percent: 0 }
-  const paid = Number(batchStation.paidItemCount || 0)
+  const paid = Number(batchStation.paidUserCount || 0)
   const threshold = Number(batchStation.thresholdN || 0)
   const leftCount = Math.max(0, threshold - paid)
   const percent = threshold > 0 ? Math.min(100, Math.round((paid / threshold) * 100)) : 0
@@ -10,7 +10,7 @@ function buildProgress(batchStation) {
 }
 
 function buildShareLine(isLeader, stationName, leftCount) {
-  const progressPart = leftCount > 0 ? '还差 ' + leftCount + ' 件达到配送门槛' : '已达到5件，取货日12:00确认配送'
+  const progressPart = leftCount > 0 ? '还差 ' + leftCount + ' 人成团' : '已满5人成团，取货日12:00确认配送'
   if (isLeader) {
     return '我在 ' + stationName + ' 下单了泰斓斑斓甜品，' + progressPart + '。今晚下单，明天到站取～'
   }
@@ -31,6 +31,7 @@ Page({
     leftCount: 0,
     percent: 0,
     shareLine: '',
+    groupResultTemplateId: '',
     pickupTemplateId: ''
   },
 
@@ -59,10 +60,11 @@ Page({
       isLeader: isLeader,
       successTitle: isLeader ? '团开起来了，你是发起人！' : '支付成功！',
       progressText: app.progressText(batchStation),
-      leftText: progress.leftCount > 0 ? '还差 ' + progress.leftCount + ' 件达到配送门槛' : '已达到5件，等待取货日12:00最终确认',
+      leftText: progress.leftCount > 0 ? '还差 ' + progress.leftCount + ' 人成团' : '已满5人，等待取货日12:00最终确认',
       leftCount: progress.leftCount,
       percent: progress.percent,
       shareLine: buildShareLine(isLeader, stationName, progress.leftCount),
+      groupResultTemplateId: config.ok ? (config.groupResultTemplateId || '') : '',
       pickupTemplateId: config.ok ? (config.pickupTemplateId || '') : ''
     })
     app.call('myOrders').then((r) => {
@@ -78,18 +80,17 @@ Page({
   },
 
   subscribe() {
-    if (!this.data.pickupTemplateId) {
+    const tmplIds = [this.data.groupResultTemplateId, this.data.pickupTemplateId].filter(Boolean)
+    if (!tmplIds.length) {
       wx.showToast({ title: '商家暂未配置通知模板', icon: 'none' })
       return
     }
     wx.requestSubscribeMessage({
-      tmplIds: [this.data.pickupTemplateId],
+      tmplIds,
       success: (res) => {
-        if (res[this.data.pickupTemplateId] === 'accept' && this.options.orderId) {
-          app.call('markPickupSubscribed', { orderId: this.options.orderId })
-        }
+        if (this.options.orderId) app.call('markPickupSubscribed', { orderId: this.options.orderId, subscribeGroupResult: res[this.data.groupResultTemplateId] === 'accept', subscribePickupNotice: res[this.data.pickupTemplateId] === 'accept' })
       },
-      complete: () => wx.showToast({ title: '站点确认配送后会提醒你', icon: 'none' })
+      complete: () => wx.showToast({ title: '订阅选择已保存', icon: 'none' })
     })
   },
 

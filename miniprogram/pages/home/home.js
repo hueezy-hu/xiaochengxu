@@ -2,9 +2,21 @@ const app = getApp()
 const WELCOME_KEY = 'tailanWelcomeSeen'
 
 Page({
-  data: { heroImage: '/assets/hero.jpg', showWelcome: false, welcomeNickname: '', welcomeAvatarFileId: '' },
+  data: { heroImage: '/assets/hero.jpg', showWelcome: false, welcomeNickname: '', welcomeAvatarFileId: '', businessStatus: '未开团', canNudge: true, nudgeCount: 0, nudging: false },
 
-  onShow() { this.maybeShowWelcome() },
+  onShow() { this.maybeShowWelcome(); this.loadBusinessStatus() },
+  async loadBusinessStatus() {
+    const res = await app.call('getHomeStatus')
+    if (res.ok) this.setData({ businessStatus: res.businessStatus, canNudge: Boolean(res.canNudge), nudgeCount: Number(res.nudgeCount || 0) })
+  },
+  async nudgeOpenGroup() {
+    if (this.data.nudging || !this.data.canNudge) return
+    this.setData({ nudging: true })
+    const res = await app.call('nudgeOpenGroup')
+    this.setData({ nudging: false })
+    if (res.ok) this.setData({ nudgeCount: Number(res.nudgeCount || 0) })
+    wx.showToast({ title: res.ok ? (res.duplicate ? '今天已经催过啦' : '已帮你催开团') : (res.msg || '暂时无法催开团'), icon: 'none' })
+  },
   maybeShowWelcome() {
     if (wx.getStorageSync(WELCOME_KEY)) return
     const user = app.getLocalProfile()

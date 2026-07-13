@@ -317,7 +317,7 @@ async function initDemo(openid) {
   const bsA = 'demo-bs-buji'
   const bsB = 'demo-bs-daxuecheng'
 
-  await setDoc('config', 'system', { brandName: '泰斓 TAILAN', pickupTemplateId: '', mockPay: MOCK_PAY, phoneOneTapEnabled: false, merchantPhone: '13800000000', createdAt: t, updatedAt: t })
+  await setDoc('config', 'system', { brandName: '泰斓 TAILAN', groupResultTemplateId: '', pickupTemplateId: '', mockPay: MOCK_PAY, phoneOneTapEnabled: false, merchantPhone: '13800000000', createdAt: t, updatedAt: t })
   // 用户资料由微信原生登录流写入；首个管理员由“商家通道”显式绑定。
   const MENU = [
     { name: '蝶糯桑卡雅', thai: 'ข้าวเหนียวอัญชันสังขยาใบเตย', category: '糯香经典', spec: '1个', price: 600, qty: 20,
@@ -476,10 +476,10 @@ async function getOrderDetail(event, openid) {
   return ok({ order, batchStation, station, deliveryWindow })
 }
 
-// PRD 5.7：支付成功页读取唯一订阅模板ID，未配置时前端跳过不报错。
+// PRD V1.7：支付成功页读取成团结果和取货提醒两条模板。
 async function getPickupNoticeConfig() {
   const cfg = await getDoc('config', 'system')
-  return ok({ pickupTemplateId: cfg ? (cfg.pickupTemplateId || '') : '' })
+  return ok({ groupResultTemplateId: cfg ? (cfg.groupResultTemplateId || '') : '', pickupTemplateId: cfg ? (cfg.pickupTemplateId || '') : '' })
 }
 
 async function buildMinePayload(openid) {
@@ -585,13 +585,13 @@ async function setDeliveryWindow(event, openid) {
   return ok({ deliveryWindowId: id, msg: '自提窗口已修改' })
 }
 
-// 用户在支付成功页点"允许"后，把订阅意愿写回订单（推送按此过滤）。
+// 用户在支付成功页选择两条模板后，把各自意愿写回订单。
 async function markPickupSubscribed(event, openid) {
   assertText(event.orderId, 'orderId')
   const order = await getDoc('orders', event.orderId)
   if (!order || order.userOpenid !== openid) return fail('订单不存在或无权操作')
-  await db.collection('orders').doc(order._id).update({ data: { subscribePickupNotice: true, updatedAt: now() } })
-  return ok({ msg: '已开启自提通知' })
+  await db.collection('orders').doc(order._id).update({ data: { subscribeGroupResult: event.subscribeGroupResult === true, subscribePickupNotice: event.subscribePickupNotice === true, updatedAt: now() } })
+  return ok({ msg: '订阅选择已保存' })
 }
 
 // PRD 10：退款重试，失败单可反复触发。

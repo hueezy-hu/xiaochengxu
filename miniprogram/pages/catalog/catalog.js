@@ -82,6 +82,7 @@ Page({
 
   switchCategory(e) { this.setData({ activeCategory: e.currentTarget.dataset.category }, () => this.applyCategory()) },
 
+  goCart() { wx.navigateTo({ url: '/pages/cart/cart' }) },
   goBack() { wx.navigateBack() },
 
   goProduct(e) {

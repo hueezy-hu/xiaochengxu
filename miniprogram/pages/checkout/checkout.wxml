@@ -1,0 +1,7 @@
+<view class="screen" style="padding-bottom:170rpx">
+  <view class="topbar"><view class="back" bindtap="goBack"></view><text class="nav-title">确认结算</text><view class="menu-pill">•••</view></view>
+  <view class="card column gap-md"><text class="card-title">取货联系人</text><input class="profile-input" placeholder="联系人" value="{{contactName}}" bindinput="onName"/><input class="profile-input" type="number" maxlength="11" placeholder="手机号" value="{{phone}}" bindinput="onPhone"/><text class="small">手机号尾号后 4 位就是现场取货凭证。</text></view>
+  <view class="card column gap-sm" style="margin-top:24rpx"><text class="card-title">商品</text><view wx:for="{{items}}" wx:key="skuId" class="between"><text class="text">{{item.name}} · {{item.spec}} × {{item.quantity}}</text><text class="price">{{item.priceText}}</text></view></view>
+  <view class="notice" style="margin-top:24rpx">点击发起支付后，后台预占库存 3 分钟；当前页面尚未占库存。</view>
+  <view class="fixed-bottom between"><text class="price">{{amountText}}</text><view class="btn {{submitting ? 'disabled' : ''}}" style="width:280rpx" bindtap="submit">发起支付</view></view>
+</view>

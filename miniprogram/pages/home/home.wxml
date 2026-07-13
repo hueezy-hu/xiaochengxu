@@ -5,6 +5,12 @@
     <view class="home-brand"><text class="home-brand-title">泰斓 TAILAN</text><text class="home-brand-sub">THAI PANDAN DESSERTS</text></view>
     <view class="home-hero-copy"><text class="home-hero-title">一口斑斓，一点泰式日常</text><text class="home-hero-sub">家庭烘焙 · 新鲜现做 · 次日到站自提</text></view>
   </view>
+  <view class="card column gap-sm" style="margin-bottom:24rpx;">
+    <view class="between"><text class="card-title">今日营业</text><text class="tag {{businessStatus === '今日休息' ? 'muted' : ''}}">{{businessStatus}}</text></view>
+    <text wx:if="{{businessStatus === '开团中'}}" class="text">开团中 · 每站满 5 人成团配送</text>
+    <text wx:elif="{{businessStatus === '今日休息'}}" class="text">今日休息，下一批由商家确认库存后手动发布。</text>
+    <view wx:else class="column gap-sm"><text class="text">未开团 · 已有 {{nudgeCount}} 人催开团</text><view class="btn secondary" bindtap="nudgeOpenGroup">{{nudging ? '提交中…' : '催开团'}}</view></view>
+  </view>
   <view class="card column gap-md home-batch-card">
     <text class="section-title">从热带叶香，到你下班经过的地铁站</text>
     <text class="text">我们用斑斓、椰香与糯米做小批量甜品。每天由商家确认可售数量并手动开售，今晚下单，明天按页面时间到站取。</text>

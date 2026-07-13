@@ -31,6 +31,7 @@ Page({
   },
 
   goRules() { this.setData({ showRules: true }) },
+  managePhone() { wx.showModal({ title: '手机号管理', content: this.data.user.phone ? `当前手机号：${this.data.user.phone}\n下次结算页可直接修改。` : '请在下次结算时填写手机号。', showCancel: false }) },
   closeRules() { this.setData({ showRules: false }) },
   goVerify() { wx.navigateTo({ url: '/pages/adminVerify/adminVerify' }) },
   goAdmin() { wx.navigateTo({ url: '/pages/adminHome/adminHome' }) },

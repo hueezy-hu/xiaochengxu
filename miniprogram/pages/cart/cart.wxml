@@ -1,0 +1,13 @@
+<view class="screen" style="padding-bottom:180rpx">
+  <view class="topbar"><view class="back" bindtap="goBack"></view><text class="nav-title">购物车</text><view class="menu-pill" bindtap="clearInvalidCart">清理失效</view></view>
+  <view class="notice">加购不占库存；发起支付时才预占 3 分钟。</view>
+  <view class="column gap-md" style="margin-top:24rpx">
+    <view wx:for="{{items}}" wx:key="skuId" class="card cart-row {{item.valid ? '' : 'invalid'}}">
+      <view class="cart-check {{item.checked && item.valid ? 'on' : ''}}" data-id="{{item.skuId}}" bindtap="toggle">✓</view>
+      <view class="cart-main column gap-xs"><text class="card-title">{{item.sku.name}} · {{item.sku.spec}}</text><text class="small">{{item.valid ? (item.priceChanged ? '价格已更新，以当前价结算' : '可结算') : item.invalidReason}}</text><text class="price">{{item.priceText}}</text></view>
+      <view class="column gap-sm"><view class="row gap-sm"><view class="qty" data-id="{{item.skuId}}" data-qty="{{item.qty - 1}}" bindtap="changeQty">-</view><text>{{item.qty}}</text><view class="qty" data-id="{{item.skuId}}" data-qty="{{item.qty + 1}}" bindtap="changeQty">+</view></view><text class="small" data-id="{{item.skuId}}" bindtap="removeCartItem">删除</text></view>
+    </view>
+    <view wx:if="{{!loading && !items.length}}" class="notice">购物车还是空的，去挑一份斑斓甜品吧。</view>
+  </view>
+  <view class="fixed-bottom between"><view class="row gap-sm"><view class="cart-check {{allChecked ? 'on' : ''}}" bindtap="toggleAll">✓</view><text>全选</text></view><view class="column"><text class="small">仅合计已勾选</text><text class="price">{{amountText}}</text></view><view class="btn {{selectedQty ? '' : 'disabled'}}" style="width:220rpx" bindtap="checkout">去结算</view></view>
+</view>

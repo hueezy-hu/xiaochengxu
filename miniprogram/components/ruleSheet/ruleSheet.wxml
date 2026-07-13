@@ -6,7 +6,7 @@
     <view class="rs-group">
       <text class="rs-tag">拼团</text>
       <text class="rs-line">今天下单，明天按站点窗口自提</text>
-      <text class="rs-line">每站累计5件达到配送门槛，按已付款件数计</text>
+      <text class="rs-line">每站满 5 位不同付款用户成团配送，商品库存仍按份计</text>
       <text class="rs-line">达到门槛后仍可下单；取货日12:00最终确认配送</text>
     </view>
     <view class="rs-group">
@@ -16,7 +16,7 @@
     </view>
     <view class="rs-group">
       <text class="rs-tag">自提</text>
-      <text class="rs-line">凭 6 位核销码到站取货，码只能用一次</text>
+      <text class="rs-line">凭手机号尾号后 4 位或二维码到站取货</text>
       <text class="rs-line">可把取货券截图发给他人代取</text>
     </view>
 

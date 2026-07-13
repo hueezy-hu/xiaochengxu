@@ -2,9 +2,9 @@ const app = getApp()
 const CACHE_KEY = 'tailanOrdersCache'
 const TABS = [
   { key: 'all', name: '全部', statuses: null },
-  { key: '处理中', name: '处理中', statuses: ['待支付', '待配送确认', '退款处理中'] },
-  { key: '待自提', name: '待自提', statuses: ['待自提', '已放置待自取'] },
-  { key: '已完成', name: '已完成', statuses: ['已完成', '已退款', '已取消', '已超时'] }
+  { key: '待自提', name: '待自提', statuses: ['待配送确认', '待自提', '已放置待自取'] },
+  { key: '已完成', name: '已完成', statuses: ['已完成', '已完成未取'] },
+  { key: '已退款', name: '已退款', statuses: ['退款处理中', '已退款', '退款申请中'] },
 ]
 
 function refundText(order) {
@@ -35,8 +35,8 @@ Page({
     this.renderOrders(res.orders || [])
   },
   renderOrders(rawOrders) {
-    const orders = (rawOrders || []).map((o) => ({ ...o, firstItem: (o.items && o.items[0]) || {}, amountText: app.money(o.amount), refundText: refundText(o), canCancelPending: o.status === '待支付', canRefund: ['待配送确认', '待自提'].includes(o.status) }))
-    const badge = orders.filter((o) => ['待支付', '待配送确认', '待自提'].includes(o.status)).length
+    const orders = (rawOrders || []).filter((o) => o.status !== '预占中' && o.status !== '待支付').map((o) => ({ ...o, firstItem: (o.items && o.items[0]) || {}, amountText: app.money(o.amount), refundText: refundText(o), canRefund: ['待配送确认', '待自提'].includes(o.status), canApplyRefund: ['已完成', '已放置待自取', '已完成未取'].includes(o.status) }))
+    const badge = orders.filter((o) => ['待配送确认', '待自提'].includes(o.status)).length
     app.updateOrderBadge(badge)
     this.setData({ loading: false, orders }, () => this.applyFilter())
   },
@@ -52,17 +52,6 @@ Page({
   },
 
   goDetail(e) { wx.navigateTo({ url: '/pages/orderDetail/orderDetail?orderId=' + e.currentTarget.dataset.id }) },
-  async cancelPending(e) {
-    if (this._cancelling) return
-    const id = e.currentTarget.dataset.id
-    const confirmed = await new Promise((resolve) => wx.showModal({ title: '取消待支付订单？', content: '取消后会立即释放15分钟库存预占。', success: (r) => resolve(r.confirm) }))
-    if (!confirmed) return
-    this._cancelling = true
-    const res = await app.call('cancelPendingOrder', { orderId: id })
-    this._cancelling = false
-    wx.showToast({ title: res.ok ? '待支付订单已取消' : (res.msg || '操作失败'), icon: 'none' })
-    this.load()
-  },
   async requestRefund(e) {
     if (this._cancelling) return
     const id = e.currentTarget.dataset.id
@@ -73,6 +62,13 @@ Page({
     this._cancelling = false
     wx.showToast({ title: res.ok ? '退款已提交' : (res.msg || '操作失败'), icon: 'none' })
     this.load()
+  },
+  async applyRefundRequest(e) {
+    const id = e.currentTarget.dataset.id
+    const reason = await new Promise((resolve) => wx.showModal({ title: '申请退款', editable: true, placeholderText: '说明交付后的退款原因', success: (r) => resolve(r.confirm ? String(r.content || '').trim() : '') }))
+    if (!reason) return
+    const res = await app.call('applyRefundRequest', { orderId: id, reason })
+    wx.showToast({ title: res.ok ? '已提交人工处理' : (res.msg || '提交失败'), icon: 'none' }); if (res.ok) this.load()
   },
   onShareAppMessage() { return { title: '泰斓 TAILAN · 我的订单', path: '/pages/home/home' } },
   onShareTimeline() { return { title: '泰斓 TAILAN · 地铁站拼团自提' } }

@@ -22,8 +22,8 @@ App({
   },
 
   progressText(batchStation) {
-    if (!batchStation) return '已拼 0/5 件'
-    return '已拼 ' + (batchStation.paidItemCount || 0) + '/' + (batchStation.thresholdN || 5) + ' 份'
+    if (!batchStation) return '已拼 0/5 人'
+    return '已拼 ' + (batchStation.paidUserCount || 0) + '/' + (batchStation.thresholdN || 5) + ' 人'
   },
 
   validPhone(phone) {

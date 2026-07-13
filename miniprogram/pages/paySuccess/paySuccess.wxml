@@ -24,7 +24,7 @@
       <text class="card-title">把这个团发到微信群</text>
       <text class="text">{{shareLine}}</text>
       <button class="btn" open-type="share">分享到微信群</button>
-      <view class="btn secondary" bindtap="subscribe">开启自提通知（确认配送后提醒）</view>
+      <view class="btn secondary" bindtap="subscribe">选择订阅：成团结果 + 取货提醒</view>
     </view>
 
     <view class="row gap-sm" style="margin-top: 24rpx;">

@@ -23,14 +23,15 @@
   <view class="card column gap-md" style="margin-top: 24rpx;">
     <button class="list-button" open-type="contact"><text class="card-title" style="flex: 1;">联系商家</text><text class="small">微信客服</text></button>
     <view class="divider"></view>
-    <view class="list-item" bindtap="goRules"><text class="card-title" style="flex: 1;">规则说明</text><text class="small">拼团与退款</text></view>
+    <view class="list-item" bindtap="managePhone"><text class="card-title" style="flex: 1;">手机号管理</text><text class="small">尾号即凭证</text></view>
+    <view class="divider"></view><view class="list-item" bindtap="goRules"><text class="card-title" style="flex: 1;">使用规则</text><text class="small">拼团与退款</text></view>
   </view>
 
   <view wx:if="{{isAdmin}}" class="card column gap-md" style="margin-top: 24rpx;">
     <text class="tag">管理员 · {{role}}</text>
-    <view class="list-item" bindtap="goAdmin"><text class="card-title" style="flex: 1;">商家管理</text><text class="small">进入</text></view>
-    <view class="divider"></view>
-    <view class="list-item" bindtap="goVerify"><text class="card-title" style="flex: 1;">现场核销</text><text class="small">进入</text></view>
+    <view wx:if="{{role === 'superAdmin'}}" class="list-item" bindtap="goAdmin"><text class="card-title" style="flex: 1;">商家工作台</text><text class="small">进入</text></view>
+    <view wx:if="{{role === 'superAdmin'}}" class="divider"></view>
+    <view wx:if="{{role === 'superAdmin' || role === 'verifier'}}" class="list-item" bindtap="goVerify"><text class="card-title" style="flex: 1;">现场核销</text><text class="small">进入</text></view>
   </view>
 
   <view class="merchant-channel" bindtap="openMerchantChannel">商家通道</view>

@@ -54,12 +54,21 @@ Page({
     this.setData({ selectedSku: sku || null, totalText: app.money((sku ? sku.price : 0) * this.data.qty), stockText: sku ? sku.stockText : '请选择规格' })
   },
   goBack() { wx.navigateBack() },
-  goPickStation() {
+  selectedItems() {
     const sku = this.data.selectedSku
+    return sku ? [{ skuId: sku._id, quantity: this.data.qty, name: sku.name, spec: sku.spec || '', price: sku.price }] : []
+  },
+  async addToCart() {
+    const sku = this.data.selectedSku
+    if (!sku || !this.data.batch) return
+    const res = await app.call('addToCart', { skuId: sku._id, qty: this.data.qty })
+    wx.showToast({ title: res.ok ? '已加入购物车' : (res.msg || '加购失败'), icon: 'none' })
+  },
+  buyNow() {
     const batchId = this.data.batch && this.data.batch._id
-    if (!sku) return
-    if (!batchId) { wx.showToast({ title: '今晚批次准备中', icon: 'none' }); return }
-    wx.navigateTo({ url: '/pages/pickStation/pickStation?batchId=' + batchId + '&skuId=' + sku._id + '&qty=' + this.data.qty + '&skuName=' + encodeURIComponent(sku.name + ' ' + (sku.spec || '')) })
+    if (!batchId || !this.data.selectedSku) { wx.showToast({ title: '当前未开团', icon: 'none' }); return }
+    wx.setStorageSync('checkoutItems', this.selectedItems())
+    wx.navigateTo({ url: '/pages/pickStation/pickStation?batchId=' + batchId })
   },
   onShareAppMessage() {
     return { title: '泰斓 TAILAN · ' + (this.data.product.name || '斑斓蛋糕') + '，今天拼明天取', imageUrl: (this.data.images && this.data.images[0]) || '/assets/hero.jpg', path: '/pages/product/product?productId=' + (this.data.product._id || '') }

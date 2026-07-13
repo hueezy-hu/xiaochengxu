@@ -1,10 +1,10 @@
 <view class="screen catalog-screen">
-  <view class="topbar"><text class="nav-title">点单 · 今天拼明天取</text><view class="menu-pill">•••</view></view>
+  <view class="topbar"><text class="nav-title">点单 · 今天拼明天取</text><view class="menu-pill" bindtap="goCart">购物车</view></view>
 
   <view class="catalog-status">
     <view class="batch-dot"></view>
     <text>{{batchText}}</text>
-    <text class="catalog-status-strong">每站累计5件达配送门槛</text>
+    <text class="catalog-status-strong">每站满 5 人成团配送</text>
   </view>
 
   <view class="catalog-layout">

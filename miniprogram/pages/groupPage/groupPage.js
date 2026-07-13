@@ -39,10 +39,10 @@ Page({
       return
     }
     const bs = group.batchStation
-    const paid = Number(bs.paidItemCount || 0)
+    const paid = Number(bs.paidUserCount || 0)
     const threshold = Number(bs.thresholdN || 0)
     const left = Math.max(0, threshold - paid)
-    const memberCount = Number(bs.paidOrderCount || 0)
+    const memberCount = Number(bs.paidUserCount || 0)
     const invMap = {}
     if (catalog.ok) {
       for (const inv of catalog.inventory || []) invMap[inv.skuId] = inv
@@ -64,7 +64,7 @@ Page({
       station: group.station || {},
       isLeader: Boolean(group.isLeader),
       progressText: app.progressText(bs),
-      leftText: left > 0 ? '还差 ' + left + ' 件达到配送门槛' : '已达到5件，取货日12:00确认配送',
+      leftText: left > 0 ? '还差 ' + left + ' 人成团' : '已满5人，取货日12:00确认配送',
       percent: threshold > 0 ? Math.min(100, Math.round((paid / threshold) * 100)) : 0,
       memberCount: memberCount,
       memberInitials: AVATAR_POOL.slice(0, Math.min(4, Math.max(memberCount, 0))),
@@ -83,10 +83,10 @@ Page({
   },
 
   onShareAppMessage() {
-    const left = this.data.batchStation ? Math.max(0, Number(this.data.batchStation.thresholdN || 0) - Number(this.data.batchStation.paidItemCount || 0)) : 0
+    const left = this.data.batchStation ? Math.max(0, Number(this.data.batchStation.thresholdN || 0) - Number(this.data.batchStation.paidUserCount || 0)) : 0
     const name = this.data.station.name || ''
     return {
-      title: left > 0 ? name + ' 泰斓还差 ' + left + ' 件达到配送门槛' : name + ' 泰斓已达到5件，仍可继续下单',
+      title: left > 0 ? name + ' 泰斓还差 ' + left + ' 人成团' : name + ' 泰斓已满5人，仍可继续下单',
       imageUrl: '/assets/hero.jpg', path: '/pages/catalog/catalog'
     }
   },

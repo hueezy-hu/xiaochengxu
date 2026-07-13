@@ -21,13 +21,12 @@ test('product navigation never passes a client-controlled price', () => {
   assert.doesNotMatch(js, /[?&]price=/)
 })
 
-test('checkout sends required contact identity and retries the same pending order', () => {
-  const js = read('miniprogram/pages/pickStation/pickStation.js')
+test('V1.7 checkout sends required contact identity and opens a dedicated payment page', () => {
+  const js = read('miniprogram/pages/checkout/checkout.js')
   assert.match(js, /contactName/)
   assert.match(js, /clientRequestId/)
-  assert.match(js, /pendingOrderId/)
-  assert.match(js, /pendingBatchStationId/)
-  assert.match(js, /已有待支付订单|不能切换站点/)
+  assert.match(js, /createOrder/)
+  assert.match(js, /pages\/payment\/payment/)
   assert.match(js, /redirectTo/)
   assert.doesNotMatch(js, /options\.price/)
 })

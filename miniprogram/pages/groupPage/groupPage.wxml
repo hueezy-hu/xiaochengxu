@@ -32,7 +32,7 @@
     <view class="card column gap-sm trust-list" style="margin-top: 24rpx;">
       <view class="trust-item"><text class="trust-check">✓</text><text class="text">完成交付前支持整单退款，不支持顺延</text></view>
       <view class="trust-item"><text class="trust-check">✓</text><text class="text">各买各付，不用帮别人垫钱</text></view>
-      <view class="trust-item"><text class="trust-check">✓</text><text class="text">凭 6 位码到站自提，取货券可截图代取</text></view>
+      <view class="trust-item"><text class="trust-check">✓</text><text class="text">凭手机尾号后 4 位或二维码到站自提</text></view>
     </view>
 
     <view class="between" style="margin: 28rpx 0 16rpx;">
