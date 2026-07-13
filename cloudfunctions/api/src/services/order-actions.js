@@ -16,6 +16,7 @@ const ORDER_EXPIRED = '已超时'
 const ORDER_REFUNDED = '已退款'
 const BATCH_ACCEPTING = '接单中'
 const STATION_ORDERABLE = new Set(['拼团中', '已成团待确认'])
+const ACTIVE_PAID_ORDER_STATUSES = ['待配送确认', '待自提', '已放置待自取', '已完成', '已完成未取', '退款申请待处理']
 
 function normalizeInventory(original, patch) {
   return {
@@ -85,6 +86,12 @@ function validateCreate(input) {
 function idempotentOrderId(openid, clientRequestId) {
   const digest = crypto.createHash('sha256').update(`${openid}\0${clientRequestId}`).digest('hex').slice(0, 32)
   return `order-${digest}`
+}
+
+async function remainingPaidOrders(tx, order) {
+  if (typeof tx.listOrdersByStation !== 'function') return []
+  const rows = await tx.listOrdersByStation(order.batchStationId, ACTIVE_PAID_ORDER_STATUSES)
+  return rows.filter((row) => row._id !== order._id)
 }
 
 function aggregateItems(items) {
@@ -244,7 +251,8 @@ function createOrderActions({ repository, now = Date.now, mockPay = true } = {})
       if (!transition.ok) return { error: [ERROR_CODES.ORDER_STATE_CONFLICT, transition.reason] }
       const station = await tx.getBatchStation(order.batchStationId)
       const inventoryBySkuId = await loadOrderInventory(tx, order)
-      const refund = applyV16Refund({ order, batchStation: station, inventoryBySkuId, now: t })
+      const remainingActiveOrders = await remainingPaidOrders(tx, order)
+      const refund = applyV16Refund({ order, batchStation: station, inventoryBySkuId, remainingActiveOrders, now: t })
       if (!refund.ok) return { error: [ERROR_CODES.ORDER_STATE_CONFLICT, refund.reason] }
       await persistInventory(tx, inventoryBySkuId, refund.inventoryPatches, t)
       await tx.saveBatchStation(station._id, { ...refund.batchStationPatch, updatedAt: t })
@@ -282,11 +290,14 @@ function createOrderActions({ repository, now = Date.now, mockPay = true } = {})
       if (existingRefund || order.status === ORDER_REFUNDED || order.refundAccountingApplied) {
         return { orderId: order._id, refundId, refundNo: refundId, refundStatus: existingRefund ? existingRefund.status : ORDER_REFUNDED, idempotent: true }
       }
-      const transition = transitionOrderFulfillment({ order, operation: 'refund', now: t })
+      const transition = input.allowPostDelivery
+        ? { ok: true, orderPatch: { status: '退款处理中', refundRequestedAt: t, fulfillmentOperation: 'refund' } }
+        : transitionOrderFulfillment({ order, operation: 'refund', now: t })
       if (!transition.ok) return { error: [ERROR_CODES.ORDER_STATE_CONFLICT, transition.reason] }
       const station = await tx.getBatchStation(order.batchStationId)
       const inventoryBySkuId = await loadOrderInventory(tx, order)
-      const refund = applyV16Refund({ order, batchStation: station, inventoryBySkuId, now: t })
+      const remainingActiveOrders = await remainingPaidOrders(tx, order)
+      const refund = applyV16Refund({ order, batchStation: station, inventoryBySkuId, remainingActiveOrders, allowPostDelivery: Boolean(input.allowPostDelivery), now: t })
       if (!refund.ok) return { error: [ERROR_CODES.ORDER_STATE_CONFLICT, refund.reason] }
       await persistInventory(tx, inventoryBySkuId, refund.inventoryPatches, t)
       await tx.saveBatchStation(station._id, { ...refund.batchStationPatch, updatedAt: t })

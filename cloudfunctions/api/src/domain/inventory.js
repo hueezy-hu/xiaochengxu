@@ -5,6 +5,12 @@ const SELF_REFUNDABLE = new Set([
   ORDER_STATUS.WAITING_DELIVERY,
   ORDER_STATUS.WAITING_PICKUP
 ])
+const POST_DELIVERY_REFUNDABLE = new Set([
+  ORDER_STATUS.PLACED,
+  ORDER_STATUS.COMPLETED,
+  ORDER_STATUS.COMPLETED_NO_SHOW,
+  ORDER_STATUS.REFUND_REQUESTED
+])
 
 function quantitiesBySku(items = []) {
   const quantities = {}
@@ -35,10 +41,12 @@ function applyV17Refund({
   batchStation,
   inventoryBySkuId = {},
   remainingActiveOrders = [],
+  allowPostDelivery = false,
   now = Date.now()
 } = {}) {
   if (order && (order.refundAccountingApplied || order.refundedAt)) return { ok: false, reason: '退款库存已处理', inventoryPatches: [] }
-  if (!order || !SELF_REFUNDABLE.has(order.status)) return { ok: false, reason: '当前状态不可自助退款', inventoryPatches: [] }
+  const eligible = order && (SELF_REFUNDABLE.has(order.status) || (allowPostDelivery && POST_DELIVERY_REFUNDABLE.has(order.status)))
+  if (!eligible) return { ok: false, reason: '当前状态不可自助退款', inventoryPatches: [] }
   const quantities = quantitiesBySku(order.items)
   if (!quantities) return { ok: false, reason: '订单商品无效', inventoryPatches: [] }
 

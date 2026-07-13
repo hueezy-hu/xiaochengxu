@@ -195,6 +195,21 @@ test('V1.7 refund restores item inventory and derives people from remaining acti
   assert.equal(result.orderPatch.status, '已退款')
 })
 
+test('V1.7 manual approval can apply accounting after delivery', () => {
+  const result = applyV17Refund({
+    order: { _id: 'o1', userOpenid: 'buyer-a', status: '已完成', items: [{ skuId: 'sku1', quantity: 1 }] },
+    batchStation: { _id: 'bs1', status: '已确认配送', paidUserCount: 1, paidItemCount: 1, paidOrderCount: 1 },
+    inventoryBySkuId: { sku1: { ...inventory(10), availableQty: 9, soldQty: 1 } },
+    remainingActiveOrders: [],
+    allowPostDelivery: true,
+    now: 4500
+  })
+
+  assert.equal(result.ok, true)
+  assert.equal(result.orderPatch.status, '已退款')
+  assert.equal(result.batchStationPatch.paidUserCount, 0)
+})
+
 test('V1.7 order transitions separate self-refund, delivery and post-delivery requests', () => {
   assert.equal(typeof transitionV17Order, 'function')
   const selfRefund = transitionV17Order({ order: { status: '待自提' }, operation: 'refund', now: 5000 })

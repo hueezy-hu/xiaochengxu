@@ -292,8 +292,8 @@ function confirmPickupDayStations({ batchStations = [], now = Date.now() } = {})
   return { stationPatches, skippedStationIds }
 }
 
-function applyV16Refund({ order, batchStation, inventoryBySkuId = {}, remainingActiveOrders = [], now = Date.now() } = {}) {
-  return applyV17Refund({ order, batchStation, inventoryBySkuId, remainingActiveOrders, now })
+function applyV16Refund({ order, batchStation, inventoryBySkuId = {}, remainingActiveOrders = [], allowPostDelivery = false, now = Date.now() } = {}) {
+  return applyV17Refund({ order, batchStation, inventoryBySkuId, remainingActiveOrders, allowPostDelivery, now })
 }
 
 function canRefundOrder(order) {

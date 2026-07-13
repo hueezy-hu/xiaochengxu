@@ -36,6 +36,7 @@ function createMemoryRepository(seed = {}, options = {}) {
         getSku: async (id) => clone(draft.skus[id] || null),
         getInventory: async (batchId, skuId) => clone(draft.inventories[`${batchId}:${skuId}`] || null),
         getRefund: async (id) => clone(draft.refunds[id] || null),
+        listOrdersByStation: async (batchStationId, statuses) => clone(Object.values(draft.orders).filter((row) => row.batchStationId === batchStationId && statuses.includes(row.status))),
         createOrder: async (data, requestedId) => {
           const id = requestedId || `order-${++orderSequence}`
           draft.orders[id] = { _id: id, ...clone(data) }

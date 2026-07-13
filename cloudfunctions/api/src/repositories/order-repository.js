@@ -23,11 +23,21 @@ function createOrderRepository({ db, command } = {}) {
             return rows[0] || null
           },
           async getRefund(id) { return transactionDoc(transaction, 'refunds', id) },
+          async getRefundRequest(id) { return transactionDoc(transaction, 'refundRequests', id) },
+          async listOrdersByStation(batchStationId, statuses) {
+            const rows = []
+            for (let offset = 0; ; offset += 100) {
+              const page = (await transaction.collection('orders').where({ batchStationId, status: command.in(statuses) }).skip(offset).limit(100).get()).data || []
+              rows.push(...page)
+              if (page.length < 100) return rows
+            }
+          },
           async createOrder(data, id) { await transaction.collection('orders').doc(id).set({ data }); return id },
           async saveOrder(id, data) { await transaction.collection('orders').doc(id).update({ data }) },
           async saveBatchStation(id, data) { await transaction.collection('batchStations').doc(id).update({ data }) },
           async saveInventory(row) { const { _id, ...data } = row; await transaction.collection('batchInventory').doc(_id).update({ data }) },
-          async saveRefund(id, data) { await transaction.collection('refunds').doc(id).set({ data }) }
+          async saveRefund(id, data) { await transaction.collection('refunds').doc(id).set({ data }) },
+          async saveRefundRequest(id, data) { await transaction.collection('refundRequests').doc(id).set({ data }) }
         }
         return work(tx)
       }, 3)

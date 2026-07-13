@@ -15,6 +15,7 @@ const { createFulfillmentActions } = require('./src/services/fulfillment-actions
 const { createCatalogActions } = require('./src/services/catalog-actions')
 const { createCartActions } = require('./src/services/cart-actions')
 const { createProfileActions } = require('./src/services/profile-actions')
+const { createRefundActions } = require('./src/services/refund-actions')
 const { createOrderRepository } = require('./src/repositories/order-repository')
 const { createBatchRepository } = require('./src/repositories/batch-repository')
 const { createFulfillmentRepository } = require('./src/repositories/fulfillment-repository')
@@ -53,12 +54,13 @@ const shoppingRepository = createShoppingRepository({ db, command: _ })
 const catalogActions = createCatalogActions({ repository: shoppingRepository, now })
 const cartActions = createCartActions({ repository: shoppingRepository, now })
 const profileActions = createProfileActions({ repository: shoppingRepository, now })
+const refundActions = createRefundActions({ repository: cloudOrderRepository, systemRefundOrder: v16OrderActions.systemRefundOrder, now })
 
 const COLLECTIONS = [
   'products', 'skus', 'stations', 'batches', 'batchStations', 'batchInventory',
   'orders', 'admins', 'users', 'refunds', 'verificationLogs', 'deliveryWindows', 'config',
   'placementLogs', 'contactLogs', 'operationLogs', 'notificationOutbox', 'paymentEvents', 'runtimeLocks',
-  'carts', 'openGroupNudges', 'businessDays'
+  'carts', 'openGroupNudges', 'businessDays', 'refundRequests'
 ]
 let collectionsReadyPromise = null
 
@@ -86,6 +88,7 @@ exports.main = async (event = {}, context = {}) => {
       case 'queryPaymentResult': return await invokeV16OrderAction('queryPaymentResult', event, openid)
       case 'cancelPendingOrder': return await invokeV16OrderAction('cancelPendingOrder', event, openid)
       case 'requestRefund': return await invokeV16OrderAction('requestRefund', event, openid)
+      case 'applyRefundRequest': return await invokeUserAction(refundActions, 'applyRefundRequest', event, openid)
       case 'lifecycleTick': return trustedSystemTrigger ? await runLifecycleTick(event) : v16Failure(event, now(), V16_ERROR_CODES.FORBIDDEN, '仅可信定时任务可执行生命周期处理')
       case 'payCallback': return v16Failure(event, now(), V16_ERROR_CODES.PAYMENT_UNKNOWN, '真实支付回调尚未启用')
       case 'myOrders': return await myOrders(openid)
@@ -112,6 +115,7 @@ exports.main = async (event = {}, context = {}) => {
       case 'closeBatchStation': return await adminOnly(openid, ['superAdmin'], () => invokeV16BatchAction('closeBatchStation', event, openid))
       case 'appendInventory': return await adminOnly(openid, ['superAdmin'], () => invokeV16BatchAction('appendInventory', event, openid))
       case 'setTodayRest': return await adminOnly(openid, ['superAdmin'], () => invokeV16BatchAction('setTodayRest', event, openid))
+      case 'resolveRefundRequest': return await adminOnly(openid, ['superAdmin'], () => invokeUserAction(refundActions, 'resolveRefundRequest', event, openid))
       case 'setDeliveryWindow': return await adminOnly(openid, ['superAdmin'], () => setDeliveryWindow(event, openid))
       case 'markArrived': return await adminOnly(openid, ['superAdmin', 'verifier'], (admin) => invokeV16FulfillmentAction('markArrived', event, admin))
       case 'prepList': return await adminOnly(openid, ['superAdmin', 'verifier'], (admin) => invokeV16FulfillmentAction('getPrepList', event, admin))
