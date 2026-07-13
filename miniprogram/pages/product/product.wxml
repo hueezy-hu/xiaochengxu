@@ -1,0 +1,37 @@
+<view class="screen" style="padding-bottom: 160rpx;">
+  <view class="topbar"><view class="back" bindtap="goBack"></view><text class="nav-title">商品详情</text><view class="menu-pill">•••</view></view>
+
+  <view class="product-visual">
+    <swiper wx:if="{{images.length}}" class="product-swiper" indicator-dots autoplay circular>
+      <swiper-item wx:for="{{images}}" wx:key="*this"><image class="product-image" src="{{item}}" mode="aspectFill"></image></swiper-item>
+    </swiper>
+    <view wx:else class="product-placeholder"><view class="cake"></view><text>泰斓 TAILAN</text></view>
+  </view>
+
+  <view class="card column gap-sm" style="margin-top: 24rpx;">
+    <view class="between"><text class="tag">{{product.category || '斑斓经典'}}</text><text class="tag orange">{{stockText}}</text></view>
+    <text class="section-title">{{product.name}}</text>
+    <text class="text">{{product.description}}</text>
+    <view class="trust-strip"><text>今天拼明天取</text><text>每站累计5件</text><text>交付前可整单退款</text></view>
+  </view>
+
+  <view class="card column gap-sm" style="margin-top: 24rpx;">
+    <text class="card-title">选择规格</text>
+    <view class="column gap-sm">
+      <view wx:for="{{skus}}" wx:key="_id" class="sku-row {{selectedSkuId === item._id ? 'active' : ''}}" bindtap="pickSku" data-id="{{item._id}}">
+        <view class="column gap-xs"><text class="card-title">{{item.name}} · {{item.spec}}</text><text class="small">{{item.stockText}} · 冷藏后口感更细腻</text></view>
+        <view class="column gap-xs" style="align-items:flex-end"><text class="price">{{item.displayPrice}}</text><text class="tag {{selectedSkuId === item._id ? '' : 'muted'}}">{{selectedSkuId === item._id ? '已选' : '选择'}}</text></view>
+      </view>
+    </view>
+  </view>
+
+  <view class="card column gap-sm" style="margin-top: 24rpx;">
+    <view class="between"><text class="card-title">购买数量</text><view class="row gap-sm"><view class="qty" bindtap="minus">-</view><text class="card-title">{{qty}}</text><view class="qty" bindtap="plus">+</view></view></view>
+    <view class="notice">完成核销或固定地点放置前支持整单退款；不支持顺延。</view>
+  </view>
+
+  <view class="fixed-bottom"><view class="between" style="width: 100%;">
+    <view class="column"><text class="small">合计</text><text class="price" style="font-size: 44rpx;">{{totalText}}</text></view>
+    <view class="btn" style="width: 320rpx;" bindtap="goPickStation">选自提站点</view>
+  </view></view>
+</view>

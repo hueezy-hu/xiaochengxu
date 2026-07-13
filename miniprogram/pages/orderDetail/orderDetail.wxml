@@ -1,0 +1,28 @@
+<view class="screen">
+  <view class="topbar"><view class="back" bindtap="goBack"></view><text class="nav-title">取货券</text><view class="menu-pill">•••</view></view>
+  <view wx:if="{{loading}}" class="card column gap-sm" style="margin-top:24rpx"><text class="tag muted">加载中</text><text class="text">正在读取取货券…</text></view>
+  <view wx:elif="{{order}}" class="ticket">
+    <view class="ticket-head column gap-xs"><text class="small">泰斓 TAILAN · 自提凭证</text><text class="section-title">{{station.name || order.stationName}}</text><text>{{station.exit || 'A口'}} · 凭码自提</text></view>
+    <view class="ticket-body column gap-md">
+      <text wx:if="{{refundText}}" class="tag orange">{{refundText}}</text>
+      <text class="small" style="text-align: center;">核销码</text>
+      <text class="verify-code">{{order.verifyCode}}</text>
+      <view class="dash"></view>
+      <view class="column gap-xs"><text class="card-title">{{order.firstItem.name}} · {{order.firstItem.spec}}</text><text class="text">数量 {{order.firstItem.quantity}} 份 · {{order.amountText}}</text><text class="small">自提窗口：{{deliveryWindow.pickupDate || '明天'}} {{deliveryWindow.arriveAt || ''}}-{{deliveryWindow.leaveAt || ''}}</text></view>
+      <view class="pickup-guide column gap-sm">
+        <text class="card-title">{{order.status === '已放置待自取' ? '商品已放置' : '取货点指引'}}</text>
+        <text class="text">{{order.placementLocationNote || deliveryWindow.locationNote || station.pickupNote || '到站后按商家通知位置取货'}}</text>
+        <text wx:if="{{order.placedAt}}" class="small">放置时间：{{order.placedAt}}</text>
+        <swiper wx:if="{{locationImages.length}}" class="pickup-swiper" indicator-dots>
+          <swiper-item wx:for="{{locationImages}}" wx:key="*this"><image src="{{item}}" mode="aspectFill" style="width: 100%; height: 100%;" /></swiper-item>
+        </swiper>
+      </view>
+      <canvas canvas-id="ticketQr" class="qr-canvas"></canvas>
+    </view>
+  </view>
+
+  <block wx:if="{{order}}">
+    <button class="btn secondary" style="margin: 24rpx 0;" open-type="contact">联系商家</button>
+    <view wx:if="{{canRefund}}" class="btn secondary" bindtap="requestRefund">申请整单退款</view>
+  </block>
+</view>

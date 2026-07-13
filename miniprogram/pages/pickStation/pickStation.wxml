@@ -1,0 +1,37 @@
+<view class="screen" style="padding-bottom: 190rpx;">
+  <view class="topbar"><view class="back" bindtap="goBack"></view><text class="nav-title">选自提站点</text><view class="menu-pill">•••</view></view>
+  <view class="notice">选择站点后，本单会计入该站累计件数。完成交付前支持整单退款；不支持顺延。</view>
+
+  <view class="column gap-md" style="margin-top: 24rpx;">
+    <view wx:if="{{loading}}" class="notice">正在读取可选站点…</view>
+    <view wx:for="{{stations}}" wx:key="_id" class="station-card {{selectedId === item._id ? 'active' : ''}}" bindtap="selectStation" data-id="{{item._id}}">
+      <view class="between"><view class="column gap-xs"><text class="card-title">{{item.stationName}}</text><text class="small">{{item.line}} · {{item.exit}}</text></view><text class="tag {{item.isEmpty ? 'orange' : ''}}">{{item.statusText}}</text></view>
+      <view class="between"><text class="text">已拼 {{item.paid}}/{{item.threshold}} 份</text><text class="small">{{item.leftText}}</text></view>
+      <view class="progress"><view class="progress-inner" style="width: {{item.percent}}%;"></view></view>
+      <view class="station-window"><text>自提窗口 {{item.windowText}}</text><text>{{item.locationNote}}</text></view>
+      <text class="tag {{selectedId === item._id ? '' : 'muted'}}">{{selectedId === item._id ? '已选择' : '选择这个站'}}</text>
+    </view>
+    <view wx:if="{{!loading && stations.length === 0}}" class="notice">本批次站点暂未开放。</view>
+  </view>
+
+  <view class="fixed-bottom"><view class="between" style="width: 100%; align-items: center;">
+    <view class="column"><text class="small">{{skuName}} × {{qty}}</text><text class="price" style="font-size: 40rpx;">{{totalText}}</text></view>
+    <view class="btn {{selectedId && !paying ? '' : 'disabled'}}" style="width: 300rpx;" bindtap="pay">{{paying ? '支付中…' : (selectedId ? '微信支付' : '先选一个站')}}</view>
+  </view></view>
+
+  <view wx:if="{{showCheckoutAuth}}" class="checkout-mask">
+    <view class="checkout-sheet">
+      <text class="checkout-title">完成微信登录后支付</text>
+      <text class="checkout-copy">仅用于生成订单和取货联系，不会影响你已选的商品和站点。</text>
+      <button class="avatar-button checkout-avatar" open-type="chooseAvatar" bindchooseavatar="onCheckoutAvatar">
+        <image wx:if="{{checkoutAvatarFileId}}" class="avatar-large" src="{{checkoutAvatarFileId}}" mode="aspectFill"></image>
+        <view wx:else class="avatar-large avatar-placeholder">我</view>
+      </button>
+      <input class="profile-input" type="nickname" placeholder="填写微信昵称" value="{{checkoutNicknameDraft}}" bindinput="onCheckoutNickname" />
+      <button wx:if="{{phoneOneTapEnabled}}" class="btn secondary" open-type="getPhoneNumber" bindgetphonenumber="getPhoneNumber">一键获取手机号</button>
+      <input class="profile-input" type="number" maxlength="11" placeholder="取货联系手机号" value="{{checkoutPhoneDraft}}" bindinput="onCheckoutPhone" />
+      <view class="btn" bindtap="submitCheckoutAuth">确认并支付</view>
+      <view class="btn secondary" bindtap="closeCheckoutAuth">再想想</view>
+    </view>
+  </view>
+</view>

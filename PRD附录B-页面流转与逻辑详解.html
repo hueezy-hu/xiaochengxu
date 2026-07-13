@@ -1,0 +1,1515 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PRD附录B：页面流转与逻辑详解</title>
+<style>
+:root {
+  --bg: #f6f7f2;
+  --paper: #ffffff;
+  --ink: #20251f;
+  --muted: #5f6a5e;
+  --line: #d8dfd4;
+  --primary: #2f6f4f;
+  --primary-soft: #e9f2eb;
+  --accent: #b76434;
+  --accent-soft: #fff3e8;
+  --code-bg: #101815;
+  --code-ink: #e5f0e8;
+  --nav-w: 292px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 16px;
+  line-height: 1.72;
+  overflow-x: hidden;
+}
+a { color: inherit; text-decoration: none; }
+.progress {
+  position: fixed;
+  z-index: 50;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: var(--primary);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+.shell {
+  display: grid;
+  grid-template-columns: var(--nav-w) minmax(0, 1fr);
+  min-height: 100vh;
+}
+aside {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 28px 18px 22px;
+  border-right: 1px solid var(--line);
+  background: #fbfcf8;
+  overflow-y: auto;
+}
+.brand {
+  display: block;
+  padding: 0 8px 18px;
+  border-bottom: 1px solid var(--line);
+}
+.brand strong {
+  display: block;
+  font-size: 15px;
+  line-height: 1.35;
+}
+.brand span {
+  display: block;
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.toc {
+  display: grid;
+  gap: 4px;
+  padding-top: 16px;
+}
+.toc a {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
+  padding: 7px 9px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.35;
+}
+.toc a.sub {
+  padding-left: 22px;
+  font-size: 13px;
+}
+.toc a:hover,
+.toc a.active {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+main {
+  width: min(100%, 900px);
+  margin: 0 auto;
+  padding: 42px 28px 80px;
+}
+.doc-head {
+  padding: 26px 0 28px;
+  border-bottom: 1px solid var(--line);
+}
+.eyebrow {
+  margin: 0 0 10px;
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+h1 {
+  margin: 0;
+  max-width: 780px;
+  font-size: 34px;
+  line-height: 1.18;
+  letter-spacing: 0;
+}
+.lede {
+  max-width: 720px;
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 17px;
+}
+.quick-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 22px;
+}
+.quick-links a,
+.mobile-toc-btn {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  padding: 9px 12px;
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 14px;
+}
+.stats {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin: 22px 0 0;
+}
+.stats div {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  padding: 12px 10px;
+}
+.stats strong,
+.stats span { display: block; }
+.stats strong { font-size: 21px; line-height: 1.1; color: var(--primary); }
+.stats span { margin-top: 5px; color: var(--muted); font-size: 13px; line-height: 1.35; }
+.article {
+  padding-top: 28px;
+}
+h2, h3, h4 {
+  scroll-margin-top: 20px;
+  letter-spacing: 0;
+}
+h2 {
+  margin: 42px 0 14px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  font-size: 26px;
+  line-height: 1.25;
+}
+h3 {
+  margin: 28px 0 10px;
+  font-size: 20px;
+  line-height: 1.35;
+}
+h4 {
+  margin: 22px 0 8px;
+  color: var(--primary);
+  font-size: 17px;
+  line-height: 1.35;
+}
+p { margin: 10px 0; max-width: 42em; }
+ul, ol {
+  max-width: 42em;
+  margin: 10px 0 16px;
+  padding-left: 1.35em;
+}
+li { margin: 5px 0; }
+strong { font-weight: 800; }
+blockquote {
+  max-width: 42em;
+  margin: 10px 0;
+  border-left: 4px solid var(--primary);
+  border-radius: 0 8px 8px 0;
+  background: var(--primary-soft);
+  padding: 10px 14px;
+  color: #294331;
+}
+hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 30px 0;
+}
+code {
+  border: 1px solid #d9e2d7;
+  border-radius: 6px;
+  background: #f2f6ef;
+  padding: 1px 5px;
+  color: #1f583e;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.92em;
+  word-break: break-word;
+}
+.code-card {
+  max-width: 100%;
+  margin: 14px 0 20px;
+  border: 1px solid #26382f;
+  border-radius: 8px;
+  background: var(--code-bg);
+  overflow: hidden;
+}
+.code-head {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid #26382f;
+  padding: 6px 8px 6px 14px;
+  color: #b8c8bf;
+  font-size: 13px;
+}
+.copy-btn {
+  min-width: 58px;
+  min-height: 34px;
+  border: 1px solid #52675a;
+  border-radius: 7px;
+  background: #1c2923;
+  color: var(--code-ink);
+  cursor: pointer;
+  font: inherit;
+}
+pre {
+  margin: 0;
+  max-width: 100%;
+  overflow: auto;
+  padding: 15px;
+  color: var(--code-ink);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre;
+}
+pre code {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: inherit;
+  font-size: inherit;
+  word-break: normal;
+}
+.mobile-toc-btn {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 40;
+  display: none;
+  color: var(--primary);
+  cursor: pointer;
+}
+.backdrop {
+  display: none;
+}
+.notice {
+  max-width: 42em;
+  margin: 20px 0 0;
+  border: 1px solid #f0d0b5;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  padding: 12px 14px;
+  color: #664021;
+}
+@media (max-width: 960px) {
+  .shell { display: block; }
+  aside {
+    position: fixed;
+    z-index: 45;
+    left: 0;
+    top: 0;
+    width: min(86vw, 330px);
+    transform: translateX(-105%);
+    transition: transform 180ms ease;
+    box-shadow: 8px 0 18px rgba(36, 44, 37, 0.14);
+  }
+  body.toc-open aside { transform: translateX(0); }
+  .backdrop {
+    position: fixed;
+    z-index: 44;
+    inset: 0;
+    background: rgba(19, 28, 22, 0.34);
+  }
+  body.toc-open .backdrop { display: block; }
+  .mobile-toc-btn { display: inline-flex; }
+  main { padding: 32px 18px 72px; }
+}
+@media (max-width: 560px) {
+  body { font-size: 16px; }
+  h1 { font-size: 28px; }
+  h2 { font-size: 23px; }
+  h3 { font-size: 19px; }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stats div:last-child { grid-column: 1 / -1; }
+  .quick-links a { flex: 1 1 calc(50% - 8px); }
+  pre { font-size: 12.5px; }
+}
+</style>
+</head>
+<body>
+<div class="progress" id="readProgress" aria-hidden="true"></div>
+<div class="backdrop" id="backdrop" aria-hidden="true"></div>
+<button class="mobile-toc-btn" id="tocButton" type="button">目录</button>
+<div class="shell">
+  <aside aria-label="章节目录">
+    <a class="brand" href="#top">
+      <strong>PRD附录B：页面流转与逻辑详解</strong>
+      <span>按代码实际行为整理，适合创始人从页面、动作、数据三条线理解产品。</span>
+    </a>
+    <nav class="toc"><a class="main" href="#sec-001">0. 先用一句话讲清这个产品</a>
+<a class="main" href="#sec-002">1. 全站页面地图与跳转树</a>
+<a class="sub" href="#sec-003">1.1 app.json 里实际注册的 14 个页面</a>
+<a class="sub" href="#sec-004">1.2 tabBar 关系</a>
+<a class="sub" href="#sec-005">1.3 全站跳转树</a>
+<a class="main" href="#sec-006">2. 三条核心动线逐步拆解</a>
+<a class="sub" href="#sec-007">2.1 买家线：首页 -&gt; 点单 -&gt; 商品 -&gt; 选站 -&gt; 支付 -&gt; 分享 -&gt; 订单 -&gt; 取货券</a>
+<a class="sub" href="#sec-020">2.2 商家线：商家通道 -&gt; 工作台 -&gt; 创建批次 -&gt; 核销 -&gt; 结束自提 -&gt; 售后</a>
+<a class="sub" href="#sec-029">2.3 系统线：22:00 定时截单 -&gt; 成团推送 -&gt; 10点退款窗口关闭</a>
+<a class="main" href="#sec-036">3. 订单状态机全图</a>
+<a class="sub" href="#sec-037">3.1 批次状态 batches.status</a>
+<a class="sub" href="#sec-038">3.2 站点团状态 batchStations.status</a>
+<a class="sub" href="#sec-039">3.3 订单状态 orders.status</a>
+<a class="sub" href="#sec-040">3.4 售后/退款辅助状态</a>
+<a class="main" href="#sec-041">4. 数据模型讲解：12 个业务集合 + 1 个配置集合</a>
+<a class="sub" href="#sec-042">4.1 主链先看清：batch -&gt; batchStation -&gt; order</a>
+<a class="sub" href="#sec-043">4.2 products：商品 SPU</a>
+<a class="sub" href="#sec-044">4.3 skus：商品规格和价格</a>
+<a class="sub" href="#sec-045">4.4 stations：站点池</a>
+<a class="sub" href="#sec-046">4.5 batches：日批次</a>
+<a class="sub" href="#sec-047">4.6 batchStations：每站拼团进度</a>
+<a class="sub" href="#sec-048">4.7 batchInventory：批次共享库存</a>
+<a class="sub" href="#sec-049">4.8 deliveryWindows：自提窗口和地点</a>
+<a class="sub" href="#sec-050">4.9 orders：买家订单和取货券</a>
+<a class="sub" href="#sec-051">4.10 users：用户资料</a>
+<a class="sub" href="#sec-052">4.11 admins：管理员白名单</a>
+<a class="sub" href="#sec-053">4.12 refunds：退款和售后单</a>
+<a class="sub" href="#sec-054">4.13 verificationLogs：核销日志</a>
+<a class="sub" href="#sec-055">4.14 config：系统配置集合</a>
+<a class="main" href="#sec-056">5. 每页速查卡</a>
+<a class="sub" href="#sec-057">5.1 首页 pages/home/home</a>
+<a class="sub" href="#sec-058">5.2 点单页 pages/catalog/catalog</a>
+<a class="sub" href="#sec-059">5.3 商品详情页 pages/product/product</a>
+<a class="sub" href="#sec-060">5.4 选站点页 pages/pickStation/pickStation</a>
+<a class="sub" href="#sec-061">5.5 支付成功页 pages/paySuccess/paySuccess</a>
+<a class="sub" href="#sec-062">5.6 站点团页 pages/groupPage/groupPage</a>
+<a class="sub" href="#sec-063">5.7 我的订单页 pages/orders/orders</a>
+<a class="sub" href="#sec-064">5.8 取货券页 pages/orderDetail/orderDetail</a>
+<a class="sub" href="#sec-065">5.9 我的页 pages/mine/mine</a>
+<a class="sub" href="#sec-066">5.10 商家工作台 pages/adminHome/adminHome</a>
+<a class="sub" href="#sec-067">5.11 商品管理页 pages/adminProducts/adminProducts</a>
+<a class="sub" href="#sec-068">5.12 创建批次页 pages/adminBatch/adminBatch</a>
+<a class="sub" href="#sec-069">5.13 现场核销页 pages/adminVerify/adminVerify</a>
+<a class="sub" href="#sec-070">5.14 站点池管理页 pages/adminStations/adminStations</a>
+<a class="main" href="#sec-071">6. 为什么这么设计</a>
+<a class="sub" href="#sec-072">6.1 为什么先付款</a>
+<a class="sub" href="#sec-073">6.2 为什么共享库存</a>
+<a class="sub" href="#sec-074">6.3 为什么成团后不回退</a>
+<a class="sub" href="#sec-075">6.4 为什么取货日 10:00 后不可自助退</a>
+<a class="sub" href="#sec-076">6.5 为什么自提窗口前置</a>
+<a class="sub" href="#sec-077">6.6 为什么支付成功后强引导分享但不硬拦截</a>
+<a class="main" href="#sec-078">7. 创始人要特别知道的代码事实差异</a></nav>
+  </aside>
+  <main id="top">
+    <header class="doc-head">
+      <p class="eyebrow">泰斓 TAILAN · 产品说明 HTML 版</p>
+      <h1>PRD附录B：页面流转与逻辑详解</h1>
+      <p class="lede">这不是重新写一份 PRD，而是把原 Markdown 变成更好读的网页：左侧目录负责跳转，正文保留原文细节，代码块和树状图可以一键复制。</p>
+      
+<div class="stats" aria-label="文档统计">
+  <div><strong>894</strong><span>Markdown 行</span></div>
+  <div><strong>14</strong><span>实际页面</span></div>
+  <div><strong>4</strong><span>tabBar</span></div>
+  <div><strong>41</strong><span>云函数 action</span></div>
+  <div><strong>12+1</strong><span>数据集合</span></div>
+</div>
+
+      <div class="quick-links" aria-label="核心章节入口"><a href="#sec-002">全站页面地图</a>
+<a href="#sec-006">三条核心动线</a>
+<a href="#sec-036">订单状态机</a>
+<a href="#sec-041">数据模型</a>
+<a href="#sec-056">每页速查卡</a>
+<a href="#sec-071">为什么这么设计</a></div>
+      <div class="notice">阅读提醒：文档以当前代码实际行为为准，其中“实际差异”部分会指出 PRD 或直觉与代码不一致的地方。</div>
+    </header>
+    <article class="article"><blockquote>本文按当前代码实际行为写，不按理想 PRD 补脑。</blockquote>
+<blockquote>已通读 <code>CLAUDE.md</code>、<code>banlan-cake-prd-v1.5.md</code>（含附录A）、<code>miniprogram/</code> 和 <code>cloudfunctions/api/</code>。</blockquote>
+<blockquote>目标读者是非技术创始人：看完要知道用户、商家、系统到底怎么转起来。</blockquote>
+<blockquote>代码事实：<code>app.json</code> 实际注册 14 个页面，不是 13 个。</blockquote>
+<blockquote>代码事实：云数据库实际是 12 个业务集合 + 1 个 <code>config</code> 配置集合。</blockquote>
+<blockquote>代码事实：单入口云函数 <code>api</code> 实际暴露 41 个 action。</blockquote>
+<blockquote>代码事实：支付当前是 <code>MOCK_PAY = true</code>，点“微信支付”后后端直接模拟支付成功。</blockquote>
+<blockquote>代码事实：支付成功页强引导分享，但不是硬拦截；用户可以直接查看订单或继续购买。</blockquote>
+<blockquote>代码事实：10:00 退款线不是定时任务，而是用户点退款时由 <code>cancelOrder</code> 实时判断。</blockquote>
+<blockquote>代码事实：商家工作台的 <code>manualCutoff</code> 当前调用未定义的 <code>advanceBatchById</code>，按钮会失败；定时器 <code>closeExpired</code> 是可读到实现的。</blockquote>
+<h2 id="sec-001">0. 先用一句话讲清这个产品</h2>
+<p>泰斓 TAILAN 是一个“今天拼，明天到地铁站自提”的微信小程序。</p>
+<p>买家先选甜品，再选地铁站，再付款。</p>
+<p>付款后这单才计入该站点的拼团进度，也才扣共享库存。</p>
+<p>一个站点满门槛就算成团，成团后还能继续卖，直到库存卖完或批次截单。</p>
+<p>商家提前创建明天的批次，同时把每个站点的自提窗口和取货点说明填好。</p>
+<p>用户取货日 10:00 前可以自助退款。</p>
+<p>10:00 后，代码不让用户自助退，只能截图转让取货券，或走商家售后。</p>
+<p>到自提现场，商家用 6 位核销码核销。</p>
+<p>没来取的订单，商家结束本场后会转入“未取货待处理”。</p>
+<hr>
+<h2 id="sec-002">1. 全站页面地图与跳转树</h2>
+<h3 id="sec-003">1.1 app.json 里实际注册的 14 个页面</h3>
+<ol>
+<li><code>pages/home/home</code>：首页，tabBar 第 1 项。</li>
+<li><code>pages/orders/orders</code>：我的订单，tabBar 第 3 项。</li>
+<li><code>pages/mine/mine</code>：我的，tabBar 第 4 项。</li>
+<li><code>pages/catalog/catalog</code>：点单/商品分类，tabBar 第 2 项。</li>
+<li><code>pages/product/product</code>：商品详情页。</li>
+<li><code>pages/pickStation/pickStation</code>：选自提站点页。</li>
+<li><code>pages/paySuccess/paySuccess</code>：支付成功页。</li>
+<li><code>pages/groupPage/groupPage</code>：站点团分享落地页。</li>
+<li><code>pages/orderDetail/orderDetail</code>：订单详情/取货券页。</li>
+<li><code>pages/adminHome/adminHome</code>：商家工作台。</li>
+<li><code>pages/adminProducts/adminProducts</code>：商品管理页。</li>
+<li><code>pages/adminBatch/adminBatch</code>：创建批次页。</li>
+<li><code>pages/adminVerify/adminVerify</code>：现场核销页。</li>
+<li><code>pages/adminStations/adminStations</code>：站点池管理页。</li>
+</ol>
+<h3 id="sec-004">1.2 tabBar 关系</h3>
+<ul>
+<li>tabBar 第 0 位：<code>pages/home/home</code>，文案“首页”。</li>
+<li>tabBar 第 1 位：<code>pages/catalog/catalog</code>，文案“点单”。</li>
+<li>tabBar 第 2 位：<code>pages/orders/orders</code>，文案“我的订单”。</li>
+<li>tabBar 第 3 位：<code>pages/mine/mine</code>，文案“我的”。</li>
+<li>订单角标由 <code>app.updateOrderBadge(count)</code> 设置，固定挂在 index=2，也就是“我的订单”。</li>
+<li>角标数量来自 <code>myOrders</code> 或 <code>getMinePage</code> 后统计：<code>待成团</code>、<code>已成团待截单</code>、<code>待自提</code>。</li>
+<li>tab 页之间跳转必须用 <code>wx.switchTab</code>，代码里首页、团页、我的页都按这个规则写。</li>
+<li>非 tab 页，例如商品详情、选站、支付成功、取货券、商家后台页，用 <code>wx.navigateTo</code> 或 <code>wx.navigateBack</code>。</li>
+</ul>
+<h3 id="sec-005">1.3 全站跳转树</h3>
+<div class="code-card"><div class="code-head"><span>text</span><button type="button" class="copy-btn" data-copy="code-1">复制</button></div><pre id="code-1"><code>小程序启动
+└─ tabBar：首页 pages/home/home
+   ├─ onShow -&gt; app.getCatalogPage() -&gt; action=getCatalogPage
+   ├─ 如果云端无批次且无商品 -&gt; action=initDemo -&gt; 再 action=getCatalogPage
+   ├─ 点“自提自取” -&gt; switchTab -&gt; pages/catalog/catalog
+   ├─ 点“去拼这一批” -&gt; switchTab -&gt; pages/catalog/catalog
+   ├─ 点任意站点卡 -&gt; switchTab -&gt; pages/catalog/catalog
+   ├─ 点“我的订单” -&gt; switchTab -&gt; pages/orders/orders
+   ├─ 点“联系我们” -&gt; open-type=contact，不走云函数
+   ├─ 点“规则说明” -&gt; 打开 ruleSheet 半屏组件，不跳页面
+   ├─ 首次欢迎弹层点“微信一键登录” -&gt; action=saveUserProfile
+   └─ 首次欢迎弹层点“先逛逛” -&gt; 只写本地缓存，不跳页面
+点单 tab：pages/catalog/catalog
+├─ onShow -&gt; app.getCatalogPage() -&gt; action=getCatalogPage
+├─ 点左侧品类 -&gt; 本页切换 activeCategory，不跳页面
+├─ 点商品卡 -&gt; navigateTo -&gt; pages/product/product?productId=&lt;productId&gt;&amp;skuId=&lt;skuId&gt;
+├─ 点“去拼团” -&gt; navigateTo -&gt; pages/product/product?productId=&lt;productId&gt;&amp;skuId=&lt;skuId&gt;
+└─ 分享 -&gt; path=/pages/catalog/catalog
+商品详情：pages/product/product
+├─ onLoad(productId, skuId) -&gt; action=getProductDetail(productId)
+├─ 点返回 -&gt; navigateBack
+├─ 点规格 -&gt; 本页 selectedSkuId 变化，不跳页面
+├─ 点 -/+ -&gt; 本页 qty 变化，不跳页面
+├─ 点“选自提站点” -&gt; navigateTo -&gt; pages/pickStation/pickStation
+│  └─ 参数：batchId=&lt;currentBatch._id&gt;&amp;skuId=&lt;sku._id&gt;&amp;qty=&lt;qty&gt;&amp;skuName=&lt;encodeURIComponent(name spec)&gt;&amp;price=&lt;sku.price&gt;
+└─ 分享 -&gt; path=/pages/product/product?productId=&lt;productId&gt;
+选自提站点：pages/pickStation/pickStation
+├─ onLoad(batchId, skuId, qty, skuName, price)
+├─ 并发调用 action=getStationOptions(batchId) 与 action=getUserProfile
+├─ 点返回 -&gt; navigateBack
+├─ 点站点卡 -&gt; 本页 selectedId=&lt;batchStationId&gt;，不跳页面
+├─ 点“微信支付”但昵称或手机号缺失 -&gt; 打开支付前资料弹层
+├─ 资料弹层点头像 -&gt; wx.cloud.uploadFile 到 avatars/，不走 api action
+├─ 资料弹层点“一键获取手机号” -&gt; action=decodePhoneNumber(code)
+├─ 资料弹层点“确认并支付” -&gt; action=saveUserProfile -&gt; 继续 pay()
+└─ 点“微信支付”且资料齐全 -&gt; action=createOrder -&gt; action=payOrder -&gt; navigateTo pages/paySuccess/paySuccess?orderId=&lt;orderId&gt;&amp;batchStationId=&lt;selectedId&gt;
+支付成功：pages/paySuccess/paySuccess
+├─ onLoad(orderId, batchStationId)
+├─ 并发调用 action=getOrderDetail(orderId)、action=getGroupPage(batchStationId)、action=getPickupNoticeConfig
+├─ 再异步调用 action=myOrders，用于刷新订单角标
+├─ 如果订单状态是 支付后退款中/已退款 -&gt; 展示“本单已自动退款”，隐藏分享区
+├─ 点“分享到微信群” -&gt; open-type=share -&gt; path=/pages/groupPage/groupPage?batchStationId=&lt;batchStationId&gt;
+├─ 点“开启自提通知” -&gt; wx.requestSubscribeMessage -&gt; action=markPickupSubscribed(orderId)
+├─ 点“查看订单”且有 order -&gt; navigateTo -&gt; pages/orderDetail/orderDetail?orderId=&lt;orderId&gt;
+├─ 点“查看订单”但没有 order -&gt; switchTab -&gt; pages/orders/orders
+└─ 点“继续购买”或退款卡“回首页看看” -&gt; switchTab -&gt; pages/home/home
+站点团页：pages/groupPage/groupPage
+├─ onLoad(batchStationId)
+├─ 并发调用 action=getGroupPage(batchStationId) 与 action=getCatalogPage
+├─ 点“去参团” -&gt; switchTab -&gt; pages/catalog/catalog
+│  └─ 注意：按钮带 productid/skuid，但 goBuy 没使用参数，所以实际只回点单页
+├─ 点“再喊几个人” -&gt; open-type=share -&gt; path=/pages/groupPage/groupPage?batchStationId=&lt;batchStationId&gt;
+├─ 点“我也要买” -&gt; switchTab -&gt; pages/home/home
+└─ 注意：代码写的是 oonShareTimeline，不是 onShareTimeline，所以朋友圈分享回调实际不会生效
+我的订单 tab：pages/orders/orders
+├─ onShow -&gt; action=myOrders
+├─ 如果从“我的”页跳入，先读本地 ordersFilter 决定默认筛选
+├─ 点筛选 tab -&gt; 本页过滤 all/待成团/待自提/已完成，不跳页面
+├─ 点订单卡 -&gt; navigateTo -&gt; pages/orderDetail/orderDetail?orderId=&lt;orderId&gt;
+├─ 点“喊人拼团” -&gt; navigateTo -&gt; pages/groupPage/groupPage?batchStationId=&lt;batchStationId&gt;
+└─ 点“10点前可退” -&gt; modal确认 -&gt; action=cancelOrder(orderId) -&gt; 本页 reload
+取货券：pages/orderDetail/orderDetail
+├─ onLoad(orderId 或 id) -&gt; action=getOrderDetail(orderId)
+├─ 点返回 -&gt; navigateBack
+├─ 点“联系商家” -&gt; open-type=contact，不走 api action
+├─ 点“取货日10点前自助退款” -&gt; modal确认 -&gt; action=cancelOrder(orderId) -&gt; reload
+└─ 点“申请售后” -&gt; ActionSheet：商家违约退款/申请顺延/联系商家
+   ├─ 商家违约退款 -&gt; action=applyAfterSale(orderId,type=refund,reason)
+   ├─ 申请顺延 -&gt; action=applyAfterSale(orderId,type=postpone,reason)
+   └─ 联系商家 -&gt; showToast 提醒点微信客服
+我的 tab：pages/mine/mine
+├─ onShow -&gt; action=getMinePage
+├─ 点“待成团/待自提/全部订单” -&gt; app.setOrdersFilter(status) -&gt; switchTab pages/orders/orders
+├─ 点“联系商家” -&gt; open-type=contact
+├─ 点“规则说明” -&gt; ruleSheet 半屏组件，不跳页面
+├─ 已是管理员时点“商家管理” -&gt; navigateTo pages/adminHome/adminHome
+├─ 已是管理员时点“现场核销” -&gt; navigateTo pages/adminVerify/adminVerify
+└─ 点底部“商家通道” -&gt; 如果 isAdmin 直接 navigateTo adminHome；否则 action=bindAdmin -&gt; 成功后 navigateTo adminHome
+商家工作台：pages/adminHome/adminHome
+├─ onShow -&gt; action=checkAdmin；失败后 switchTab pages/mine/mine
+├─ 成功后并发 action=adminDashboard 与 action=applyAfterSale(operation=listPending)
+├─ 点返回 -&gt; switchTab pages/mine/mine
+├─ 点“开始核销” -&gt; navigateTo pages/adminVerify/adminVerify
+├─ 点“备料清单” -&gt; navigateTo pages/adminVerify/adminVerify
+├─ 点“我已到达” -&gt; action=markArrived(deliveryWindowId=dw-&lt;第一个站点团id&gt;)
+├─ 点“手动成团” -&gt; action=manualFormGroup(batchStationId)
+├─ 点“手动截单” -&gt; action=manualCutoff(batchId)
+│  └─ 注意：当前 action 内调用未定义 advanceBatchById，实际会失败
+├─ 点“更多操作” -&gt; ActionSheet
+│  ├─ 修改自提窗口 -&gt; 打开本页窗口表单 -&gt; action=setDeliveryWindow(deliveryWindow)
+│  ├─ 延长截止时间 -&gt; action=extendDeadline(batchId, deadlineAt=现在+24小时)
+│  └─ 关团退款 -&gt; 二次确认 -&gt; action=closeGroupRefund(batchStationId)
+├─ 点“审核通过” -&gt; action=reviewRefund(refundId, approve=true)
+├─ 点“驳回” -&gt; action=reviewRefund(refundId, approve=false)
+├─ 点未取货“标记顺延” -&gt; action=markOrderPostponed(orderId,note)
+├─ 点未取货“退款” -&gt; action=adminRefundOrder(orderId,reason=未取货商家退款)
+├─ 点“重试退款” -&gt; action=retryRefunds
+├─ 点“商品管理” -&gt; navigateTo pages/adminProducts/adminProducts
+├─ 点“创建批次” -&gt; navigateTo pages/adminBatch/adminBatch
+├─ 点“现场核销” -&gt; navigateTo pages/adminVerify/adminVerify
+└─ 点“站点管理” -&gt; navigateTo pages/adminStations/adminStations
+商品管理：pages/adminProducts/adminProducts
+├─ onShow -&gt; action=checkAdmin，要求 role=superAdmin
+├─ 成功后 action=listProducts
+├─ 点商品卡 -&gt; 本页载入商品表单，不跳页面
+├─ 点“上传图片” -&gt; wx.chooseMedia -&gt; wx.cloud.uploadFile 到 products/
+├─ 点“删除” -&gt; 本页移除 imageFileIds，不走 action
+├─ 点“保存商品” -&gt; action=saveProduct(product)
+├─ 点 SKU 行 -&gt; 本页载入 SKU 表单，不跳页面
+├─ 点“+新SKU” -&gt; 本页清空 SKU 表单
+├─ 点“保存上架” -&gt; action=saveSku(sku,status=上架)
+└─ 点“保存下架” -&gt; action=saveSku(sku,status=下架)
+创建批次：pages/adminBatch/adminBatch
+├─ onShow -&gt; action=checkAdmin，要求 role=superAdmin
+├─ 成功后并发 action=listStations 与 action=listProducts
+├─ 点返回 -&gt; navigateBack
+├─ 点站点行 -&gt; 本页 toggleStation，不跳页面
+├─ 点“+照片” -&gt; wx.chooseMedia -&gt; wx.cloud.uploadFile 到 pickup/
+├─ 点照片“×” -&gt; 本页移除 locationImages，不走 action
+├─ 点 SKU 行 -&gt; 本页 toggleSku，不跳页面
+└─ 点“发布批次 · 各站开团” -&gt; action=createBatch(batch) -&gt; 成功后 navigateBack
+现场核销：pages/adminVerify/adminVerify
+├─ onShow -&gt; action=checkAdmin，要求 isAdmin
+├─ 成功后 action=adminDashboard，筛出状态为 待自提/已成团继续接单/拼团中 的站点团
+├─ 选站点 picker -&gt; 本页 batchStationId 改变 -&gt; action=prepList(batchStationId)
+├─ 点返回 -&gt; navigateBack
+├─ 输入 6 位码点“核销” -&gt; action=verifyOrder(code,method=input)
+├─ 点“扫码核销” -&gt; wx.scanCode -&gt; parseScanCode -&gt; action=verifyOrder(code,method=scan)
+├─ 点“我已到达” -&gt; action=markArrived(deliveryWindowId=dw-&lt;batchStationId&gt;)
+└─ 点“结束本场自提” -&gt; modal确认 -&gt; action=markNoShowOrders(batchStationId)
+站点池管理：pages/adminStations/adminStations
+├─ onShow -&gt; action=checkAdmin，要求 role=superAdmin
+├─ 成功后 action=listStations
+├─ 点返回 -&gt; navigateBack
+├─ 点“+新增” -&gt; 本页打开新增表单
+├─ 点站点行 -&gt; 本页打开编辑表单
+├─ 点“切换” -&gt; 本页 status 在 active/disabled 之间切换
+├─ 点“保存” -&gt; action=saveStation(station)
+└─ 点“取消” -&gt; 本页关闭表单</code></pre></div>
+<hr>
+<h2 id="sec-006">2. 三条核心动线逐步拆解</h2>
+<h3 id="sec-007">2.1 买家线：首页 -&gt; 点单 -&gt; 商品 -&gt; 选站 -&gt; 支付 -&gt; 分享 -&gt; 订单 -&gt; 取货券</h3>
+<h4 id="sec-008">买家线第 1 步：小明打开首页 <code>pages/home/home</code></h4>
+<ul>
+<li>用户看到什么：泰斓 TAILAN 的 hero 图、品牌文案、“自提自取”入口、“今天拼 · 明天取”批次卡、布吉/大学城站点卡、规则说明。</li>
+<li>用户点什么：可以点“自提自取”、站点卡、“去拼这一批”，也可以先看规则。</li>
+<li>前端做什么：<code>home.onShow()</code> 先尝试读 <code>tailanHomeCache</code>，再调用 <code>app.getCatalogPage()</code>。</li>
+<li>调哪个 action：<code>getCatalogPage</code>。</li>
+<li>数据库读什么：<code>products</code>、<code>skus</code>、当前 <code>batches</code>、当前批次的 <code>batchStations</code>、<code>batchInventory</code>、<code>stations</code>、<code>deliveryWindows</code>。</li>
+<li>数据库写什么：正常不写；如果没有批次且没有商品，并且本地没标记初始化过，会自动调用 <code>initDemo</code> 写演示数据。</li>
+<li>页面如何反馈：有缓存先秒开；云端返回后刷新站点进度、门槛、窗口、库存与首页主图。</li>
+<li>例子：小明打开首页，看到“布吉站已拼 3/5 份，还差 2 份成团”。</li>
+</ul>
+<h4 id="sec-009">买家线第 2 步：小明从首页进点单页 <code>pages/catalog/catalog</code></h4>
+<ul>
+<li>用户看到什么：左边是分类，右边是商品卡；每个商品显示图、描述、剩余份数、起售价、“去拼团”。</li>
+<li>用户点什么：点“自提自取”或站点卡后进入点单页。</li>
+<li>前端做什么：<code>home.goCatalog()</code> 执行 <code>wx.switchTab({ url:&#x27;/pages/catalog/catalog&#x27; })</code>。</li>
+<li>调哪个 action：进入 catalog 后 <code>catalog.onShow()</code> 再调用 <code>getCatalogPage</code>。</li>
+<li>数据库读什么：仍是商品、SKU、当前批次、站点团、共享库存。</li>
+<li>数据库写什么：不写。</li>
+<li>页面如何反馈：按 <code>products.category</code> 生成分类；按 <code>batchInventory.availableQty</code> 算剩余份数。</li>
+<li>例子：小明点“糯香经典”，看到“蝶糯桑卡雅 ¥6起，剩 20 份”。</li>
+</ul>
+<h4 id="sec-010">买家线第 3 步：小明进商品详情页 <code>pages/product/product</code></h4>
+<ul>
+<li>用户看到什么：商品图片轮播、分类、库存、商品描述、规格、数量加减、底部合计和“选自提站点”。</li>
+<li>用户点什么：点商品卡或“去拼团”。</li>
+<li>前端做什么：<code>catalog.goProduct()</code> 执行 <code>navigateTo(&#x27;/pages/product/product?productId=...&amp;skuId=...&#x27;)</code>。</li>
+<li>调哪个 action：<code>getProductDetail(productId)</code>。</li>
+<li>数据库读什么：<code>products</code> 当前商品、该商品的 <code>skus</code>、当前接单中的 <code>batches</code>、该批次里这些 SKU 的 <code>batchInventory</code>。</li>
+<li>数据库写什么：不写。</li>
+<li>页面如何反馈：展示当前 SKU 价格和库存；点 <code>+</code> 会检查本批库存上限，超过就 toast “本批库存只剩 X 份啦”。</li>
+<li>例子：小明选“蝶糯桑卡雅 1个”，数量点到 2，底部合计变成 ¥12。</li>
+</ul>
+<h4 id="sec-011">买家线第 4 步：小明选站点 <code>pages/pickStation/pickStation</code></h4>
+<ul>
+<li>用户看到什么：站点卡，每张卡有站名、线路、出口、已拼份数、还差几份、自提窗口、取货点说明。</li>
+<li>用户点什么：点“选自提站点”，然后点“布吉站”。</li>
+<li>前端做什么：<code>product.goPickStation()</code> 带上 <code>batchId</code>、<code>skuId</code>、<code>qty</code>、<code>skuName</code>、<code>price</code> 跳转。</li>
+<li>调哪个 action：<code>getStationOptions(batchId)</code> 和 <code>getUserProfile</code> 并发调用。</li>
+<li>数据库读什么：<code>batchStations</code>、<code>stations</code>、<code>deliveryWindows</code>、<code>users</code>、<code>config</code>、<code>orders</code>、<code>admins</code>。</li>
+<li>数据库写什么：不写。</li>
+<li>页面如何反馈：选中站点后底部按钮从“先选一个站”变成“微信支付”。</li>
+<li>例子：小明点布吉站，底部显示“蝶糯桑卡雅 1个 × 2，¥12，微信支付”。</li>
+</ul>
+<h4 id="sec-012">买家线第 5 步：支付前补资料</h4>
+<ul>
+<li>用户看到什么：如果昵称或手机号缺失，底部弹层出现“完成微信登录后支付”。</li>
+<li>用户点什么：填昵称、填手机号，或者有企业能力时点“一键获取手机号”。</li>
+<li>前端做什么：<code>pickStation.needsCheckoutAuth()</code> 检查昵称和手机号；缺失就 <code>showCheckoutAuth=true</code>。</li>
+<li>调哪个 action：手填后 <code>saveUserProfile</code>；一键手机号时 <code>decodePhoneNumber</code>。</li>
+<li>数据库读什么：<code>users</code>、<code>config</code>。</li>
+<li>数据库写什么：<code>users</code> 写入 <code>openid</code>、<code>nickname</code>、<code>avatarFileId</code>、<code>phone</code>。</li>
+<li>页面如何反馈：资料保存成功后关闭弹层，自动继续 <code>pay()</code>。</li>
+<li>例子：小明第一次下单，填写“小明”和 138 开头手机号，确认后继续支付。</li>
+</ul>
+<h4 id="sec-013">买家线第 6 步：创建订单 <code>createOrder</code></h4>
+<ul>
+<li>用户看到什么：按钮显示“支付中...”。</li>
+<li>用户点什么：点“微信支付”。</li>
+<li>前端做什么：<code>pickStation.pay()</code> 先调用 <code>createOrder</code>。</li>
+<li>调哪个 action：<code>createOrder({ batchStationId, items:[{skuId,quantity}], phone })</code>。</li>
+<li>数据库读什么：<code>batchStations</code>、<code>batches</code>、<code>skus</code>、<code>batchInventory</code>。</li>
+<li>数据库写什么：<code>orders</code> 新增一条 <code>status=&#x27;待支付&#x27;</code> 的订单。</li>
+<li>重要边界：创建订单不扣库存、不加进度；只是固化价格快照和 6 位核销码。</li>
+<li>失败条件：批次不是 <code>接单中</code>、<code>deadlineAt</code> 已过、站点团状态不是 <code>拼团中/已成团继续接单</code>、SKU 下架、SKU 未加入本批次。</li>
+<li>页面如何反馈：失败 toast；成功得到 <code>orderId</code> 后继续支付。</li>
+<li>例子：小明布吉站买 2 份，<code>orders.items</code> 固化单价 600 分，<code>amount=1200</code>。</li>
+</ul>
+<h4 id="sec-014">买家线第 7 步：模拟支付成功 <code>payOrder</code></h4>
+<ul>
+<li>用户看到什么：仍在“支付中...”，随后跳到支付成功页。</li>
+<li>用户点什么：不用再点，前端自动继续。</li>
+<li>前端做什么：<code>pickStation.pay()</code> 调 <code>payOrder({orderId})</code>。</li>
+<li>调哪个 action：<code>payOrder</code>；当前 <code>MOCK_PAY=true</code>，所以直接进 <code>confirmPaidOrder</code>。</li>
+<li>数据库读什么：事务内读 <code>orders</code>、<code>batches</code>、<code>batchStations</code>、<code>deliveryWindows</code>、<code>batchInventory</code>。</li>
+<li>数据库写什么：事务内更新 <code>orders</code>、<code>batchStations</code>、<code>batchInventory</code>，必要时更新 <code>batches</code> 和新增 <code>refunds</code>。</li>
+<li>成功路径：扣库存，加站点已付件数，加已付订单数，设置团长 openid，跨门槛时触发成团。</li>
+<li>失败路径：如果支付回调时批次已截单、站点不可下单或库存不足，整单自动退款。</li>
+<li>页面如何反馈：成功后 <code>navigateTo(&#x27;/pages/paySuccess/paySuccess?orderId=...&amp;batchStationId=...&#x27;)</code>。</li>
+<li>例子：布吉原来 3/5，小明买 2 份后变成 5/5，布吉站点团跨过门槛。</li>
+</ul>
+<h4 id="sec-015">买家线第 8 步：成团触发与订阅推送</h4>
+<ul>
+<li>用户看到什么：支付成功页显示“团开起来了，你是发起人！”或“支付成功！”。</li>
+<li>用户点什么：可以点“分享到微信群”或“开启自提通知”。</li>
+<li>前端做什么：<code>paySuccess.load()</code> 调 <code>getOrderDetail</code>、<code>getGroupPage</code>、<code>getPickupNoticeConfig</code>。</li>
+<li>调哪个 action：<code>getOrderDetail</code>、<code>getGroupPage</code>、<code>getPickupNoticeConfig</code>，点订阅后 <code>markPickupSubscribed</code>。</li>
+<li>数据库读什么：<code>orders</code>、<code>batchStations</code>、<code>stations</code>、<code>deliveryWindows</code>、<code>config</code>。</li>
+<li>数据库写什么：点订阅后 <code>orders.subscribePickupNotice=true</code>。</li>
+<li>成团推送实际发生点：不是 22:00 定时截单，而是 <code>confirmPaidOrder</code> 发现本次付款让站点跨过门槛时，调用 <code>pushPickupNoticeIfConfigured(batchStationId)</code>。</li>
+<li>推送过滤条件：只给该站点 <code>status=&#x27;待自提&#x27;</code> 且 <code>subscribePickupNotice=true</code> 的订单发。</li>
+<li>页面如何反馈：订阅完成 toast “站点团成团时会提醒你”。</li>
+<li>例子：小明买完让布吉站成团，之前同意订阅的布吉买家会收到自提通知。</li>
+</ul>
+<h4 id="sec-016">买家线第 9 步：分享不是硬门槛</h4>
+<ul>
+<li>用户看到什么：支付成功页把“分享到微信群”放在主卡片里，文案会说还差几份或已成团。</li>
+<li>用户点什么：可以点分享，也可以点“查看订单”或“继续购买”。</li>
+<li>前端做什么：分享按钮是 <code>open-type=share</code>，路径为 <code>pages/groupPage/groupPage?batchStationId=...</code>。</li>
+<li>调哪个 action：分享动作本身不走云函数；被分享者打开团页才调 <code>getGroupPage</code>。</li>
+<li>数据库读什么：无。</li>
+<li>数据库写什么：无。</li>
+<li>页面如何反馈：微信原生分享面板弹出。</li>
+<li>例子：小明可以把布吉团发群里，但系统不会强制他必须发完才能看订单。</li>
+</ul>
+<h4 id="sec-017">买家线第 10 步：被分享者打开站点团页 <code>groupPage</code></h4>
+<ul>
+<li>用户看到什么：站点名、进度条、还差几份、已参团人数、正在拼的 SKU 列表。</li>
+<li>用户点什么：点“去参团”或“我也要买”。</li>
+<li>前端做什么：<code>groupPage.load()</code> 并发调用 <code>getGroupPage</code> 和 <code>getCatalogPage</code>。</li>
+<li>调哪个 action：<code>getGroupPage(batchStationId)</code>、<code>getCatalogPage</code>。</li>
+<li>数据库读什么：站点团、批次、站点、窗口、商品、SKU、库存。</li>
+<li>数据库写什么：不写。</li>
+<li>页面如何反馈：可买时按钮显示“去参团”；售罄或暂停时显示“已售罄/暂停中”。</li>
+<li>注意：<code>goBuy</code> 实际只 <code>switchTab</code> 到点单页，没有把团页按钮上的 productid/skuid 继续带下去。</li>
+</ul>
+<h4 id="sec-018">买家线第 11 步：看订单列表 <code>orders</code></h4>
+<ul>
+<li>用户看到什么：全部、待成团、待自提、已完成四个筛选；每张订单有状态、核销码、商品、站点、退款提示。</li>
+<li>用户点什么：点订单卡，或点“喊人拼团”，或点“10点前可退”。</li>
+<li>前端做什么：<code>orders.onShow()</code> 调 <code>myOrders</code>，并刷新 tabBar 角标。</li>
+<li>调哪个 action：<code>myOrders</code>；退款时 <code>cancelOrder</code>。</li>
+<li>数据库读什么：<code>orders</code>，再关联 <code>stations</code> 和 <code>batchStations</code>。</li>
+<li>数据库写什么：看列表不写；退款会写 <code>orders</code>、<code>batchStations</code>、<code>batchInventory</code>、<code>refunds</code>。</li>
+<li>页面如何反馈：退款成功 toast “已提交退款”，然后重新加载订单。</li>
+</ul>
+<h4 id="sec-019">买家线第 12 步：看取货券 <code>orderDetail</code></h4>
+<ul>
+<li>用户看到什么：站名、出口、凭码自提、大号 6 位核销码、二维码、商品数量金额、自提窗口、取货点指引、取货点照片。</li>
+<li>用户点什么：点“联系商家”、点“取货日10点前自助退款”、点“申请售后”。</li>
+<li>前端做什么：<code>orderDetail.load()</code> 调 <code>getOrderDetail</code>；二维码由本地 <code>weapp-qrcode.js</code> 画在 canvas。</li>
+<li>调哪个 action：<code>getOrderDetail(orderId)</code>；退款时 <code>cancelOrder</code>；售后时 <code>applyAfterSale</code>。</li>
+<li>数据库读什么：<code>orders</code>、<code>batchStations</code>、<code>stations</code>、<code>deliveryWindows</code>。</li>
+<li>数据库写什么：看券不写；退款和售后会写。</li>
+<li>页面如何反馈：退款/售后提交后 toast，并重新加载订单详情。</li>
+<li>例子：小明把布吉站取货券截图给朋友，朋友到站报 6 位码也能取，因为核销只认码。</li>
+</ul>
+<h3 id="sec-020">2.2 商家线：商家通道 -&gt; 工作台 -&gt; 创建批次 -&gt; 核销 -&gt; 结束自提 -&gt; 售后</h3>
+<h4 id="sec-021">商家线第 1 步：从“我的”页进入商家通道</h4>
+<ul>
+<li>用户看到什么：<code>pages/mine/mine</code> 底部有“商家通道”。</li>
+<li>用户点什么：点“商家通道”。</li>
+<li>前端做什么：如果 <code>isAdmin=true</code>，直接 <code>navigateTo(adminHome)</code>；否则调用 <code>bindAdmin</code>。</li>
+<li>调哪个 action：<code>getMinePage</code>、<code>bindAdmin</code>。</li>
+<li>数据库读什么：<code>admins</code>、<code>users</code>、<code>orders</code>、<code>config</code>。</li>
+<li>数据库写什么：如果 <code>admins</code> 为空，<code>bindAdmin</code> 写入 <code>admins/admin-&lt;openid&gt;</code>，角色 <code>superAdmin</code>。</li>
+<li>页面如何反馈：首个管理员绑定成功后进入商家工作台；已有管理员时弹窗显示 openid，可复制给现有超管。</li>
+</ul>
+<h4 id="sec-022">商家线第 2 步：进入商家工作台 <code>adminHome</code></h4>
+<ul>
+<li>用户看到什么：今日自提、开始核销、我已到达、各站进度、待处理、商品/批次/核销/站点入口。</li>
+<li>用户点什么：可以进入核销、创建批次、商品管理、站点管理，也可以手动成团、更多操作、处理售后。</li>
+<li>前端做什么：<code>adminHome.guard()</code> 先查权限，<code>load()</code> 再拉工作台数据。</li>
+<li>调哪个 action：<code>checkAdmin</code>、<code>adminDashboard</code>、<code>applyAfterSale(operation=listPending)</code>。</li>
+<li>数据库读什么：<code>admins</code>、<code>batches</code>、<code>batchStations</code>、<code>stations</code>、<code>deliveryWindows</code>、<code>refunds</code>、<code>orders</code>。</li>
+<li>数据库写什么：刚进入不写。</li>
+<li>页面如何反馈：无权限 toast 后回“我的”；有权限显示角色和各站进度。</li>
+</ul>
+<h4 id="sec-023">商家线第 3 步：创建批次 <code>adminBatch</code></h4>
+<ul>
+<li>用户看到什么：批次名称、取货日、截止时间戳、开放站点、每站窗口、取货点照片、门槛、共享库存。</li>
+<li>用户点什么：点“创建批次”进入；填写窗口；勾选站点和 SKU；最后点“发布批次 · 各站开团”。</li>
+<li>前端做什么：<code>adminBatch.guard()</code> 要求 <code>superAdmin</code>，<code>load()</code> 拉站点和商品。</li>
+<li>调哪个 action：<code>checkAdmin</code>、<code>listStations</code>、<code>listProducts</code>、<code>createBatch</code>。</li>
+<li>数据库读什么：<code>admins</code>、<code>stations</code>、<code>products</code>、<code>skus</code>。</li>
+<li>数据库写什么：<code>createBatch</code> 写 <code>batches</code>、每个站点一条 <code>batchStations</code>、每个站点一条 <code>deliveryWindows</code>、每个 SKU 一条 <code>batchInventory</code>。</li>
+<li>页面如何反馈：成功 toast “批次已发布，各站开团”，然后返回上一页。</li>
+<li>代码事实：页面初始 <code>thresholdN</code> 是 4；如果商家不改，前端会把 4 发给后端。后端默认值是 5，但只有前端没传时才生效。</li>
+<li>例子：老板创建 7月10日批次，开放布吉和大学城，布吉 18:30-19:10，大学城 19:45-20:25，每个 SKU 20 份共享库存。</li>
+</ul>
+<h4 id="sec-024">商家线第 4 步：手动成团与更多操作</h4>
+<ul>
+<li>用户看到什么：工作台每个站点团有进度条，“手动成团”和“更多操作”。</li>
+<li>用户点什么：点“手动成团”。</li>
+<li>前端做什么：<code>adminHome.action()</code> 读取 <code>data-action=&#x27;manualFormGroup&#x27;</code> 和 <code>data-id=batchStationId</code>。</li>
+<li>调哪个 action：<code>manualFormGroup(batchStationId)</code>。</li>
+<li>数据库读什么：主要由云函数直接按 id 更新。</li>
+<li>数据库写什么：<code>batchStations.status=&#x27;已成团继续接单&#x27;</code>，<code>formedAt=now</code>，同站点 <code>orders.status=&#x27;待成团&#x27;</code> 批量改为 <code>已成团待截单</code>。</li>
+<li>页面如何反馈：toast “已手动成团”，然后工作台 reload。</li>
+<li>注意：手动成团不会直接把这些订单改成 <code>待自提</code>，而是 <code>已成团待截单</code>。</li>
+</ul>
+<h4 id="sec-025">商家线第 5 步：修改窗口、延长截止、关团退款</h4>
+<ul>
+<li>用户看到什么：点“更多操作”后出现 ActionSheet：修改自提窗口、延长截止时间、关团退款。</li>
+<li>用户点什么：选其中一个。</li>
+<li>前端做什么：修改窗口打开本页弹层；延长截止直接把 deadlineAt 设为当前时间 + 24 小时；关团退款要二次确认。</li>
+<li>调哪个 action：<code>setDeliveryWindow</code>、<code>extendDeadline</code>、<code>closeGroupRefund</code>。</li>
+<li>数据库读什么：工作台已读过 <code>deliveryWindows</code>；操作时主要按 id 写。</li>
+<li>数据库写什么：窗口写 <code>deliveryWindows</code>；延长写 <code>batches.deadlineAt</code>；关团退款写 <code>orders</code>、<code>batchStations</code>、<code>batchInventory</code>、<code>refunds</code>。</li>
+<li>页面如何反馈：toast 后 reload。</li>
+<li>例子：布吉站下雨临时换到 B 口，老板用“修改自提窗口”改 <code>locationNote</code>，买家取货券下次打开会看到新说明。</li>
+</ul>
+<h4 id="sec-026">商家线第 6 步：现场核销 <code>adminVerify</code></h4>
+<ul>
+<li>用户看到什么：站点选择器、6 位码输入框、扫码核销、本场进度、备料清单、订单明细。</li>
+<li>用户点什么：选站点，输入顾客报码，点“核销”；或点“扫码核销”。</li>
+<li>前端做什么：<code>adminVerify.loadStations()</code> 从工作台数据筛出进行中的站点团，再 <code>prepList</code> 拉备料。</li>
+<li>调哪个 action：<code>checkAdmin</code>、<code>adminDashboard</code>、<code>prepList</code>、<code>verifyOrder</code>。</li>
+<li>数据库读什么：<code>admins</code>、<code>batchStations</code>、<code>orders</code>。</li>
+<li>数据库写什么：核销成功时 <code>orders.status=&#x27;已完成&#x27;</code>，写 <code>orders.verifiedAt</code>，并新增 <code>verificationLogs</code>。</li>
+<li>页面如何反馈：toast “核销成功”，本场进度刷新。</li>
+<li>二次核销：如果订单已经 <code>已完成</code>，<code>verifyOrder</code> 返回“该码已核销过”。</li>
+<li>例子：小明到布吉站报码 638274，商家输入后订单变成已完成，日志记录核销人和方式。</li>
+</ul>
+<h4 id="sec-027">商家线第 7 步：结束本场自提</h4>
+<ul>
+<li>用户看到什么：现场核销页有“结束本场自提”。</li>
+<li>用户点什么：点按钮，看到确认弹窗。</li>
+<li>前端做什么：计算还有多少单未核销，提示将转入“未取货待处理”。</li>
+<li>调哪个 action：<code>markNoShowOrders(batchStationId)</code>。</li>
+<li>数据库读什么：不需要先读，直接按条件更新。</li>
+<li>数据库写什么：把该站点 <code>orders.status=&#x27;待自提&#x27;</code> 的订单批量改成 <code>未取货待处理</code>。</li>
+<li>页面如何反馈：toast “已结束，转待处理 X 单”，然后重新拉 <code>prepList</code>。</li>
+<li>例子：大学城站 10 单里核销了 8 单，结束本场后剩下 2 单进入待处理。</li>
+</ul>
+<h4 id="sec-028">商家线第 8 步：售后与未取货处理</h4>
+<ul>
+<li>用户看到什么：工作台“待处理”里有退款待审核数量、未取货待处理数量、重试退款按钮。</li>
+<li>用户点什么：退款申请点“审核通过/驳回”；未取货订单点“标记顺延/退款”。</li>
+<li>前端做什么：通过不同按钮调用不同 action。</li>
+<li>调哪个 action：<code>reviewRefund</code>、<code>markOrderPostponed</code>、<code>adminRefundOrder</code>、<code>retryRefunds</code>。</li>
+<li>数据库读什么：<code>refunds</code>、<code>orders</code>、必要时 <code>batchStations</code> 和 <code>batchInventory</code>。</li>
+<li>数据库写什么：通过退款会走统一 <code>refundOrder</code>，写 <code>orders.status=&#x27;已退款&#x27;</code>、回退 <code>batchStations</code> 件数和订单数、回补 <code>batchInventory</code>、新增或更新 <code>refunds</code>。</li>
+<li>页面如何反馈：toast 后 reload。</li>
+<li>代码事实：<code>reviewRefund</code> 的驳回分支只更新 <code>refunds.status=&#x27;已驳回&#x27;</code>，没有同步更新 <code>orders.afterSaleStatus/refundStatus</code>；订单页可能仍显示审核中，后续应修。</li>
+</ul>
+<h3 id="sec-029">2.3 系统线：22:00 定时截单 -&gt; 成团推送 -&gt; 10点退款窗口关闭</h3>
+<h4 id="sec-030">系统线第 1 步：定时器如何触发</h4>
+<ul>
+<li>用户看到什么：用户无感知。</li>
+<li>商家看到什么：下一次打开工作台时看到批次/站点状态变化。</li>
+<li>前端做什么：没有前端参与。</li>
+<li>调哪个 action：云函数入口检测 <code>event.Type===&#x27;Timer&#x27;</code>、<code>event.TriggerName</code> 或 <code>context.triggerName</code>，自动把 action 设成 <code>closeExpired</code>。</li>
+<li>数据库读什么：<code>batches</code> 中 <code>status=&#x27;接单中&#x27;</code> 且 <code>deadlineAt &lt; now()</code> 的批次。</li>
+<li>数据库写什么：后续步骤写。</li>
+<li>频率：<code>cloudfunctions/api/config.json</code> 配的是每 10 分钟一次。</li>
+</ul>
+<h4 id="sec-031">系统线第 2 步：22:00 后批次推进</h4>
+<ul>
+<li>用户看到什么：如果还在首页或点单页，下一次刷新会看到批次状态变化或无可下单站点。</li>
+<li>商家看到什么：批次变为已截单，未成团站点关闭，已成团站点待自提。</li>
+<li>前端做什么：无。</li>
+<li>调哪个 action：<code>closeExpired</code>。</li>
+<li>数据库读什么：每个过期批次的 <code>batchStations</code>。</li>
+<li>数据库写什么：<code>batches.status=&#x27;已截单&#x27;</code>，<code>closedAt</code>、<code>closedBy</code>、<code>closeReason=&#x27;截止时间到达&#x27;</code>。</li>
+<li>判断规则：<code>advanceBatchLifecycle</code> 用 <code>formedAt</code>、站点状态、或 <code>paidItemCount &gt;= thresholdN</code> 判断站点是否已成团。</li>
+</ul>
+<h4 id="sec-032">系统线第 3 步：未成团站点如何处理</h4>
+<ul>
+<li>用户看到什么：订单会变为已退款，列表显示“已退款 ¥X 原路退回”。</li>
+<li>商家看到什么：站点团状态变成已关闭。</li>
+<li>前端做什么：下次 <code>myOrders</code> 或 <code>adminDashboard</code> 读取后呈现。</li>
+<li>调哪个 action：<code>closeExpired</code> 内部调用 <code>closeGroupRefund(batchStationId, reason=&#x27;到期未成团&#x27;)</code>。</li>
+<li>数据库写什么：相关订单改 <code>已退款</code>；<code>batchStations</code> 回退件数与订单数后写 <code>已关闭</code>；<code>batchInventory</code> 回补；新增 <code>refunds</code>。</li>
+<li>例子：大学城站只有 2/5，22:00 后这 2 单被统一退款，大学城站团关闭。</li>
+</ul>
+<h4 id="sec-033">系统线第 4 步：已成团站点如何处理</h4>
+<ul>
+<li>用户看到什么：取货券仍可用，订单应继续处于待自提类状态。</li>
+<li>商家看到什么：站点团状态变成 <code>待自提</code>。</li>
+<li>前端做什么：下次读取后显示为待自提/已成团。</li>
+<li>调哪个 action：<code>closeExpired</code>。</li>
+<li>数据库写什么：<code>batchStations.status=&#x27;待自提&#x27;</code>。</li>
+<li>代码事实：这一步只更新站点团 <code>batchStations</code>，没有批量更新 <code>orders</code>。</li>
+<li>影响：如果某些订单之前停在 <code>已成团待截单</code>，定时截单不会把它们统一改成 <code>待自提</code>。</li>
+</ul>
+<h4 id="sec-034">系统线第 5 步：成团推送实际在哪里发生</h4>
+<ul>
+<li>用户看到什么：订阅过的买家会收到“自提通知”。</li>
+<li>商家看到什么：无专门反馈。</li>
+<li>前端做什么：买家在支付成功页点“开启自提通知”后，订单写入订阅意愿。</li>
+<li>调哪个 action：<code>markPickupSubscribed</code> 写订阅意愿；真正发送由 <code>confirmPaidOrder</code> 调 <code>pushPickupNoticeIfConfigured</code>。</li>
+<li>数据库读什么：<code>config.pickupTemplateId</code>、该站 <code>deliveryWindows</code>、该站 <code>orders</code>。</li>
+<li>数据库写什么：发送本身不写；订阅时写 <code>orders.subscribePickupNotice=true</code>。</li>
+<li>代码事实：22:00 <code>closeExpired</code> 没有调用推送；推送是在支付跨门槛成团的那一刻触发。</li>
+</ul>
+<h4 id="sec-035">系统线第 6 步：取货日 10:00 退款窗口如何关闭</h4>
+<ul>
+<li>用户看到什么：10:00 前点退款可以成功；10:00 后点退款会提示不可自助退款，可转卖或转让取货券。</li>
+<li>商家看到什么：没有自动任务提醒。</li>
+<li>前端做什么：订单页和取货券页仍显示“10点前可退”按钮，只是点了后以后端结果为准。</li>
+<li>调哪个 action：<code>cancelOrder(orderId)</code>。</li>
+<li>数据库读什么：<code>orders</code> 和对应 <code>batches.pickupDate</code>。</li>
+<li>数据库写什么：10:00 前写退款相关集合；10:00 后不写，直接失败返回。</li>
+<li>判断逻辑：<code>canSelfCancelOrder</code> 用 <code>beijingTimestamp(pickupDate,&#x27;10:00&#x27;)</code> 生成北京时间截止点。</li>
+<li>例子：小明 09:59 点退款，订单可退；10:01 点退款，返回“取货日10:00后不可自助退款”。</li>
+</ul>
+<hr>
+<h2 id="sec-036">3. 订单状态机全图</h2>
+<h3 id="sec-037">3.1 批次状态 <code>batches.status</code></h3>
+<ul>
+<li><code>接单中</code></li>
+<li>进入条件：<code>initDemo</code> 或 <code>createBatch</code> 创建批次时写入。</li>
+<li>退出路径：<code>closeExpired</code> 到截止时间；库存售罄时 <code>evaluatePaidOrder</code> 返回 <code>batchPatch</code>；商家手动截单理论上走 <code>manualCutoff</code>。</li>
+<li>谁触发：系统定时器、支付成功事务、商家按钮。</li>
+<li>用户看到：首页/点单页显示当前批次可买。</li>
+<li>商家看到：工作台当前批次进行中。</li>
+<li><code>已截单</code></li>
+<li>进入条件：<code>closeExpired</code> 推进；或全部有限库存卖完；理论上手动截单。</li>
+<li>退出路径：代码里没有恢复接单的路径，只能新建批次或延长仍接单的批次。</li>
+<li>谁触发：系统定时器、支付成功事务。</li>
+<li>用户看到：新订单会被 <code>createOrder</code> 拒绝或支付后自动退款。</li>
+<li>商家看到：批次已经停止接单。</li>
+</ul>
+<h3 id="sec-038">3.2 站点团状态 <code>batchStations.status</code></h3>
+<ul>
+<li><code>拼团中</code></li>
+<li>进入条件：<code>initDemo</code> 或 <code>createBatch</code> 创建每个站点团。</li>
+<li>退出路径：支付后件数达到门槛 -&gt; <code>已成团继续接单</code>；截止仍未成团 -&gt; <code>已关闭</code>；商家手动成团 -&gt; <code>已成团继续接单</code>。</li>
+<li>谁触发：买家付款、定时器、商家。</li>
+<li>用户看到：站点卡显示“拼团中”“还差 X 份”。</li>
+<li>商家看到：工作台显示 paidItemCount/thresholdN。</li>
+<li><code>已成团继续接单</code></li>
+<li>进入条件：某笔 <code>payOrder</code> 让 <code>paidItemCount &gt;= thresholdN</code>；或商家 <code>manualFormGroup</code>。</li>
+<li>退出路径：22:00 定时截单后变 <code>待自提</code>；商家关团退款变 <code>已关闭</code>。</li>
+<li>谁触发：买家付款、商家。</li>
+<li>用户看到：站点卡显示“已成团 · 还能下单”。</li>
+<li>商家看到：站点已成团但仍可继续卖。</li>
+<li>设计重点：后续退款即使把件数退到门槛以下，也不自动退回“拼团中”。</li>
+<li><code>待自提</code></li>
+<li>进入条件：<code>closeExpired</code> 对已成团站点推进；也可被 <code>isStationAccepting</code> 视为仍可下单状态。</li>
+<li>退出路径：商家关团退款可改 <code>已关闭</code>；代码没有站点级完成状态。</li>
+<li>谁触发：系统定时器或商家关团。</li>
+<li>用户看到：订单/取货券进入取货表达。</li>
+<li>商家看到：核销页优先选 <code>待自提</code> 站点。</li>
+<li><code>已关闭</code></li>
+<li>进入条件：未成团到点关闭；商家关团退款；未成团退款后件数归零时退款逻辑也可能写已关闭。</li>
+<li>退出路径：代码里没有重开路径。</li>
+<li>谁触发：定时器、商家、退款事务。</li>
+<li>用户看到：不能继续下单，相关订单多为已退款。</li>
+<li>商家看到：站点团关闭。</li>
+</ul>
+<h3 id="sec-039">3.3 订单状态 <code>orders.status</code></h3>
+<ul>
+<li><code>待支付</code></li>
+<li>进入条件：<code>createOrder</code> 成功后新增订单。</li>
+<li>退出路径：<code>payOrder</code> MOCK 直接确认；真实支付先转 <code>支付中</code>。</li>
+<li>谁触发：买家点“微信支付”。</li>
+<li>用户看到：通常很短暂，MOCK 模式几乎看不到。</li>
+<li>商家看到：工作台不重点展示待支付订单。</li>
+<li><code>支付中</code></li>
+<li>进入条件：<code>MOCK_PAY=false</code> 时 <code>payOrder</code> 调真实支付前写入。</li>
+<li>退出路径：<code>payCallback</code> 进入 <code>confirmPaidOrder</code>。</li>
+<li>谁触发：真实支付回调。</li>
+<li>用户看到：可能停在支付流程中。</li>
+<li>商家看到：不作为可核销订单。</li>
+<li><code>待成团</code></li>
+<li>进入条件：支付成功后站点未达到门槛。</li>
+<li>退出路径：下一笔付款跨门槛后改 <code>待自提</code> 或 <code>已成团待截单</code>；用户 10:00 前自助退改 <code>已退款</code>；未成团到点关团退款改 <code>已退款</code>。</li>
+<li>谁触发：买家付款、其他买家付款、用户退款、定时器。</li>
+<li>用户看到：订单列表“待成团”，按钮“喊人拼团”和“10点前可退”。</li>
+<li>商家看到：工作台站点进度未满。</li>
+<li><code>已成团待截单</code></li>
+<li>进入条件：支付成功跨门槛但没有窗口时；或商家 <code>manualFormGroup</code> 把待成团订单批量改过来。</li>
+<li>退出路径：代码里没有清晰的订单级自动转 <code>待自提</code> 路径；用户仍可 10:00 前退款；售后允许。</li>
+<li>谁触发：支付事务或商家手动成团。</li>
+<li>用户看到：订单列表归在“待自提”筛选里，但按钮仍可“喊人拼团”和“10点前可退”。</li>
+<li>商家看到：核销备料列表不会包含这个状态，因为 <code>prepList</code> 只查 <code>待自提/已完成/未取货待处理</code>。</li>
+<li><code>待自提</code></li>
+<li>进入条件：支付后已成团且存在 <code>deliveryWindow</code>；或同站点跨门槛时把原 <code>待成团</code> 订单批量改为 <code>待自提</code>。</li>
+<li>退出路径：核销 -&gt; <code>已完成</code>；结束本场未核销 -&gt; <code>未取货待处理</code>；10:00 前自助退款 -&gt; <code>已退款</code>；售后退款通过 -&gt; <code>已退款</code>。</li>
+<li>谁触发：支付事务、商家核销、商家结束本场、用户退款、商家售后。</li>
+<li>用户看到：取货券、核销码、自提窗口、取货点指引。</li>
+<li>商家看到：核销页备料和订单明细。</li>
+<li><code>已完成</code></li>
+<li>进入条件：<code>verifyOrder</code> 成功核销。</li>
+<li>退出路径：普通商家直接退款 <code>adminRefundOrder</code> 禁止已完成；但用户售后退款申请通过 <code>reviewRefund</code> 仍会走 <code>refundOrder</code> 改成已退款。</li>
+<li>谁触发：核销员或超级管理员。</li>
+<li>用户看到：订单列表“已完成”，取货券仍可查看，也可申请售后。</li>
+<li>商家看到：核销页本场进度 doneCount 增加。</li>
+<li><code>未取货待处理</code></li>
+<li>进入条件：商家在核销页点“结束本场自提”，<code>markNoShowOrders</code> 批量修改未核销订单。</li>
+<li>退出路径：商家可 <code>markOrderPostponed</code> 改 <code>已顺延</code>；或 <code>adminRefundOrder</code> 改 <code>已退款</code>；也可仍被 <code>verifyOrder</code> 核销成 <code>已完成</code>。</li>
+<li>谁触发：商家。</li>
+<li>用户看到：订单详情可申请售后；具体文案不算强提醒。</li>
+<li>商家看到：工作台“未取货待处理”。</li>
+<li><code>已顺延</code></li>
+<li>进入条件：商家在工作台未取货订单上点“标记顺延”。</li>
+<li>退出路径：代码无跨批次迁移；仍可被商家退款。</li>
+<li>谁触发：商家。</li>
+<li>用户看到：订单详情 refundText 可能显示“顺延申请中”取决于 afterSaleStatus；单纯 <code>已顺延</code> 主要是状态。</li>
+<li>商家看到：订单不再是未取货待处理。</li>
+<li><code>已退款</code></li>
+<li>进入条件：用户自助退款、未成团关团退款、库存不足自动退款、商家关团退款、售后通过、未取货退款。</li>
+<li>退出路径：代码里没有恢复路径。</li>
+<li>谁触发：用户、系统、商家。</li>
+<li>用户看到：订单列表显示“已退款 ¥X 原路退回”。</li>
+<li>商家看到：退款记录在 <code>refunds</code>，订单终态。</li>
+<li><code>支付后退款中</code></li>
+<li>进入条件：真实支付模式下，支付回调后发现批次不接单、站点不可下单或库存不足。</li>
+<li>退出路径：真实退款成功后应由退款处理改终态；当前 <code>retryRefunds</code> 只更新 <code>refunds</code>，不更新 <code>orders</code>。</li>
+<li>谁触发：真实支付回调。</li>
+<li>用户看到：支付成功页按退款卡处理，显示“本单已自动退款”。</li>
+<li>商家看到：<code>refunds</code> 有待退款或退款失败记录。</li>
+<li>代码事实：MOCK 模式会直接写 <code>已退款</code>，所以本地测试通常不会停在这个状态。</li>
+</ul>
+<h3 id="sec-040">3.4 售后/退款辅助状态</h3>
+<ul>
+<li><code>refunds.status=&#x27;待审核&#x27;</code>：用户在取货券页申请商家违约退款后进入。</li>
+<li><code>refunds.status=&#x27;审核通过&#x27;</code>：商家工作台点审核通过，随后立即走 <code>refundOrder</code>。</li>
+<li><code>refunds.status=&#x27;已驳回&#x27;</code>：商家驳回后写入退款单。</li>
+<li><code>refunds.status=&#x27;待退款&#x27;</code>：真实支付模式下退款待调用微信退款。</li>
+<li><code>refunds.status=&#x27;退款失败&#x27;</code>：真实退款异常后进入，可点重试。</li>
+<li><code>refunds.status=&#x27;已退款&#x27;</code>：MOCK 或真实退款成功后的退款单终态。</li>
+<li><code>orders.afterSaleStatus=&#x27;退款审核中&#x27;</code>：用户提交商家违约退款申请后写入订单。</li>
+<li><code>orders.afterSaleStatus=&#x27;顺延申请中&#x27;</code>：用户申请顺延后写入订单。</li>
+<li><code>orders.refundStatus=&#x27;待审核/已驳回/已退款&#x27;</code>：部分售后路径会写，部分路径没有同步，展示以代码实际字段为准。</li>
+</ul>
+<hr>
+<h2 id="sec-041">4. 数据模型讲解：12 个业务集合 + 1 个配置集合</h2>
+<h3 id="sec-042">4.1 主链先看清：batch -&gt; batchStation -&gt; order</h3>
+<div class="code-card"><div class="code-head"><span>text</span><button type="button" class="copy-btn" data-copy="code-2">复制</button></div><pre id="code-2"><code>batches（一场明天自提的总批次）
+└─ batchStations（这个批次下，每个地铁站各一条站点团）
+   ├─ deliveryWindows（这个站点团的自提窗口和取货点照片）
+   ├─ orders（买家在这个站点团下的订单）
+   └─ batchInventory（不是挂在站点团下，而是挂在批次下的共享 SKU 库存）</code></pre></div>
+<ul>
+<li><code>batches</code> 回答“明天这一批什么时候截单、什么时候取”。</li>
+<li><code>batchStations</code> 回答“布吉站/大学城站各自拼到几份了”。</li>
+<li><code>orders</code> 回答“小明这笔订单买了什么，在哪个站取，核销码是什么”。</li>
+<li><code>deliveryWindows</code> 回答“布吉站几点到几点、A口哪里等、有没有照片”。</li>
+<li><code>batchInventory</code> 回答“这个批次每个 SKU 全站共享还剩几份”。</li>
+<li>例子：小明在布吉站买 2 份，订单会指向同一个 <code>batchId</code> 和布吉的 <code>batchStationId</code>。</li>
+<li>例子：小红在大学城买同一个 SKU，会扣同一个批次的 <code>batchInventory</code>，不是大学城单独库存。</li>
+</ul>
+<h3 id="sec-043">4.2 <code>products</code>：商品 SPU</h3>
+<ul>
+<li>存什么：商品本体，比如“蝶糯桑卡雅”“香斓花糕”。</li>
+<li>关键字段：<code>name</code> 商品名。</li>
+<li>关键字段：<code>thaiName</code> 泰文名，演示数据有。</li>
+<li>关键字段：<code>category</code> 分类，点单页左侧分类来自这里。</li>
+<li>关键字段：<code>description</code> 商品描述。</li>
+<li>关键字段：<code>tags</code> 标签，演示数据有，但当前页面展示不多。</li>
+<li>关键字段：<code>images[]</code> 商品图片，点单页和详情页用第一张或轮播。</li>
+<li>关键字段：<code>status</code>，<code>上架</code> 才会在 C 端读取。</li>
+<li>关联：一个 <code>product</code> 有多个 <code>skus</code>。</li>
+</ul>
+<h3 id="sec-044">4.3 <code>skus</code>：商品规格和价格</h3>
+<ul>
+<li>存什么：具体可售规格，比如“蝶糯桑卡雅 · 1个 · ¥6”。</li>
+<li>关键字段：<code>productId</code>，指向 <code>products._id</code>。</li>
+<li>关键字段：<code>name</code>、<code>spec</code>，订单快照会复制这两个字段。</li>
+<li>关键字段：<code>price</code>，单位是分。</li>
+<li>关键字段：<code>status</code>，<code>上架</code> 才能被选。</li>
+<li>关联：<code>batchInventory.skuId</code> 指向 <code>skus._id</code>。</li>
+<li>关联：<code>orders.items[].skuId</code> 指向下单时选择的 SKU。</li>
+<li>设计重点：改价不影响已付订单，因为订单里有价格快照。</li>
+</ul>
+<h3 id="sec-045">4.4 <code>stations</code>：站点池</h3>
+<ul>
+<li>存什么：商家可开团的地铁站。</li>
+<li>关键字段：<code>name</code>，如布吉站、大学城站。</li>
+<li>关键字段：<code>line</code>，如 3/14号线。</li>
+<li>关键字段：<code>exit</code>，如 A口。</li>
+<li>关键字段：<code>pickupNote</code>，默认取货点说明。</li>
+<li>关键字段：<code>status</code>，<code>active</code> 才会在创建批次页默认可选。</li>
+<li>关联：<code>batchStations.stationId</code> 指向 <code>stations._id</code>。</li>
+<li>关联：<code>orders.stationId</code> 保存买家这单所在站点。</li>
+</ul>
+<h3 id="sec-046">4.5 <code>batches</code>：日批次</h3>
+<ul>
+<li>存什么：一场“今天下单、明天自提”的总批次。</li>
+<li>关键字段：<code>name</code>，批次名。</li>
+<li>关键字段：<code>pickupDate</code>，取货日，格式 <code>YYYY-MM-DD</code>。</li>
+<li>关键字段：<code>status</code>，主要是 <code>接单中</code>、<code>已截单</code>。</li>
+<li>关键字段：<code>deadlineAt</code>，下单截止时间戳。</li>
+<li>关键字段：<code>createdBy</code>，创建人 openid。</li>
+<li>关键字段：<code>closedAt</code>、<code>closedBy</code>、<code>closeReason</code>，截单信息。</li>
+<li>关联：一个 <code>batch</code> 有多个 <code>batchStations</code>。</li>
+<li>关联：一个 <code>batch</code> 有多条 <code>batchInventory</code>。</li>
+<li>关联：<code>orders.batchId</code> 指向它。</li>
+</ul>
+<h3 id="sec-047">4.6 <code>batchStations</code>：每站拼团进度</h3>
+<ul>
+<li>存什么：一个批次下，一个站点的一场团。</li>
+<li>关键字段：<code>batchId</code>，指向 <code>batches._id</code>。</li>
+<li>关键字段：<code>stationId</code>，指向 <code>stations._id</code>。</li>
+<li>关键字段：<code>leaderOpenid</code>，第一位付款用户会成为发起人。</li>
+<li>关键字段：<code>thresholdN</code>，成团门槛份数。</li>
+<li>关键字段：<code>status</code>，如 <code>拼团中</code>、<code>已成团继续接单</code>、<code>待自提</code>、<code>已关闭</code>。</li>
+<li>关键字段：<code>paidOrderCount</code>，已付款订单数。</li>
+<li>关键字段：<code>paidItemCount</code>，已付款商品件数，成团看这个。</li>
+<li>关键字段：<code>formedAt</code>，成团时间。</li>
+<li>关联：<code>orders.batchStationId</code> 指向它。</li>
+<li>关联：<code>deliveryWindows.batchStationId</code> 指向它。</li>
+</ul>
+<h3 id="sec-048">4.7 <code>batchInventory</code>：批次共享库存</h3>
+<ul>
+<li>存什么：某批次下每个 SKU 的共享库存。</li>
+<li>关键字段：<code>batchId</code>，指向 <code>batches._id</code>。</li>
+<li>关键字段：<code>skuId</code>，指向 <code>skus._id</code>。</li>
+<li>关键字段：<code>availableQty</code>，当前可卖份数。</li>
+<li>关键字段：<code>soldQty</code>，已售份数。</li>
+<li>关键字段：<code>isUnlimited</code>，是否不限量。</li>
+<li>关键字段：<code>status</code>，如 <code>上架</code>、<code>售罄</code>。</li>
+<li>关联：支付成功事务按 <code>batchId + skuId</code> 扣减。</li>
+<li>设计重点：布吉和大学城共用同一批库存，不拆站点库存。</li>
+</ul>
+<h3 id="sec-049">4.8 <code>deliveryWindows</code>：自提窗口和地点</h3>
+<ul>
+<li>存什么：每个站点团的到达时间、离开时间、取货点说明和照片。</li>
+<li>关键字段：<code>batchStationId</code>，指向 <code>batchStations._id</code>。</li>
+<li>关键字段：<code>pickupDate</code>，取货日。</li>
+<li>关键字段：<code>arriveAt</code>、<code>leaveAt</code>，窗口时间。</li>
+<li>关键字段：<code>waitMinutes</code>，等待时长。</li>
+<li>关键字段：<code>locationNote</code>，比如“布吉站A口 出站直行20米”。</li>
+<li>关键字段：<code>locationImages[]</code>，取货点照片 fileID。</li>
+<li>关键字段：<code>arrivedAt</code>、<code>arrivedBy</code>，商家到达记录。</li>
+<li>关联：取货券、站点卡、成团推送都会读它。</li>
+</ul>
+<h3 id="sec-050">4.9 <code>orders</code>：买家订单和取货券</h3>
+<ul>
+<li>存什么：每个买家的具体订单。</li>
+<li>关键字段：<code>batchId</code>，指向批次。</li>
+<li>关键字段：<code>batchStationId</code>，指向站点团。</li>
+<li>关键字段：<code>stationId</code>，冗余保存站点，方便列表展示。</li>
+<li>关键字段：<code>userOpenid</code>，买家身份。</li>
+<li>关键字段：<code>items[]</code>，商品快照，含 <code>skuId/name/spec/quantity/unitPrice/subtotal</code>。</li>
+<li>关键字段：<code>amount</code>，订单总金额，单位分。</li>
+<li>关键字段：<code>status</code>，订单状态机核心。</li>
+<li>关键字段：<code>phone</code>，取货联系手机号。</li>
+<li>关键字段：<code>verifyCode</code>，6 位核销码，全局查重生成。</li>
+<li>关键字段：<code>subscribePickupNotice</code>，是否订阅成团/自提通知。</li>
+<li>关键字段：<code>paidAt/refundedAt/verifiedAt</code>，支付、退款、核销时间。</li>
+<li>关键字段：<code>afterSaleType/afterSaleStatus/refundStatus</code>，售后辅助字段。</li>
+</ul>
+<h3 id="sec-051">4.10 <code>users</code>：用户资料</h3>
+<ul>
+<li>存什么：微信 openid 对应的昵称、头像、手机号。</li>
+<li>关键字段：<code>openid</code>，身份根。</li>
+<li>关键字段：<code>nickname</code>，首页欢迎弹层或支付前资料弹层保存。</li>
+<li>关键字段：<code>avatarFileId</code>，头像上传后的云存储 fileID。</li>
+<li>关键字段：<code>phone</code>，下单时必须有。</li>
+<li>关联：<code>orders.userOpenid</code> 与 <code>users.openid</code> 对应。</li>
+<li>设计重点：首页不强制登录，支付前才强制补齐。</li>
+</ul>
+<h3 id="sec-052">4.11 <code>admins</code>：管理员白名单</h3>
+<ul>
+<li>存什么：谁能进商家后台。</li>
+<li>关键字段：<code>openid</code>，管理员身份。</li>
+<li>关键字段：<code>role</code>，如 <code>superAdmin</code>、<code>verifier</code>。</li>
+<li>关键字段：<code>name</code>、<code>phone</code>。</li>
+<li>关键字段：<code>status=&#x27;active&#x27;</code> 才有效。</li>
+<li>关联：所有商家 action 都先查 <code>admins</code>。</li>
+<li>设计重点：首个进入商家通道的人，在 <code>admins</code> 为空时可绑定成超级管理员。</li>
+</ul>
+<h3 id="sec-053">4.12 <code>refunds</code>：退款和售后单</h3>
+<ul>
+<li>存什么：所有退款请求、退款处理状态、售后审核。</li>
+<li>关键字段：<code>orderId</code>，指向订单。</li>
+<li>关键字段：<code>refundNo</code>，退款单号。</li>
+<li>关键字段：<code>userOpenid</code>，用户申请售后时会写。</li>
+<li>关键字段：<code>amount</code>，退款金额。</li>
+<li>关键字段：<code>status</code>，如 <code>待审核</code>、<code>待退款</code>、<code>退款失败</code>、<code>已退款</code>、<code>已驳回</code>。</li>
+<li>关键字段：<code>reason</code>，退款原因。</li>
+<li>关键字段：<code>source=&#x27;afterSale&#x27;</code>，用户售后申请。</li>
+<li>关键字段：<code>operatorOpenid</code>，商家或系统退款时记录操作者。</li>
+<li>关键字段：<code>retryCount/lastError</code>，真实退款失败重试用。</li>
+<li>关联：工作台待处理列表读取它。</li>
+</ul>
+<h3 id="sec-054">4.13 <code>verificationLogs</code>：核销日志</h3>
+<ul>
+<li>存什么：每次成功核销的记录。</li>
+<li>关键字段：<code>orderId</code>。</li>
+<li>关键字段：<code>verifyCode</code>。</li>
+<li>关键字段：<code>adminOpenid</code>，谁核销的。</li>
+<li>关键字段：<code>verifyMethod</code>，<code>input</code> 或 <code>scan</code>。</li>
+<li>关键字段：<code>verifiedAt</code>。</li>
+<li>关联：<code>verifyOrder</code> 成功时写入。</li>
+<li>设计重点：二次核销会被拒绝，日志只记录成功核销。</li>
+</ul>
+<h3 id="sec-055">4.14 <code>config</code>：系统配置集合</h3>
+<ul>
+<li>存什么：不是业务主集合，但代码会创建和读取。</li>
+<li>关键字段：固定 doc id 是 <code>system</code>。</li>
+<li>关键字段：<code>brandName=&#x27;泰斓 TAILAN&#x27;</code>。</li>
+<li>关键字段：<code>pickupTemplateId</code>，订阅消息模板 id。</li>
+<li>关键字段：<code>mockPay</code>，演示数据里写当前支付模式。</li>
+<li>关键字段：<code>phoneOneTapEnabled</code>，是否开启一键手机号。</li>
+<li>关键字段：<code>merchantPhone</code>，商家联系电话。</li>
+<li>关联：<code>getUserProfile/getMinePage/getPickupNoticeConfig</code> 都会读它。</li>
+</ul>
+<hr>
+<h2 id="sec-056">5. 每页速查卡</h2>
+<h3 id="sec-057">5.1 首页 <code>pages/home/home</code></h3>
+<ul>
+<li>这页解决什么问题：让新用户明白泰斓是什么、今天有没有批次、哪些站点在拼、从哪里开始点单。</li>
+<li>关键数据来源：<code>getCatalogPage</code>；必要时自动 <code>initDemo</code>。</li>
+<li>主要集合：<code>products</code>、<code>skus</code>、<code>batches</code>、<code>batchStations</code>、<code>batchInventory</code>、<code>stations</code>、<code>deliveryWindows</code>。</li>
+<li>“自提自取”：<code>goCatalog</code>，<code>switchTab</code> 到 <code>catalog</code>。</li>
+<li>“我的订单”：<code>goOrders</code>，<code>switchTab</code> 到 <code>orders</code>。</li>
+<li>站点卡：<code>goCatalog</code>，<code>switchTab</code> 到 <code>catalog</code>，不带站点参数。</li>
+<li>“规则说明”：打开 <code>ruleSheet</code>，不走云函数。</li>
+<li>欢迎弹层“微信一键登录”：上传头像后 <code>saveUserProfile</code>。</li>
+<li>欢迎弹层“先逛逛”：只写本地 <code>tailanWelcomeSeen</code>。</li>
+</ul>
+<h3 id="sec-058">5.2 点单页 <code>pages/catalog/catalog</code></h3>
+<ul>
+<li>这页解决什么问题：按分类展示可买商品，让用户进入商品详情。</li>
+<li>关键数据来源：<code>getCatalogPage</code>。</li>
+<li>主要集合：<code>products</code>、<code>skus</code>、<code>batchInventory</code>、<code>batches</code>。</li>
+<li>左侧分类：本页切换，不走云函数。</li>
+<li>商品卡：<code>navigateTo product?productId&amp;skuId</code>。</li>
+<li>“去拼团”：同商品卡，<code>navigateTo product?productId&amp;skuId</code>。</li>
+<li>库存展示：把同商品所有 SKU 的 <code>batchInventory.availableQty</code> 加总。</li>
+<li>售罄按钮：样式置灰，但点击仍会触发 <code>goProduct</code>，详情页再看库存。</li>
+<li>代码事实：顶部固定写“满 5 份成团”，不是完全动态。</li>
+</ul>
+<h3 id="sec-059">5.3 商品详情页 <code>pages/product/product</code></h3>
+<ul>
+<li>这页解决什么问题：让用户看清商品、规格、数量和合计。</li>
+<li>关键数据来源：<code>getProductDetail(productId)</code>。</li>
+<li>主要集合：<code>products</code>、<code>skus</code>、<code>batches</code>、<code>batchInventory</code>。</li>
+<li>规格行：本页切换 <code>selectedSkuId</code>。</li>
+<li>“-”：数量大于 1 才减少。</li>
+<li>“+”：不能超过当前 SKU 剩余库存。</li>
+<li>“选自提站点”：<code>navigateTo pickStation</code>，带 <code>batchId/skuId/qty/skuName/price</code>。</li>
+<li>无当前批次时：toast “今晚批次准备中”。</li>
+<li>分享：分享当前商品详情页。</li>
+</ul>
+<h3 id="sec-060">5.4 选站点页 <code>pages/pickStation/pickStation</code></h3>
+<ul>
+<li>这页解决什么问题：让用户选在哪个地铁站取货，并完成支付前身份资料。</li>
+<li>关键数据来源：<code>getStationOptions(batchId)</code>、<code>getUserProfile</code>。</li>
+<li>主要集合：<code>batchStations</code>、<code>stations</code>、<code>deliveryWindows</code>、<code>users</code>、<code>config</code>。</li>
+<li>站点卡：本页选中 <code>batchStationId</code>。</li>
+<li>“微信支付”：先检查昵称和手机号。</li>
+<li>缺资料：打开支付前弹层。</li>
+<li>“一键获取手机号”：<code>decodePhoneNumber(code)</code>。</li>
+<li>“确认并支付”：<code>saveUserProfile</code> 后继续支付。</li>
+<li>真正下单：<code>createOrder</code>。</li>
+<li>真正支付：<code>payOrder</code>。</li>
+<li>成功跳转：<code>navigateTo paySuccess?orderId&amp;batchStationId</code>。</li>
+</ul>
+<h3 id="sec-061">5.5 支付成功页 <code>pages/paySuccess/paySuccess</code></h3>
+<ul>
+<li>这页解决什么问题：告诉用户支付结果、站点进度、鼓励分享、允许订阅通知。</li>
+<li>关键数据来源：<code>getOrderDetail</code>、<code>getGroupPage</code>、<code>getPickupNoticeConfig</code>、<code>myOrders</code>。</li>
+<li>主要集合：<code>orders</code>、<code>batchStations</code>、<code>stations</code>、<code>deliveryWindows</code>、<code>config</code>。</li>
+<li>“分享到微信群”：微信原生分享，路径到 <code>groupPage?batchStationId</code>。</li>
+<li>“开启自提通知”：请求订阅后 <code>markPickupSubscribed(orderId)</code>。</li>
+<li>“查看订单”：有订单时 <code>navigateTo orderDetail?orderId</code>；没有时 <code>switchTab orders</code>。</li>
+<li>“继续购买”：<code>switchTab home</code>。</li>
+<li>自动退款订单：显示退款卡，隐藏分享区。</li>
+<li>代码事实：<code>copyShareText</code> 函数存在，但页面没有按钮调用它。</li>
+</ul>
+<h3 id="sec-062">5.6 站点团页 <code>pages/groupPage/groupPage</code></h3>
+<ul>
+<li>这页解决什么问题：承接微信群分享，让朋友看到某个站点团的进度并参团。</li>
+<li>关键数据来源：<code>getGroupPage(batchStationId)</code>、<code>getCatalogPage</code>。</li>
+<li>主要集合：<code>batchStations</code>、<code>batches</code>、<code>stations</code>、<code>deliveryWindows</code>、<code>products</code>、<code>skus</code>、<code>batchInventory</code>。</li>
+<li>“去参团”：<code>switchTab catalog</code>。</li>
+<li>“再喊几个人”：微信原生分享，继续分享本团。</li>
+<li>“我也要买”：<code>switchTab home</code>。</li>
+<li>成团状态：按 <code>paidItemCount/thresholdN</code> 算进度。</li>
+<li>可买状态：只有 <code>拼团中</code> 和 <code>已成团继续接单</code> 可买。</li>
+<li>代码事实：朋友圈分享函数名拼成 <code>oonShareTimeline</code>，实际不生效。</li>
+</ul>
+<h3 id="sec-063">5.7 我的订单页 <code>pages/orders/orders</code></h3>
+<ul>
+<li>这页解决什么问题：让用户按状态看订单、喊人拼团、退款、进取货券。</li>
+<li>关键数据来源：<code>myOrders</code>。</li>
+<li>主要集合：<code>orders</code>、<code>stations</code>、<code>batchStations</code>。</li>
+<li>状态 tab：本页过滤，不走云函数。</li>
+<li>订单卡：<code>navigateTo orderDetail?orderId</code>。</li>
+<li>“喊人拼团”：<code>navigateTo groupPage?batchStationId</code>。</li>
+<li>“10点前可退”：确认后 <code>cancelOrder(orderId)</code>。</li>
+<li>订单角标：统计待成团/已成团待截单/待自提。</li>
+<li>退款成功：toast 后重新 <code>myOrders</code>。</li>
+</ul>
+<h3 id="sec-064">5.8 取货券页 <code>pages/orderDetail/orderDetail</code></h3>
+<ul>
+<li>这页解决什么问题：给用户到站取货所需的全部信息。</li>
+<li>关键数据来源：<code>getOrderDetail(orderId)</code>。</li>
+<li>主要集合：<code>orders</code>、<code>batchStations</code>、<code>stations</code>、<code>deliveryWindows</code>。</li>
+<li>“联系商家”：微信客服，不走云函数。</li>
+<li>“取货日10点前自助退款”：<code>cancelOrder(orderId)</code>。</li>
+<li>“申请售后”：ActionSheet 后 <code>applyAfterSale</code>。</li>
+<li>“商家违约退款”：<code>applyAfterSale(type=refund)</code>。</li>
+<li>“申请顺延”：<code>applyAfterSale(type=postpone)</code>。</li>
+<li>二维码：本地 <code>weapp-qrcode.js</code> 按核销码绘制。</li>
+<li>取货点照片：来自 <code>deliveryWindows.locationImages[]</code>。</li>
+</ul>
+<h3 id="sec-065">5.9 我的页 <code>pages/mine/mine</code></h3>
+<ul>
+<li>这页解决什么问题：用户身份、订单摘要、规则、客服和商家入口。</li>
+<li>关键数据来源：<code>getMinePage</code>。</li>
+<li>主要集合：<code>users</code>、<code>orders</code>、<code>config</code>、<code>admins</code>。</li>
+<li>订单摘要三块：先写本地 <code>ordersFilter</code>，再 <code>switchTab orders</code>。</li>
+<li>“联系商家”：微信客服。</li>
+<li>“规则说明”：打开 <code>ruleSheet</code>。</li>
+<li>“商家管理”：管理员可见，<code>navigateTo adminHome</code>。</li>
+<li>“现场核销”：管理员可见，<code>navigateTo adminVerify</code>。</li>
+<li>“商家通道”：非管理员调用 <code>bindAdmin</code>，首个管理员可绑定成功。</li>
+</ul>
+<h3 id="sec-066">5.10 商家工作台 <code>pages/adminHome/adminHome</code></h3>
+<ul>
+<li>这页解决什么问题：商家看全局进度、处理站点团、进入各后台工具、处理售后。</li>
+<li>关键数据来源：<code>checkAdmin</code>、<code>adminDashboard</code>、<code>applyAfterSale(operation=listPending)</code>。</li>
+<li>主要集合：<code>admins</code>、<code>batches</code>、<code>batchStations</code>、<code>stations</code>、<code>deliveryWindows</code>、<code>refunds</code>、<code>orders</code>。</li>
+<li>“开始核销/备料清单”：<code>navigateTo adminVerify</code>。</li>
+<li>“我已到达”：<code>markArrived(dw-&lt;第一个站点团id&gt;)</code>。</li>
+<li>“手动成团”：<code>manualFormGroup(batchStationId)</code>。</li>
+<li>“手动截单”：<code>manualCutoff(batchId)</code>，当前会因后端函数缺失失败。</li>
+<li>“更多操作-修改窗口”：弹层后 <code>setDeliveryWindow</code>。</li>
+<li>“更多操作-延长截止”：<code>extendDeadline</code>。</li>
+<li>“更多操作-关团退款”：<code>closeGroupRefund</code>。</li>
+<li>售后“审核通过/驳回”：<code>reviewRefund</code>。</li>
+<li>未取货“标记顺延/退款”：<code>markOrderPostponed</code> / <code>adminRefundOrder</code>。</li>
+<li>“重试退款”：<code>retryRefunds</code>。</li>
+</ul>
+<h3 id="sec-067">5.11 商品管理页 <code>pages/adminProducts/adminProducts</code></h3>
+<ul>
+<li>这页解决什么问题：管理商品、图片、SKU、上下架和价格。</li>
+<li>关键数据来源：<code>checkAdmin</code>、<code>listProducts</code>。</li>
+<li>主要集合：<code>admins</code>、<code>products</code>、<code>skus</code>。</li>
+<li>商品卡：选中并载入表单。</li>
+<li>“上传图片”：微信选择图片并上传云存储。</li>
+<li>“保存商品”：<code>saveProduct(product)</code>。</li>
+<li>SKU 行：选中并载入 SKU 表单。</li>
+<li>“+新SKU”：清空 SKU 表单。</li>
+<li>“保存上架/保存下架”：<code>saveSku(sku)</code>。</li>
+<li>设计重点：改价只影响新订单，已付订单看 <code>orders.items</code> 快照。</li>
+</ul>
+<h3 id="sec-068">5.12 创建批次页 <code>pages/adminBatch/adminBatch</code></h3>
+<ul>
+<li>这页解决什么问题：发布明天的可售批次、站点窗口和共享库存。</li>
+<li>关键数据来源：<code>checkAdmin</code>、<code>listStations</code>、<code>listProducts</code>。</li>
+<li>主要集合：<code>admins</code>、<code>stations</code>、<code>products</code>、<code>skus</code>，提交后写 <code>batches/batchStations/deliveryWindows/batchInventory</code>。</li>
+<li>站点勾选：本页状态变化。</li>
+<li>时间窗口输入：本页 <code>stationWindows</code> 变化。</li>
+<li>“+照片”：上传到云存储 <code>pickup/</code>。</li>
+<li>SKU 勾选：本页状态变化。</li>
+<li>库存输入：写入 <code>inventoryDraft</code>。</li>
+<li>“发布批次”：<code>createBatch(batch)</code>。</li>
+<li>代码事实：初始门槛是 4，不是附录A里的 5。</li>
+</ul>
+<h3 id="sec-069">5.13 现场核销页 <code>pages/adminVerify/adminVerify</code></h3>
+<ul>
+<li>这页解决什么问题：现场按站点备料、核销、结束本场。</li>
+<li>关键数据来源：<code>checkAdmin</code>、<code>adminDashboard</code>、<code>prepList</code>。</li>
+<li>主要集合：<code>admins</code>、<code>batchStations</code>、<code>orders</code>、<code>verificationLogs</code>、<code>deliveryWindows</code>。</li>
+<li>站点 picker：切换后 <code>prepList(batchStationId)</code>。</li>
+<li>“核销”：<code>verifyOrder(code,method=input)</code>。</li>
+<li>“扫码核销”：<code>wx.scanCode</code> 后 <code>verifyOrder(code,method=scan)</code>。</li>
+<li>“我已到达”：<code>markArrived(dw-&lt;batchStationId&gt;)</code>。</li>
+<li>“结束本场自提”：<code>markNoShowOrders(batchStationId)</code>。</li>
+<li>备料清单：按订单 items 的商品名和规格汇总。</li>
+<li>订单明细：显示核销码、金额、状态。</li>
+</ul>
+<h3 id="sec-070">5.14 站点池管理页 <code>pages/adminStations/adminStations</code></h3>
+<ul>
+<li>这页解决什么问题：维护可开团的地铁站池。</li>
+<li>关键数据来源：<code>checkAdmin</code>、<code>listStations</code>。</li>
+<li>主要集合：<code>admins</code>、<code>stations</code>。</li>
+<li>“+新增”：打开空表单。</li>
+<li>点站点行：载入编辑表单。</li>
+<li>“切换”：active/disabled 切换。</li>
+<li>“保存”：<code>saveStation(station)</code>。</li>
+<li>“取消”：关闭表单。</li>
+<li>设计重点：停用后创建批次页不应再选；已有订单不删除站点。</li>
+</ul>
+<hr>
+<h2 id="sec-071">6. 为什么这么设计</h2>
+<h3 id="sec-072">6.1 为什么先付款</h3>
+<ul>
+<li>如果先占名额后付款，站点进度会被“口头报名”污染，商家不知道该备多少货。</li>
+<li>先付款后计入 <code>paidItemCount</code>，可以让进度条代表真实需求。</li>
+<li>小明在布吉站买 2 份，只有付款成功后布吉才从 3/5 变 5/5。</li>
+<li>这对家庭烘焙尤其重要，因为备料和出摊都要提前决定，不能靠临时口头承诺。</li>
+<li>代码也按这个逻辑写：<code>createOrder</code> 不扣库存，<code>payOrder</code> 成功才扣库存和加进度。</li>
+</ul>
+<h3 id="sec-073">6.2 为什么共享库存</h3>
+<ul>
+<li>泰斓不是每个地铁站单独开仓，而是同一批甜品分配给多个站点。</li>
+<li>共享库存让老板只需要判断“这批总共能做多少”，不用先猜布吉几份、大学城几份。</li>
+<li>小明在布吉买掉 2 份，小红在大学城看到的同 SKU 剩余也会减少。</li>
+<li>这样能减少某站卖不掉、某站不够卖的浪费。</li>
+<li>代码用 <code>batchInventory(batchId, skuId)</code> 表示共享库存，不挂在 <code>batchStationId</code> 下。</li>
+</ul>
+<h3 id="sec-074">6.3 为什么成团后不回退</h3>
+<ul>
+<li>成团是商家承诺会去这个站点的里程碑，不应该因为后续一两个人退款就反复变来变去。</li>
+<li>如果状态回退，用户会看到“刚刚成团又没成团”，信任感会很差。</li>
+<li>商家也无法根据一个反复摇摆的状态安排路线和备料。</li>
+<li>所以代码里 <code>stationWasFormed</code> 一旦为真，退款只回退件数和库存，不自动把站点状态打回 <code>拼团中</code>。</li>
+<li>是否关团交给商家用 <code>closeGroupRefund</code> 手动决定。</li>
+</ul>
+<h3 id="sec-075">6.4 为什么取货日 10:00 后不可自助退</h3>
+<ul>
+<li>10:00 后商家通常已经备料、打包、安排路线，成本已经发生。</li>
+<li>如果下午还能随便退，商家会承担大量临期损耗。</li>
+<li>但用户临时来不了也不是完全没路：可以把取货券截图转让给别人。</li>
+<li>代码用 <code>canSelfCancelOrder</code> 按北京时间判断，不依赖云函数机器本地时区。</li>
+<li>10:00 不是单独定时器，而是每次点退款时实时拦截。</li>
+</ul>
+<h3 id="sec-076">6.5 为什么自提窗口前置</h3>
+<ul>
+<li>以前如果成团后再排窗口，买家付款时不知道明天几点、哪里拿，决策成本高。</li>
+<li>现在创建批次时就写 <code>deliveryWindows</code>，买家在选站和取货券里都能看到窗口。</li>
+<li>成团通知也能直接带上取货点和时间，不用等商家后补。</li>
+<li>商家当天只需要核销和处理异常，不用临时解释“到底在哪取”。</li>
+<li>代码里 <code>createBatch</code> 会同步生成每个站点团的 <code>deliveryWindows</code>。</li>
+</ul>
+<h3 id="sec-077">6.6 为什么支付成功后强引导分享但不硬拦截</h3>
+<ul>
+<li>拼团确实需要用户帮忙扩散，所以支付成功页把分享放在最显眼位置。</li>
+<li>但强制分享会让用户觉得被绑架，也容易破坏微信审核体验。</li>
+<li>当前代码的做法是“强提示、弱约束”：可以分享，也可以直接查看订单。</li>
+<li>小明如果愿意，就把布吉团发群；如果不愿意，订单照样有效。</li>
+<li>这符合交易确定性：付款后用户已经买到资格，不应该被分享动作卡住。</li>
+</ul>
+<hr>
+<h2 id="sec-078">7. 创始人要特别知道的代码事实差异</h2>
+<ul>
+<li>页面数差异：需求里说 13 页，但 <code>app.json</code> 是 14 页，多了独立 <code>adminStations</code>。</li>
+<li>集合数差异：业务集合可算 12 个，但代码还会创建 <code>config</code>，所以实际 13 个集合名。</li>
+<li>门槛差异：首页和演示数据是 5；创建批次页初始 <code>thresholdN</code> 是 4，商家不改就会发 4。</li>
+<li>手动截单差异：<code>manualCutoff</code> 当前调用未定义函数，按钮会失败；定时器截单有实现。</li>
+<li>成团推送差异：推送发生在支付跨门槛那一刻，不发生在 22:00 截单动作里。</li>
+<li>10点关闭差异：没有“10点自动关窗”任务，只有用户点退款时后端拒绝。</li>
+<li>强分享差异：页面强引导分享，但没有强制分享才能继续。</li>
+<li>团页跳转差异：站点团页“去参团”只回点单 tab，不会直达某个商品详情。</li>
+<li>朋友圈分享差异：<code>groupPage</code> 写成 <code>oonShareTimeline</code>，不是微信识别的 <code>onShareTimeline</code>。</li>
+<li>售后驳回差异：工作台 <code>reviewRefund</code> 驳回只改 <code>refunds</code>，没有同步订单售后字段。</li>
+<li>订单待自提差异：<code>manualFormGroup</code> 把订单改成 <code>已成团待截单</code>，不是直接 <code>待自提</code>。</li>
+<li>核销列表差异：<code>prepList</code> 只查 <code>待自提/已完成/未取货待处理</code>，不查 <code>已成团待截单</code>。</li>
+<li>自动初始化差异：首页检测无批次无商品时会触发 <code>initDemo</code>，但只在本地没标记过时触发。</li>
+<li>支付模式差异：现在个人主体无商户号，所以 <code>MOCK_PAY=true</code>；真实支付路径保留但未实测。</li>
+</ul></article>
+  </main>
+</div>
+<script>
+(function () {
+  var body = document.body;
+  var progress = document.getElementById('readProgress');
+  var tocButton = document.getElementById('tocButton');
+  var backdrop = document.getElementById('backdrop');
+  var links = Array.prototype.slice.call(document.querySelectorAll('.toc a'));
+
+  function updateProgress() {
+    var doc = document.documentElement;
+    var scrollTop = window.pageYOffset || doc.scrollTop || 0;
+    var max = Math.max(1, doc.scrollHeight - window.innerHeight);
+    progress.style.transform = 'scaleX(' + Math.min(1, scrollTop / max) + ')';
+  }
+
+  function closeToc() {
+    body.classList.remove('toc-open');
+  }
+
+  window.addEventListener('scroll', updateProgress, { passive: true });
+  window.addEventListener('resize', updateProgress);
+  updateProgress();
+
+  if (tocButton) {
+    tocButton.addEventListener('click', function () {
+      body.classList.toggle('toc-open');
+    });
+  }
+  if (backdrop) backdrop.addEventListener('click', closeToc);
+  links.forEach(function (link) { link.addEventListener('click', closeToc); });
+
+  if ('IntersectionObserver' in window) {
+    var sections = links.map(function (link) { return document.querySelector(link.getAttribute('href')); }).filter(Boolean);
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        links.forEach(function (link) { link.classList.remove('active'); });
+        var active = document.querySelector('.toc a[href="#' + entry.target.id + '"]');
+        if (active) active.classList.add('active');
+      });
+    }, { rootMargin: '-20% 0px -70% 0px', threshold: 0.01 });
+    sections.forEach(function (section) { observer.observe(section); });
+  }
+
+  function copyText(text, button) {
+    function done(ok) {
+      var old = button.textContent;
+      button.textContent = ok ? '已复制' : '复制失败';
+      setTimeout(function () { button.textContent = old; }, 1200);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, function () { fallback(); });
+    } else {
+      fallback();
+    }
+    function fallback() {
+      var area = document.createElement('textarea');
+      area.value = text;
+      area.setAttribute('readonly', '');
+      area.style.position = 'fixed';
+      area.style.left = '-9999px';
+      document.body.appendChild(area);
+      area.select();
+      try { done(document.execCommand('copy')); }
+      catch (e) { done(false); }
+      document.body.removeChild(area);
+    }
+  }
+
+  Array.prototype.slice.call(document.querySelectorAll('[data-copy]')).forEach(function (button) {
+    button.addEventListener('click', function () {
+      var target = document.getElementById(button.getAttribute('data-copy'));
+      if (!target) return;
+      copyText(target.innerText, button);
+    });
+  });
+})();
+</script>
+</body>
+</html>

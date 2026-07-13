@@ -1,0 +1,35 @@
+<view class="screen">
+  <view wx:if="{{loading}}" class="card column gap-sm">
+    <text class="tag muted">加载中</text>
+    <text class="text">正在确认支付结果…</text>
+  </view>
+
+  <block wx:else>
+    <view wx:if="{{refunded}}" class="card column gap-md" style="margin-top: 30rpx; align-items: center;">
+      <text class="tag orange">本单已自动退款</text>
+      <text class="section-title" style="text-align: center;">这一批已截单啦</text>
+      <text class="text" style="text-align: center;">款项已原路退回。明晚 22:00 前下单，后天到站取～</text>
+      <view class="btn" style="width: 100%;" bindtap="goHome">回首页看看</view>
+    </view>
+
+    <view wx:else class="card green column gap-md" style="margin-top: 30rpx; align-items: center;">
+      <text class="tag">已支付成功</text>
+      <text class="section-title" style="text-align: center;">{{successTitle}}</text>
+      <text class="text">{{station.name || ''}} · {{progressText}}</text>
+      <view class="progress" style="width: 100%;"><view class="progress-inner" style="width: {{percent}}%;"></view></view>
+      <text class="price">{{leftText}}</text>
+    </view>
+
+    <view wx:if="{{!refunded}}" class="card column gap-sm" style="margin-top: 24rpx;">
+      <text class="card-title">把这个团发到微信群</text>
+      <text class="text">{{shareLine}}</text>
+      <button class="btn" open-type="share">分享到微信群</button>
+      <view class="btn secondary" bindtap="subscribe">开启自提通知（确认配送后提醒）</view>
+    </view>
+
+    <view class="row gap-sm" style="margin-top: 24rpx;">
+      <view class="btn secondary" style="flex: 1;" bindtap="goOrder">查看订单</view>
+      <view class="btn secondary" style="flex: 1;" bindtap="goHome">继续购买</view>
+    </view>
+  </block>
+</view>

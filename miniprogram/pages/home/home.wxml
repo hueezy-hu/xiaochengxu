@@ -1,0 +1,21 @@
+<view class="home-screen with-tab">
+  <view class="home-hero">
+    <image class="home-hero-img" src="{{heroImage}}" mode="aspectFill"></image>
+    <view class="home-hero-mask"></view>
+    <view class="home-brand"><text class="home-brand-title">泰斓 TAILAN</text><text class="home-brand-sub">THAI PANDAN DESSERTS</text></view>
+    <view class="home-hero-copy"><text class="home-hero-title">一口斑斓，一点泰式日常</text><text class="home-hero-sub">家庭烘焙 · 新鲜现做 · 次日到站自提</text></view>
+  </view>
+  <view class="card column gap-md home-batch-card">
+    <text class="section-title">从热带叶香，到你下班经过的地铁站</text>
+    <text class="text">我们用斑斓、椰香与糯米做小批量甜品。每天由商家确认可售数量并手动开售，今晚下单，明天按页面时间到站取。</text>
+    <view class="btn" bindtap="goCatalog">去点单</view>
+  </view>
+  <view wx:if="{{showWelcome}}" class="welcome-mask">
+    <view class="welcome-sheet">
+      <text class="welcome-title">泰斓 TAILAN</text><text class="welcome-copy">先认识一下，结算时还需要填写手机号。</text>
+      <button class="avatar-button welcome-avatar" open-type="chooseAvatar" bindchooseavatar="onWelcomeAvatar"><image wx:if="{{welcomeAvatarFileId}}" class="avatar-large" src="{{welcomeAvatarFileId}}" mode="aspectFill"></image><view wx:else class="avatar-large avatar-placeholder">我</view></button>
+      <input class="profile-input" type="nickname" placeholder="填写微信昵称" value="{{welcomeNickname}}" bindinput="onWelcomeNickname" />
+      <view class="btn" bindtap="submitWelcome">保存昵称</view><view class="btn secondary" bindtap="skipWelcome">先逛逛</view>
+    </view>
+  </view>
+</view>

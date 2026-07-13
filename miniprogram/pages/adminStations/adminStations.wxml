@@ -1,0 +1,37 @@
+<view class="admin-screen" wx:if="{{allowed}}">
+  <view class="admin-topbar"><view class="row gap-sm"><view class="admin-back" bindtap="goBack"></view><view><text class="admin-title">站点池管理</text><text class="admin-sub">开团时从这里选站</text></view></view><view class="admin-btn ghost" style="padding: 8rpx 24rpx;" bindtap="newStation">＋新增</view></view>
+
+  <view class="admin-card column gap-sm">
+    <text class="admin-card-title">全部站点（{{stations.length}}）</text>
+    <view wx:for="{{stations}}" wx:key="_id" class="between" style="padding: 12rpx 0;" bindtap="pickStation" data-id="{{item._id}}">
+      <view class="column gap-xs">
+        <text class="admin-text">{{item.name}}</text>
+        <text class="admin-muted">{{item.line}} · {{item.exit}} · {{item.pickupNote}}</text>
+      </view>
+      <text class="admin-chip {{item.status === 'active' ? '' : 'orange'}}">{{item.status === 'active' ? '启用' : '停用'}}</text>
+    </view>
+    <view wx:if="{{stations.length === 0}}" class="admin-muted">还没有站点，点右上角新增</view>
+  </view>
+
+  <view wx:if="{{editing}}" class="admin-card column gap-sm" style="margin-top: 24rpx;">
+    <text class="admin-card-title">{{form._id ? '编辑站点' : '新增站点'}}</text>
+    <text class="admin-label">站名</text>
+    <input class="admin-input" value="{{form.name}}" data-key="name" bindinput="onInput" placeholder="如：布吉站" />
+    <text class="admin-label">地铁线路</text>
+    <input class="admin-input" value="{{form.line}}" data-key="line" bindinput="onInput" placeholder="如：1/7/9/11号线" />
+    <text class="admin-label">出口</text>
+    <input class="admin-input" value="{{form.exit}}" data-key="exit" bindinput="onInput" placeholder="如：B口" />
+    <text class="admin-label">取货点默认说明</text>
+    <input class="admin-input" value="{{form.pickupNote}}" data-key="pickupNote" bindinput="onInput" placeholder="如：出站左手边花坛旁" />
+    <text class="admin-label">默认地点图片（最多3张）</text><view class="row gap-sm"><image wx:for="{{form.locationImages}}" wx:key="*this" src="{{item}}" mode="aspectFill" style="width:120rpx;height:120rpx" bindtap="removeImage" data-index="{{index}}"/><view class="admin-btn ghost" bindtap="addImage">＋图片</view></view>
+    <view class="between" style="margin-top: 8rpx;">
+      <text class="admin-text">站点状态：{{form.status === 'active' ? '启用' : '停用'}}</text>
+      <view class="admin-btn ghost" style="padding: 8rpx 24rpx;" bindtap="toggleStatus">切换</view>
+    </view>
+    <view class="row gap-sm" style="margin-top: 12rpx;">
+      <view class="admin-btn" style="flex: 1;" bindtap="save">保存</view>
+      <view class="admin-btn ghost" style="flex: 1;" bindtap="cancelEdit">取消</view>
+    </view>
+    <text class="admin-muted">停用后创建批次时不可选；已有订单的站点不可删除，只能停用。</text>
+  </view>
+</view>

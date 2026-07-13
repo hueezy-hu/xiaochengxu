@@ -1,0 +1,59 @@
+{
+  "pages": [
+    "pages/home/home",
+    "pages/orders/orders",
+    "pages/mine/mine",
+    "pages/catalog/catalog",
+    "pages/product/product",
+    "pages/pickStation/pickStation",
+    "pages/paySuccess/paySuccess",
+    "pages/groupPage/groupPage",
+    "pages/orderDetail/orderDetail",
+    "pages/adminHome/adminHome",
+    "pages/adminProducts/adminProducts",
+    "pages/adminBatch/adminBatch",
+    "pages/adminVerify/adminVerify",
+    "pages/adminStations/adminStations"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#3E8E5E",
+    "navigationBarTitleText": "泰斓 TAILAN",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#FAF7EE"
+  },
+  "tabBar": {
+    "color": "#A8A393",
+    "selectedColor": "#3E8E5E",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/home/home",
+        "text": "首页",
+        "iconPath": "assets/tab-home.png",
+        "selectedIconPath": "assets/tab-home-active.png"
+      },
+      {
+        "pagePath": "pages/catalog/catalog",
+        "text": "点单",
+        "iconPath": "assets/tab-catalog.png",
+        "selectedIconPath": "assets/tab-catalog-active.png"
+      },
+      {
+        "pagePath": "pages/orders/orders",
+        "text": "我的订单",
+        "iconPath": "assets/tab-orders.png",
+        "selectedIconPath": "assets/tab-orders-active.png"
+      },
+      {
+        "pagePath": "pages/mine/mine",
+        "text": "我的",
+        "iconPath": "assets/tab-mine.png",
+        "selectedIconPath": "assets/tab-mine-active.png"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

@@ -1,0 +1,25 @@
+<view wx:if="{{visible}}" class="rs-mask" bindtap="close">
+  <view class="rs-sheet" catchtap="noop">
+    <view class="rs-handle"></view>
+    <text class="rs-title">拼团与自提规则</text>
+
+    <view class="rs-group">
+      <text class="rs-tag">拼团</text>
+      <text class="rs-line">今天下单，明天按站点窗口自提</text>
+      <text class="rs-line">每站累计5件达到配送门槛，按已付款件数计</text>
+      <text class="rs-line">达到门槛后仍可下单；取货日12:00最终确认配送</text>
+    </view>
+    <view class="rs-group">
+      <text class="rs-tag">退款</text>
+      <text class="rs-line">完成核销或固定地点放置前支持整单退款</text>
+      <text class="rs-line">不支持顺延；退款后可以重新发起下单</text>
+    </view>
+    <view class="rs-group">
+      <text class="rs-tag">自提</text>
+      <text class="rs-line">凭 6 位核销码到站取货，码只能用一次</text>
+      <text class="rs-line">可把取货券截图发给他人代取</text>
+    </view>
+
+    <view class="rs-btn" bindtap="close">明白了</view>
+  </view>
+</view>

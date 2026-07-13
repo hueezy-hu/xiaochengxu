@@ -1,0 +1,6 @@
+@import "../../styles/common.wxss";
+.product-visual { height: 520rpx; border-radius: 40rpx; overflow: hidden; background: #EDF7EC; }
+.product-swiper, .product-image { width: 100%; height: 100%; }
+.product-placeholder { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26rpx; color: #2C6B47; font-size: 28rpx; font-weight: 900; }
+.sku-row { min-height: 132rpx; border-radius: 28rpx; background: #FAF7EE; border: 3rpx solid transparent; padding: 22rpx; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; gap: 18rpx; }
+.sku-row.active { border-color: #3E8E5E; background: #EDF7EC; }

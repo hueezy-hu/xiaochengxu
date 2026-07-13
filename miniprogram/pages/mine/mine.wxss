@@ -1,0 +1,3 @@
+@import "../../styles/common.wxss";
+.mine-screen { padding-bottom: 190rpx; }
+.merchant-channel { position: fixed; left: 0; right: 0; bottom: 128rpx; z-index: 20; height: 52rpx; display: flex; align-items: center; justify-content: center; color: #8B9386; font-size: 22rpx; background: rgba(250,247,238,.92); }

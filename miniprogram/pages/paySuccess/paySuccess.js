@@ -1,0 +1,116 @@
+const app = getApp()
+
+function buildProgress(batchStation) {
+  if (!batchStation) return { paid: 0, threshold: 0, leftCount: 0, percent: 0 }
+  const paid = Number(batchStation.paidItemCount || 0)
+  const threshold = Number(batchStation.thresholdN || 0)
+  const leftCount = Math.max(0, threshold - paid)
+  const percent = threshold > 0 ? Math.min(100, Math.round((paid / threshold) * 100)) : 0
+  return { paid, threshold, leftCount, percent }
+}
+
+function buildShareLine(isLeader, stationName, leftCount) {
+  const progressPart = leftCount > 0 ? '还差 ' + leftCount + ' 件达到配送门槛' : '已达到5件，取货日12:00确认配送'
+  if (isLeader) {
+    return '我在 ' + stationName + ' 下单了泰斓斑斓甜品，' + progressPart + '。今晚下单，明天到站取～'
+  }
+  return '我在 ' + stationName + ' 下单了泰斓斑斓甜品，' + progressPart + '。今晚下单，明天到站取～'
+}
+
+Page({
+  data: {
+    loading: true,
+    order: null,
+    refunded: false,
+    station: {},
+    batchStation: null,
+    isLeader: false,
+    successTitle: '支付成功！',
+    progressText: '',
+    leftText: '',
+    leftCount: 0,
+    percent: 0,
+    shareLine: '',
+    pickupTemplateId: ''
+  },
+
+  onLoad(options) {
+    this.options = options || {}
+    this.load()
+  },
+
+  async load() {
+    const [detail, group, config] = await Promise.all([
+      this.options.orderId ? app.call('getOrderDetail', { orderId: this.options.orderId }) : Promise.resolve({ ok: false }),
+      this.options.batchStationId ? app.call('getGroupPage', { batchStationId: this.options.batchStationId }) : Promise.resolve({ ok: false }),
+      app.call('getPickupNoticeConfig')
+    ])
+    const batchStation = group.ok ? group.batchStation : null
+    const station = group.ok ? (group.station || {}) : {}
+    const isLeader = Boolean(group.ok && group.isLeader)
+    const progress = buildProgress(batchStation)
+    const stationName = station.name || '站点'
+    this.setData({
+      loading: false,
+      order: detail.ok ? detail.order : null,
+      refunded: Boolean(detail.ok && detail.order && ['支付后退款中', '已退款'].includes(detail.order.status)),
+      station: station,
+      batchStation: batchStation,
+      isLeader: isLeader,
+      successTitle: isLeader ? '团开起来了，你是发起人！' : '支付成功！',
+      progressText: app.progressText(batchStation),
+      leftText: progress.leftCount > 0 ? '还差 ' + progress.leftCount + ' 件达到配送门槛' : '已达到5件，等待取货日12:00最终确认',
+      leftCount: progress.leftCount,
+      percent: progress.percent,
+      shareLine: buildShareLine(isLeader, stationName, progress.leftCount),
+      pickupTemplateId: config.ok ? (config.pickupTemplateId || '') : ''
+    })
+    app.call('myOrders').then((r) => {
+      if (r.ok) app.updateOrderBadge((r.orders || []).filter((o) => ['待支付', '待配送确认', '待自提'].includes(o.status)).length)
+    })
+  },
+
+  copyShareText() {
+    wx.setClipboardData({
+      data: this.data.shareLine,
+      success: () => wx.showToast({ title: '已复制，去群里粘贴吧', icon: 'none' })
+    })
+  },
+
+  subscribe() {
+    if (!this.data.pickupTemplateId) {
+      wx.showToast({ title: '商家暂未配置通知模板', icon: 'none' })
+      return
+    }
+    wx.requestSubscribeMessage({
+      tmplIds: [this.data.pickupTemplateId],
+      success: (res) => {
+        if (res[this.data.pickupTemplateId] === 'accept' && this.options.orderId) {
+          app.call('markPickupSubscribed', { orderId: this.options.orderId })
+        }
+      },
+      complete: () => wx.showToast({ title: '站点确认配送后会提醒你', icon: 'none' })
+    })
+  },
+
+  goOrder() {
+    if (this.data.order) {
+      wx.navigateTo({ url: '/pages/orderDetail/orderDetail?orderId=' + this.data.order._id })
+    } else {
+      wx.switchTab({ url: '/pages/orders/orders' })
+    }
+  },
+
+  goHome() {
+    wx.switchTab({ url: '/pages/home/home' })
+  },
+
+  onShareAppMessage() {
+    return {
+      title: this.data.shareLine || '泰斓 TAILAN · 地铁站拼团自提',
+      imageUrl: '/assets/hero.jpg',
+      path: '/pages/catalog/catalog'
+    }
+  },
+    onShareTimeline() { return { title: '泰斓 TAILAN · 地铁站拼团自提' } }
+})

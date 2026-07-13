@@ -1,0 +1,9 @@
+.rs-mask { position: fixed; inset: 0; background: rgba(22, 29, 24, .55); z-index: 999; display: flex; align-items: flex-end; }
+.rs-sheet { width: 100%; background: #FAF7EE; border-radius: 40rpx 40rpx 0 0; padding: 20rpx 40rpx calc(40rpx + env(safe-area-inset-bottom)); box-sizing: border-box; animation: rs-up .25s ease; }
+@keyframes rs-up { from { transform: translateY(40%); opacity: .6; } to { transform: translateY(0); opacity: 1; } }
+.rs-handle { width: 72rpx; height: 8rpx; border-radius: 999rpx; background: #D8D0BC; margin: 0 auto 24rpx; }
+.rs-title { display: block; font-size: 34rpx; font-weight: 700; color: #243329; text-align: center; margin-bottom: 24rpx; }
+.rs-group { margin-bottom: 24rpx; }
+.rs-tag { display: inline-block; font-size: 22rpx; color: #2C6B47; background: #EDF7EC; border-radius: 999rpx; padding: 4rpx 20rpx; margin-bottom: 12rpx; }
+.rs-line { display: block; font-size: 26rpx; color: #57614F; line-height: 1.9; }
+.rs-btn { background: #3E8E5E; color: #fff; border-radius: 999rpx; text-align: center; padding: 22rpx 0; font-size: 30rpx; font-weight: 600; margin-top: 8rpx; }

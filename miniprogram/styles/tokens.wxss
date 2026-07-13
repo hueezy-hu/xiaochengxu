@@ -1,0 +1,25 @@
+page {
+  --c-primary: #3E8E5E;
+  --c-leaf: #7BC96F;
+  --c-leaf-soft: #EDF7EC;
+  --c-cream: #FAF7EE;
+  --c-cream-deep: #FFF3DD;
+  --c-orange: #F08A3C;
+  --c-orange-soft: #FFF0E2;
+  --c-text: #243329;
+  --c-text-soft: #57614F;
+  --c-muted: #8A8574;
+  --c-line: #EAE4D6;
+  --c-card: #FFFFFF;
+  --c-disabled: #F5F1E6;
+  --c-disabled-text: #B9B29F;
+  --c-admin-bg: #F6F3EA;
+  --c-admin-card: #FFFFFF;
+  --c-admin-text: #243329;
+  --r-card: 40rpx;
+  --r-block: 28rpx;
+  --r-btn: 999rpx;
+  --shadow-card: 0 8rpx 28rpx rgba(40, 60, 45, 0.08);
+  --shadow-button: 0 12rpx 32rpx rgba(62, 142, 94, 0.28);
+  --space-page: 40rpx;
+}

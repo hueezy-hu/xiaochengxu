@@ -1,0 +1,22 @@
+<view class="screen with-tab">
+  <view class="topbar"><text class="section-title">我的订单</text><view class="menu-pill">•••</view></view>
+  <view class="status-tabs"><view wx:for="{{tabs}}" wx:key="key" class="status-tab {{active === item.key ? 'active' : ''}}" bindtap="switchTab" data-key="{{item.key}}">{{item.name}}</view></view>
+  <view class="column gap-md" style="margin-top: 24rpx;">
+    <view wx:if="{{loading}}" class="notice">正在读取订单…</view>
+    <block wx:else>
+      <view wx:for="{{shownOrders}}" wx:key="_id" class="card column gap-sm">
+        <view class="between"><view class="row gap-sm"><text class="tag">{{item.status}}</text><text wx:if="{{item.isLeader}}" class="tag">你发起的</text></view><text class="small">核销码 {{item.verifyCode}}</text></view>
+        <view class="list-item" bindtap="goDetail" data-id="{{item._id}}">
+          <view class="thumb"><view class="cake"></view></view>
+          <view class="column gap-xs" style="flex: 1;"><text class="card-title">{{item.firstItem.name}} · {{item.firstItem.spec}}</text><text class="text">{{item.stationName || ''}} · {{item.firstItem.quantity}} 份</text><text class="price">{{item.amountText}}</text><text wx:if="{{item.refundText}}" class="tag orange">{{item.refundText}}</text><text class="small">点击查看取货券</text></view>
+        </view>
+        <view class="row gap-sm">
+          <view wx:if="{{item.canCancelPending}}" class="btn secondary" style="flex: 1;" catchtap="cancelPending" data-id="{{item._id}}">取消待支付</view>
+          <view wx:if="{{item.canRefund}}" class="btn secondary" style="flex: 1;" catchtap="requestRefund" data-id="{{item._id}}">申请整单退款</view>
+        </view>
+      </view>
+
+      <view wx:if="{{shownOrders.length === 0}}" class="notice">这里还没有订单，去首页拼一块斑斓蛋糕吧～</view>
+    </block>
+  </view>
+</view>

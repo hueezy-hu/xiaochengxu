@@ -1,0 +1,31 @@
+<view class="screen catalog-screen">
+  <view class="topbar"><text class="nav-title">点单 · 今天拼明天取</text><view class="menu-pill">•••</view></view>
+
+  <view class="catalog-status">
+    <view class="batch-dot"></view>
+    <text>{{batchText}}</text>
+    <text class="catalog-status-strong">每站累计5件达配送门槛</text>
+  </view>
+
+  <view class="catalog-layout">
+    <scroll-view scroll-y class="catalog-side">
+      <view wx:for="{{categories}}" wx:key="*this" class="catalog-tab {{activeCategory === item ? 'active' : ''}}" bindtap="switchCategory" data-category="{{item}}">{{item}}</view>
+    </scroll-view>
+    <scroll-view scroll-y class="catalog-list">
+      <view wx:if="{{loading}}" class="notice">正在读取商品…</view>
+      <view wx:for="{{visibleProducts}}" wx:key="_id" class="catalog-card" bindtap="goProduct" data-productid="{{item._id}}" data-skuid="{{item.firstSkuId}}">
+        <view class="catalog-thumb">
+          <image wx:if="{{item.image}}" class="thumb-image" src="{{item.image}}" mode="aspectFill"></image>
+          <view wx:else class="cake"></view>
+        </view>
+        <view class="column gap-xs" style="flex:1">
+          <text class="card-title">{{item.name}}</text>
+          <text class="small">{{item.description}}</text>
+          <view class="between"><text class="tag {{item.remain <= 3 ? 'orange' : ''}}">剩 {{item.remain}} 份</text><text class="price">{{item.priceText}}</text></view>
+          <view class="btn {{item.soldOut ? 'disabled' : ''}}" data-productid="{{item._id}}" data-skuid="{{item.firstSkuId}}" catchtap="goProduct">{{item.soldOut ? '已售罄' : '去拼团'}}</view>
+        </view>
+      </view>
+      <view wx:if="{{!loading && visibleProducts.length === 0}}" class="notice">这个分类暂时没有商品。</view>
+    </scroll-view>
+  </view>
+</view>

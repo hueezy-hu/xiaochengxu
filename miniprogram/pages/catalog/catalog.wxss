@@ -1,0 +1,13 @@
+@import "../../styles/common.wxss";
+.catalog-screen { padding-bottom: 24rpx; }
+.catalog-status { height: 76rpx; border-radius: 999rpx; background: #EDF7EC; color: #2C6B47; display: flex; align-items: center; gap: 14rpx; padding: 0 24rpx; font-size: 24rpx; font-weight: 800; margin-bottom: 22rpx; }
+.catalog-status-strong { margin-left: auto; color: #E8722A; }
+.catalog-layout { height: calc(100vh - 150rpx); display: grid; grid-template-columns: 164rpx 1fr; gap: 18rpx; }
+.catalog-side { height: 100%; background: #FAF7EE; }
+.catalog-tab { min-height: 92rpx; padding: 20rpx 14rpx; box-sizing: border-box; border-radius: 24rpx; color: #57614F; font-size: 25rpx; font-weight: 800; display: flex; align-items: center; }
+.catalog-tab.active { background: #3E8E5E; color: #fff; }
+.catalog-list { height: 100%; }
+.catalog-card { background: #fff; border-radius: 28rpx; padding: 18rpx; box-shadow: var(--shadow-card); margin-bottom: 20rpx; display: flex; gap: 18rpx; }
+.catalog-thumb { width: 150rpx; height: 150rpx; border-radius: 24rpx; background: #EDF7EC; display: flex; align-items: center; justify-content: center; flex: none; overflow: hidden; }
+.catalog-card .btn { height: 72rpx; font-size: 27rpx; margin-top: 8rpx; }
+.catalog-card .price { font-size: 34rpx; }

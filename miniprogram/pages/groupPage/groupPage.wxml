@@ -1,0 +1,61 @@
+<view class="screen">
+  <view wx:if="{{loading}}" class="card column gap-sm">
+    <text class="tag muted">加载中</text>
+    <text class="text">正在读取拼团进度…</text>
+  </view>
+
+  <block wx:else>
+    <view class="card green column gap-md">
+      <view class="between">
+        <view class="column gap-xs">
+          <text wx:if="{{isLeader}}" class="tag">★ 你发起的团</text>
+          <text class="section-title">{{station.name}} 的团</text>
+          <text class="text">{{station.line}} · {{station.exit}}</text>
+        </view>
+        <view class="cake"></view>
+      </view>
+
+      <view class="between">
+        <text class="card-title">{{progressText}}</text>
+        <view wx:if="{{memberCount > 0}}" class="avatar-wrap">
+          <view class="avatar-stack">
+            <view wx:for="{{memberInitials}}" wx:key="*this" class="avatar-initial">{{item}}</view>
+          </view>
+          <text class="small">{{memberCount}} 人已参团</text>
+        </view>
+      </view>
+
+      <view class="progress"><view class="progress-inner" style="width: {{percent}}%;"></view></view>
+      <text class="price">{{leftText}}</text>
+    </view>
+
+    <view class="card column gap-sm trust-list" style="margin-top: 24rpx;">
+      <view class="trust-item"><text class="trust-check">✓</text><text class="text">完成交付前支持整单退款，不支持顺延</text></view>
+      <view class="trust-item"><text class="trust-check">✓</text><text class="text">各买各付，不用帮别人垫钱</text></view>
+      <view class="trust-item"><text class="trust-check">✓</text><text class="text">凭 6 位码到站自提，取货券可截图代取</text></view>
+    </view>
+
+    <view class="between" style="margin: 28rpx 0 16rpx;">
+      <text class="card-title">这个团在拼什么</text>
+      <text class="small">共享库存 · 卖完即止</text>
+    </view>
+
+    <view class="column gap-md">
+      <view wx:for="{{skus}}" wx:key="_id" class="card list-item">
+        <view class="thumb"><view class="cake"></view></view>
+        <view class="column gap-xs" style="flex: 1;">
+          <text class="card-title">{{item.name}}</text>
+          <text class="small">{{item.stockText}}</text>
+          <text class="price">{{item.priceText}}</text>
+        </view>
+        <view wx:if="{{canBuy && !item.soldOut}}" class="btn" style="width: 160rpx;" bindtap="goBuy" data-productid="{{item.productId}}" data-skuid="{{item._id}}">去参团</view>
+        <view wx:else class="btn secondary" style="width: 160rpx;">{{item.soldOut ? '已售罄' : '暂停中'}}</view>
+      </view>
+    </view>
+
+    <view class="row gap-sm" style="margin: 28rpx 0;">
+      <button class="btn" style="flex: 1;" open-type="share">再喊几个人</button>
+      <view class="btn secondary" style="flex: 1;" bindtap="goHome">我也要买</view>
+    </view>
+  </block>
+</view>

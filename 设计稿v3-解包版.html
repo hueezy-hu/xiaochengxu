@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+html,body{margin:0;padding:0;background:#E8E3D6;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Noto Sans SC",sans-serif;-webkit-font-smoothing:antialiased;}
+a{-webkit-tap-highlight-color:transparent;}
+input{font-family:inherit;outline:none;}
+::placeholder{color:#B9B29F;}
+@keyframes pop{0%{transform:scale(.5);opacity:0}60%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+@keyframes rise{0%{transform:translateY(10px);opacity:0}100%{transform:translateY(0);opacity:1}}
+</style>
+
+</helmet>
+
+<section style="padding:56px 64px 140px;display:flex;flex-direction:column;gap:44px;align-items:flex-start;">
+
+  <!-- ============ 头部 + 导航目录 ============ -->
+  <div style="display:flex;flex-direction:column;gap:18px;max-width:1280px;">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <img src="8b1faa82-50c7-418f-8464-e4f5f389ecc9" style="width:48px;height:48px;border-radius:14px;object-fit:cover;border:1px solid #E2DBC9;">
+      <div>
+        <div style="font-size:26px;font-weight:800;color:#243329;">泰斓 TAILAN · 斑斓蛋糕拼团自提 高保真原型</div>
+        <div style="font-size:14px;color:#7A7565;margin-top:2px;">家庭烘焙 · 无门店 · 选站即参团 · 满份成团 · 凭码自提 · 今天拼·明天取 · 取货日上午10点前可退　—　12 屏 / 390×844 / 可点击跳转</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;">
+      <a href="#p0" style="text-decoration:none;font-size:13px;font-weight:700;color:#FFFFFF;background:#243329;padding:8px 14px;border-radius:999px;">🅣 设计规范 Tokens</a>
+      <a href="#home" style="text-decoration:none;font-size:13px;font-weight:600;color:#2C6B47;background:#FFFFFF;border:1px solid #DDD5C2;padding:8px 14px;border-radius:999px;">0 首页·主题</a>
+      <a href="#p1" style="text-decoration:none;font-size:13px;font-weight:600;color:#2C6B47;background:#FFFFFF;border:1px solid #DDD5C2;padding:8px 14px;border-radius:999px;">1 商品分类</a>
+      <a href="#p2" style="text-decoration:none;font-size:13px;font-weight:600;color:#2C6B47;background:#FFFFFF;border:1px solid #DDD5C2;padding:8px 14px;border-radius:999px;">2 商品详情</a>
+      <a href="#p3" style="text-decoration:none;font-size:13px;font-weight:600;color:#2C6B47;background:#FFFFFF;border:1px solid #DDD5C2;padding:8px 14px;border-radius:999px;">3 选自提站点</a>
+      <a href="#p4" style="text-decoration:none;font-size:13px;font-weight:600;color:#2C6B47;background:#FFFFFF;border:1px solid #DDD5C2;padding:8px 14px;border-radius:999px;">4 支付成功·强分享</a>
+      <a href="#p5" style="text-decoration:none;font-size:13px;font-weight:600;color:#2C6B47;background:#FFFFFF;border:1px solid #DDD5C2;padding:8px 14px;border-radius:999px;">5 站点团页(分享落地)</a>
+      <a href="#p6" style="text-decoration:none;font-size:13px;font-weight:600;color:#2C6B47;background:#FFFFFF;border:1px solid #DDD5C2;padding:8px 14px;border-radius:999px;">6 我的订单</a>
+      <a href="#p7" style="text-decoration:none;font-size:13px;font-weight:600;color:#2C6B47;background:#FFFFFF;border:1px solid #DDD5C2;padding:8px 14px;border-radius:999px;">7 订单详情·取货券</a>
+      <a href="#p8" style="text-decoration:none;font-size:13px;font-weight:600;color:#2C6B47;background:#FFFFFF;border:1px solid #DDD5C2;padding:8px 14px;border-radius:999px;">8 我的</a>
+      <a href="#p9" style="text-decoration:none;font-size:13px;font-weight:700;color:#D8E8CF;background:#1C2620;padding:8px 14px;border-radius:999px;">9 商家工作台</a>
+      <a href="#p10" style="text-decoration:none;font-size:13px;font-weight:700;color:#D8E8CF;background:#1C2620;padding:8px 14px;border-radius:999px;">10 商品管理</a>
+      <a href="#p11" style="text-decoration:none;font-size:13px;font-weight:700;color:#D8E8CF;background:#1C2620;padding:8px 14px;border-radius:999px;">11 创建批次</a>
+      <a href="#p12" style="text-decoration:none;font-size:13px;font-weight:700;color:#D8E8CF;background:#1C2620;padding:8px 14px;border-radius:999px;">12 现场核销</a>
+    </div>
+  </div>
+
+  <!-- ============ TOKENS 设计规范 ============ -->
+  <div id="p0" style="background:#FFFFFF;border-radius:28px;padding:36px 40px;max-width:1280px;box-shadow:0 10px 30px rgba(40,60,45,.08);display:flex;flex-direction:column;gap:28px;">
+    <div style="display:flex;align-items:baseline;gap:12px;">
+      <div style="font-size:20px;font-weight:800;color:#243329;">Design Tokens 设计规范</div>
+      <div style="font-size:13px;color:#8A8574;">后续 12 屏严格复用 · C端明亮 / 商家端深色</div>
+    </div>
+    <div style="display:flex;gap:40px;flex-wrap:wrap;">
+      <!-- 色板 -->
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:12px;font-weight:700;color:#8A8574;letter-spacing:1px;">色板 COLOR</div>
+        <div style="display:flex;gap:10px;">
+          <div style="width:92px;"><div style="height:56px;border-radius:14px;background:#3E8E5E;"></div><div style="font-size:12px;font-weight:700;color:#243329;margin-top:6px;">主色·斑斓绿</div><div style="font-size:11px;color:#8A8574;">#3E8E5E</div></div>
+          <div style="width:92px;"><div style="height:56px;border-radius:14px;background:#7BC96F;"></div><div style="font-size:12px;font-weight:700;color:#243329;margin-top:6px;">亮绿·香兰叶</div><div style="font-size:11px;color:#8A8574;">#7BC96F</div></div>
+          <div style="width:92px;"><div style="height:56px;border-radius:14px;background:#EDF7EC;border:1px solid #E0EBDD;"></div><div style="font-size:12px;font-weight:700;color:#243329;margin-top:6px;">浅绿底</div><div style="font-size:11px;color:#8A8574;">#EDF7EC</div></div>
+          <div style="width:92px;"><div style="height:56px;border-radius:14px;background:#FAF7EE;border:1px solid #EAE4D6;"></div><div style="font-size:12px;font-weight:700;color:#243329;margin-top:6px;">椰奶米白</div><div style="font-size:11px;color:#8A8574;">#FAF7EE</div></div>
+          <div style="width:92px;"><div style="height:56px;border-radius:14px;background:#FFF3DD;"></div><div style="font-size:12px;font-weight:700;color:#243329;margin-top:6px;">奶油色</div><div style="font-size:11px;color:#8A8574;">#FFF3DD</div></div>
+          <div style="width:92px;"><div style="height:56px;border-radius:14px;background:#F08A3C;"></div><div style="font-size:12px;font-weight:700;color:#243329;margin-top:6px;">暖橙·价格紧迫</div><div style="font-size:11px;color:#8A8574;">#F08A3C</div></div>
+          <div style="width:92px;"><div style="height:56px;border-radius:14px;background:#243329;"></div><div style="font-size:12px;font-weight:700;color:#243329;margin-top:6px;">墨绿文字</div><div style="font-size:11px;color:#8A8574;">#243329</div></div>
+          <div style="width:92px;"><div style="height:56px;border-radius:14px;background:#161D18;"></div><div style="font-size:12px;font-weight:700;color:#243329;margin-top:6px;">商家端底色</div><div style="font-size:11px;color:#8A8574;">#161D18</div></div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:44px;flex-wrap:wrap;align-items:flex-start;">
+      <!-- 字号 -->
+      <div style="display:flex;flex-direction:column;gap:8px;min-width:260px;">
+        <div style="font-size:12px;font-weight:700;color:#8A8574;letter-spacing:1px;">字号层级 TYPE</div>
+        <div style="font-size:28px;font-weight:800;color:#243329;">28 页面大标题</div>
+        <div style="font-size:20px;font-weight:800;color:#243329;">20 卡片标题</div>
+        <div style="font-size:16px;font-weight:600;color:#243329;">16 正文强调</div>
+        <div style="font-size:14px;color:#57614F;">14 正文 #57614F</div>
+        <div style="font-size:12px;color:#8A8574;">12 辅助说明 #8A8574</div>
+        <div style="font-size:22px;font-weight:800;color:#F08A3C;">¥88 <span style="font-size:12px;font-weight:600;">价格 22/800 暖橙</span></div>
+      </div>
+      <!-- 圆角间距 -->
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="font-size:12px;font-weight:700;color:#8A8574;letter-spacing:1px;">圆角 &amp; 间距</div>
+        <div style="display:flex;gap:10px;align-items:flex-end;">
+          <div style="width:64px;height:64px;background:#EDF7EC;border:2px dashed #7BC96F;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#2C6B47;font-weight:700;">卡片 20</div>
+          <div style="width:56px;height:56px;background:#EDF7EC;border:2px dashed #7BC96F;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#2C6B47;font-weight:700;">块 14</div>
+          <div style="width:96px;height:40px;background:#EDF7EC;border:2px dashed #7BC96F;border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#2C6B47;font-weight:700;">按钮/标签 999</div>
+        </div>
+        <div style="font-size:12px;color:#8A8574;">页面左右留白 20 · 卡片内边距 16 · 组间距 12/16/24</div>
+      </div>
+      <!-- 组件样式 -->
+      <div style="display:flex;flex-direction:column;gap:12px;min-width:340px;">
+        <div style="font-size:12px;font-weight:700;color:#8A8574;letter-spacing:1px;">组件 COMPONENTS</div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <div style="height:46px;padding:0 26px;border-radius:999px;background:#3E8E5E;color:#FFFFFF;font-size:16px;font-weight:700;display:flex;align-items:center;box-shadow:0 6px 16px rgba(62,142,94,.28);">主按钮</div>
+          <div style="height:46px;padding:0 26px;border-radius:999px;background:#FFFFFF;color:#2C6B47;font-size:16px;font-weight:700;display:flex;align-items:center;border:1.5px solid #3E8E5E;">次按钮</div>
+          <div style="height:46px;padding:0 26px;border-radius:999px;background:#F5F1E6;color:#B9B29F;font-size:16px;font-weight:700;display:flex;align-items:center;">禁用</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <span style="font-size:12px;font-weight:700;color:#2C6B47;background:#EDF7EC;padding:4px 10px;border-radius:999px;">拼团中</span>
+          <span style="font-size:12px;font-weight:700;color:#FFFFFF;background:#3E8E5E;padding:4px 10px;border-radius:999px;">已成团</span>
+          <span style="font-size:12px;font-weight:700;color:#E8722A;background:#FFF0E2;padding:4px 10px;border-radius:999px;">仅剩12份</span>
+          <span style="font-size:12px;font-weight:700;color:#9A9483;background:#F5F1E6;padding:4px 10px;border-radius:999px;">未开放</span>
+        </div>
+        <div style="width:320px;background:#FAF7EE;border-radius:20px;padding:14px 16px;box-shadow:0 4px 14px rgba(40,60,45,.08);display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="font-weight:700;color:#243329;">进度条 · 已拼 14/20 份</span><span style="color:#E8722A;font-weight:700;">还差 6 份</span></div>
+          <div style="height:10px;border-radius:999px;background:#EAE4D6;overflow:hidden;"><div style="width:70%;height:100%;border-radius:999px;background:#7BC96F;"></div></div>
+          <div style="font-size:11px;color:#8A8574;">卡片：白/米白底 · 圆角20 · 投影 0 4 14 rgba(40,60,45,.08)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ C 端 ============ -->
+  <div style="font-size:18px;font-weight:800;color:#243329;display:flex;align-items:center;gap:10px;">C 端 · 明亮主题<span style="font-size:12px;font-weight:600;color:#8A8574;">主动线：0 首页·主题 → 1 商品分类 → 2 详情 → 3 选站 → 4 支付成功 → 分享落地 5 团页</span></div>
+  <div style="display:flex;gap:44px;flex-wrap:wrap;align-items:flex-start;">
+
+    <!-- ======== 首页·主题（品牌页） ======== -->
+    <div id="home" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:8px;"><span style="min-width:26px;height:26px;border-radius:8px;background:#243329;color:#F3EFE2;font-size:13px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;">0</span><span style="font-size:15px;font-weight:700;color:#243329;">首页·主题（品牌落地页）</span></div>
+      <div style="width:390px;height:844px;background:#FAF7EE;border-radius:48px;border:10px solid #171B18;box-shadow:0 24px 48px rgba(23,40,28,.18);overflow:hidden;display:flex;flex-direction:column;position:relative;">
+        <div style="position:absolute;top:0;left:0;right:0;height:44px;z-index:5;display:flex;align-items:center;justify-content:space-between;padding:0 26px 0 30px;">
+          <span style="font-size:15px;font-weight:700;color:#FFFFFF;">9:41</span>
+          <div style="display:flex;align-items:center;gap:6px;"><svg width="17" height="11" viewBox="0 0 17 11"><rect x="0" y="6" width="3" height="5" rx="1" fill="#FFFFFF"></rect><rect x="4.5" y="4" width="3" height="7" rx="1" fill="#FFFFFF"></rect><rect x="9" y="2" width="3" height="9" rx="1" fill="#FFFFFF"></rect><rect x="13.5" y="0" width="3" height="11" rx="1" fill="#FFFFFF"></rect></svg><div style="width:24px;height:12px;border:1.5px solid #FFFFFF;border-radius:4px;padding:1.5px;display:flex;"><div style="width:70%;background:#FFFFFF;border-radius:1.5px;"></div></div></div>
+        </div>
+        <div style="flex:1;overflow:auto;display:flex;flex-direction:column;">
+          <!-- HERO 轮播占位 -->
+          <div style="flex:none;position:relative;height:360px;background:#DFF0D2;">
+            <image-slot id="home-hero" style="position:absolute;inset:0;width:100%;height:100%;" shape="rect" placeholder="拖入品牌主图 / banner"></image-slot>
+            <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(23,40,28,.28) 0%,rgba(23,40,28,0) 34%,rgba(23,40,28,0) 60%,rgba(23,40,28,.34) 100%);pointer-events:none;"></div>
+            <div style="position:absolute;left:20px;top:56px;display:flex;align-items:center;gap:8px;">
+              <img src="8b1faa82-50c7-418f-8464-e4f5f389ecc9" style="width:34px;height:34px;border-radius:9px;object-fit:cover;">
+              <div style="line-height:1.1;"><div style="font-size:15px;font-weight:800;color:#FFFFFF;letter-spacing:1px;">泰斓 TAILAN</div><div style="font-size:10px;color:rgba(255,255,255,.85);letter-spacing:2px;">THAI PANDAN DESSERTS</div></div>
+            </div>
+            <div style="position:absolute;left:20px;bottom:24px;">
+              <div style="font-size:22px;font-weight:800;color:#FFFFFF;line-height:1.25;text-shadow:0 2px 8px rgba(23,40,28,.3);">以叶为色，<br>出炉直达地铁站</div>
+            </div>
+            <div style="position:absolute;right:18px;bottom:20px;display:flex;gap:5px;">
+              <span style="width:16px;height:5px;border-radius:999px;background:#FFFFFF;"></span>
+              <span style="width:5px;height:5px;border-radius:999px;background:rgba(255,255,255,.55);"></span>
+              <span style="width:5px;height:5px;border-radius:999px;background:rgba(255,255,255,.55);"></span>
+              <span style="width:5px;height:5px;border-radius:999px;background:rgba(255,255,255,.55);"></span>
+            </div>
+          </div>
+          <!-- 入口卡（叠在 hero 底部） -->
+          <div style="flex:none;margin:-34px 16px 0;position:relative;z-index:2;background:#FFFFFF;border-radius:24px;box-shadow:0 12px 30px rgba(40,60,45,.14);padding:6px 4px;">
+            <a href="#p1" style="text-decoration:none;display:flex;align-items:center;justify-content:space-between;padding:18px 22px;">
+              <div style="display:flex;align-items:center;gap:14px;">
+                <div style="width:44px;height:44px;border-radius:14px;background:#EDF7EC;display:flex;align-items:center;justify-content:center;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 8 H19 L18 20 H6 Z" stroke="#3E8E5E" stroke-width="2" stroke-linejoin="round"></path><path d="M8.5 8 V6.5 A3.5 3.5 0 0 1 15.5 6.5 V8" stroke="#3E8E5E" stroke-width="2"></path></svg></div>
+                <div><div style="font-size:18px;font-weight:800;color:#243329;">自提自取</div><div style="font-size:11px;color:#8A8574;letter-spacing:2px;">PICK UP · 选站参团</div></div>
+              </div>
+              <svg width="18" height="18" viewBox="0 0 16 16"><path d="M6 3 L11 8 L6 13" stroke="#3E8E5E" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </a>
+            <div style="height:1px;background:#F0ECE1;margin:0 22px;"></div>
+            <div style="display:flex;">
+              <a href="#p8" style="text-decoration:none;flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 0;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M21 15 A9 9 0 1 1 12 3 C10 6 10 8 12 9 C14 10 16 8 19 8 C20.5 10 21 12.5 21 15 Z" stroke="#57614F" stroke-width="1.8" stroke-linejoin="round"></path><circle cx="9" cy="13" r="1.3" fill="#57614F"></circle><circle cx="14" cy="15" r="1.3" fill="#57614F"></circle></svg>
+                <span style="font-size:13px;font-weight:700;color:#243329;">联系我们</span>
+              </a>
+              <div style="width:1px;background:#F0ECE1;margin:14px 0;"></div>
+              <a href="#p6" style="text-decoration:none;flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 0;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M6 3 H18 V21 L15 19 L12 21 L9 19 L6 21 Z" stroke="#57614F" stroke-width="1.8" stroke-linejoin="round"></path><path d="M9 8 H15 M9 12 H15" stroke="#57614F" stroke-width="1.8" stroke-linecap="round"></path></svg>
+                <span style="font-size:13px;font-weight:700;color:#243329;">我的订单</span>
+              </a>
+            </div>
+          </div>
+          <!-- 今天拼·明天取（用户视角流程卡） -->
+          <div style="flex:none;margin:16px 16px 0;border-radius:20px;background:#FFFFFF;box-shadow:0 6px 18px rgba(40,60,45,.08);padding:18px 16px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-size:20px;font-weight:800;color:#243329;">今天拼 · 明天取</span>
+              <span style="font-size:11px;font-weight:700;color:#2C6B47;background:#EDF7EC;padding:3px 9px;border-radius:999px;display:flex;align-items:center;gap:5px;"><span style="width:6px;height:6px;border-radius:50%;background:#3E8E5E;"></span>接单中</span>
+            </div>
+            <div style="font-size:12px;color:#8A8574;margin-top:5px;">7月8日自提批 · <span style="color:#E8722A;font-weight:800;">今晚 22:00 截止下单</span></div>
+            <div style="position:relative;margin-top:18px;">
+              <div style="position:absolute;left:25%;right:25%;top:6px;height:2px;background:#EAE4D6;"></div>
+              <div style="display:flex;">
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;">
+                  <span style="width:14px;height:14px;border-radius:50%;background:#3E8E5E;box-shadow:0 0 0 4px rgba(62,142,94,.18);"></span>
+                  <span style="font-size:12px;font-weight:800;color:#243329;">今晚下单</span>
+                  <span style="font-size:10px;color:#8A8574;">22:00 前拼进来</span>
+                </div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;">
+                  <span style="width:14px;height:14px;border-radius:50%;background:#FFFFFF;border:2px solid #D8D0BC;"></span>
+                  <span style="font-size:12px;font-weight:800;color:#57614F;">明天到站取</span>
+                  <span style="font-size:10px;color:#8A8574;" data-comment-anchor="568b8e9b53-span">傍晚窗口 · 看你选的站</span>
+                </div>
+              </div>
+            </div>
+            <a href="#p1" style="text-decoration:none;margin-top:18px;height:44px;border-radius:999px;background:#3E8E5E;color:#FFFFFF;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px rgba(62,142,94,.28);">去拼这一批</a>
+          </div>
+          <div style="flex:none;margin:10px 16px 24px;border-radius:20px;background:#FAF7EE;border:1px solid #F0ECE1;padding:2px 16px;">
+            <div style="display:flex;align-items:center;gap:10px;padding:13px 0;border-bottom:1px solid #F0ECE1;">
+              <span style="width:22px;height:22px;flex:none;border-radius:50%;background:#EDF7EC;display:flex;align-items:center;justify-content:center;"><svg width="12" height="12" viewBox="0 0 24 24"><path d="M4 12.5 L9.5 18 L20 6.5" stroke="#3E8E5E" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+              <div style="flex:1;"><span style="font-size:13px;font-weight:800;color:#243329;">满 4 份即成团</span><span style="font-size:12px;color:#8A8574;"> · 门槛低，很快就满</span></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:13px 0;border-bottom:1px solid #F0ECE1;">
+              <span style="width:22px;height:22px;flex:none;border-radius:50%;background:#EDF7EC;display:flex;align-items:center;justify-content:center;"><svg width="12" height="12" viewBox="0 0 24 24"><path d="M4 12.5 L9.5 18 L20 6.5" stroke="#3E8E5E" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+              <div style="flex:1;"><span style="font-size:13px;font-weight:800;color:#243329;">取货日上午 10:00 前可退款</span></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:13px 0;">
+              <span style="width:22px;height:22px;flex:none;border-radius:50%;background:#FFF0E2;display:flex;align-items:center;justify-content:center;"><svg width="12" height="12" viewBox="0 0 24 24"><path d="M12 5 L12 14" stroke="#E8722A" stroke-width="3" stroke-linecap="round"></path><circle cx="12" cy="19" r="1.7" fill="#E8722A"></circle></svg></span>
+              <div style="flex:1;"><span style="font-size:13px;font-weight:800;color:#243329;">上午 10:00 后不退款</span><span style="font-size:12px;color:#8A8574;"> · 可自行转卖 / 转让他人</span></div>
+            </div>
+          </div>
+        </div>
+        <!-- tabbar -->
+        <div style="flex:none;height:80px;background:#FFFFFF;border-top:1px solid #EFEAE0;display:flex;padding-bottom:16px;">
+          <a href="#home" style="text-decoration:none;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 11 L12 4 L20 11 V20 H14.5 V15 H9.5 V20 H4 Z" stroke="#3E8E5E" stroke-width="2" stroke-linejoin="round" fill="#EDF7EC"></path></svg><span style="font-size:11px;font-weight:700;color:#3E8E5E;">首页</span></a>
+          <a href="#p6" style="text-decoration:none;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M6 3 H18 V21 L15 19 L12 21 L9 19 L6 21 Z" stroke="#A8A393" stroke-width="2" stroke-linejoin="round"></path><path d="M9 8 H15 M9 12 H15" stroke="#A8A393" stroke-width="2" stroke-linecap="round"></path></svg><span style="font-size:11px;font-weight:600;color:#A8A393;">我的订单</span></a>
+          <a href="#p8" style="text-decoration:none;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="#A8A393" stroke-width="2"></circle><path d="M4 20 C4 16 8 14.5 12 14.5 C16 14.5 20 16 20 20" stroke="#A8A393" stroke-width="2" stroke-linecap="round"></path></svg><span style="font-size:11px;font-weight:600;color:#A8A393;">我的</span></a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======== P1 首页 ======== -->
+    <div id="p1" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:8px;"><span style="min-width:26px;height:26px;border-radius:8px;background:#243329;color:#F3EFE2;font-size:13px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;">1</span><span style="font-size:15px;font-weight:700;color:#243329;">商品分类（左侧品类 · 右侧列表）</span></div>
+      <div style="width:390px;height:844px;background:#FFFFFF;border-radius:48px;border:10px solid #171B18;box-shadow:0 24px 48px rgba(23,40,28,.18);overflow:hidden;display:flex;flex-direction:column;">
+        <div style="height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 26px 0 30px;">
+          <span style="font-size:15px;font-weight:700;color:#243329;">9:41</span>
+          <div style="display:flex;align-items:center;gap:6px;"><svg width="17" height="11" viewBox="0 0 17 11"><rect x="0" y="6" width="3" height="5" rx="1" fill="#243329"></rect><rect x="4.5" y="4" width="3" height="7" rx="1" fill="#243329"></rect><rect x="9" y="2" width="3" height="9" rx="1" fill="#243329"></rect><rect x="13.5" y="0" width="3" height="11" rx="1" fill="#243329"></rect></svg><div style="width:24px;height:12px;border:1.5px solid #243329;border-radius:4px;padding:1.5px;display:flex;"><div style="width:70%;background:#243329;border-radius:1.5px;"></div></div></div>
+        </div>
+        <!-- 顶部：返回 + 定位 + 搜索 -->
+        <div style="flex:none;padding:2px 16px 12px;display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <a href="#home" style="text-decoration:none;width:34px;height:34px;border-radius:50%;background:#F5F1E6;display:flex;align-items:center;justify-content:center;"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M10 3 L5 8 L10 13" stroke="#243329" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg></a>
+            <div style="width:34px;height:34px;border-radius:50%;background:#F5F1E6;display:flex;align-items:center;justify-content:center;"><svg width="17" height="17" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="6" stroke="#57614F" stroke-width="2"></circle><path d="M13.5 13.5 L17 17" stroke="#57614F" stroke-width="2" stroke-linecap="round"></path></svg></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 21 C7 15 5 11 5 8.5 A7 7 0 0 1 19 8.5 C19 11 17 15 12 21 Z" stroke="#3E8E5E" stroke-width="2" stroke-linejoin="round"></path><circle cx="12" cy="8.5" r="2.4" stroke="#3E8E5E" stroke-width="2"></circle></svg>
+            <span style="font-size:18px;font-weight:800;color:#243329;">深圳 · 地铁口自提</span>
+            <svg width="14" height="14" viewBox="0 0 16 16" style="margin-top:2px;"><path d="M6 3 L11 8 L6 13" stroke="#243329" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </div>
+          <div style="font-size:12px;color:#8A8574;">每周小批量出炉 · 满份成团 · 凭码自提</div>
+        </div>
+        <!-- 主体：左侧品类 + 右侧列表 -->
+        <div style="flex:1;display:flex;overflow:hidden;">
+          <!-- 左侧品类 -->
+          <div style="width:92px;flex:none;background:#F5F1E6;overflow:auto;padding-top:6px;">
+            <div style="position:relative;padding:18px 6px;text-align:center;font-size:13px;font-weight:800;color:#2C6B47;background:#FFFFFF;line-height:1.35;"><span style="position:absolute;left:0;top:16px;bottom:16px;width:3px;border-radius:999px;background:#3E8E5E;"></span>斑斓<br>经典</div>
+            <div style="padding:18px 6px;text-align:center;font-size:13px;font-weight:600;color:#8A8574;line-height:1.35;">椰子<br>系列</div>
+            <div style="padding:18px 6px;text-align:center;font-size:13px;font-weight:600;color:#8A8574;line-height:1.35;">小方<br>点心</div>
+            <div style="padding:18px 6px;text-align:center;font-size:13px;font-weight:600;color:#8A8574;line-height:1.35;">加购<br>配件</div>
+          </div>
+          <!-- 右侧列表 -->
+          <div style="flex:1;overflow:auto;padding:0 16px;">
+            <!-- 批次条 -->
+            <div style="margin:14px 0 6px;height:40px;border-radius:14px;background:#EDF7EC;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">
+              <span style="font-size:12px;font-weight:700;color:#2C6B47;">7月8日批次 · 共享库存卖完即止</span>
+              <span style="font-size:11px;font-weight:700;color:#FFFFFF;background:#3E8E5E;padding:3px 9px;border-radius:999px;">接单中</span>
+            </div>
+            <div style="font-size:15px;font-weight:800;color:#243329;padding:14px 0 4px;">斑斓经典</div>
+            <!-- 商品行 1 -->
+            <a href="#p2" style="text-decoration:none;display:flex;gap:12px;padding:14px 0;border-bottom:1px solid #F0ECE1;">
+              <image-slot id="cat-c1" style="width:96px;height:96px;flex:none;" shape="rounded" radius="14" placeholder="图"></image-slot>
+              <div style="flex:1;display:flex;flex-direction:column;">
+                <div style="font-size:15px;font-weight:800;color:#243329;line-height:1.3;">斑斓蛋糕 · 6寸</div>
+                <div style="font-size:12px;color:#8A8574;margin-top:4px;">椰浆戚风 · 2-4人分着吃刚好</div>
+                <div style="margin-top:8px;display:flex;align-items:center;gap:8px;">
+                  <div style="flex:1;height:6px;border-radius:999px;background:#EFEAE0;overflow:hidden;"><div style="width:38%;height:100%;border-radius:999px;background:#7BC96F;"></div></div>
+                  <span style="font-size:11px;font-weight:800;color:#2C6B47;flex:none;">还剩 9 份</span>
+                </div>
+                <div style="margin-top:auto;display:flex;align-items:flex-end;justify-content:space-between;">
+                  <div style="font-size:19px;font-weight:800;color:#F08A3C;">¥88<span style="font-size:11px;font-weight:600;margin-left:2px;">起</span></div>
+                  <span style="font-size:13px;font-weight:800;color:#FFFFFF;background:#3E8E5E;padding:7px 16px;border-radius:999px;">去拼团</span>
+                </div>
+              </div>
+            </a>
+            <!-- 商品行 2 -->
+            <a href="#p2" style="text-decoration:none;display:flex;gap:12px;padding:14px 0;border-bottom:1px solid #F0ECE1;">
+              <image-slot id="cat-c2" style="width:96px;height:96px;flex:none;" shape="rounded" radius="14" placeholder="图"></image-slot>
+              <div style="flex:1;display:flex;flex-direction:column;">
+                <div style="font-size:15px;font-weight:800;color:#243329;line-height:1.3;">斑斓蛋糕 · 8寸</div>
+                <div style="font-size:12px;color:#8A8574;margin-top:4px;">聚会装 · 6-8人份，分蛋糕神器</div>
+                <div style="margin-top:8px;display:flex;align-items:center;gap:8px;">
+                  <div style="flex:1;height:6px;border-radius:999px;background:#EFEAE0;overflow:hidden;"><div style="width:25%;height:100%;border-radius:999px;background:#F0A85C;"></div></div>
+                  <span style="font-size:11px;font-weight:800;color:#E8722A;flex:none;">仅剩 3 份</span>
+                </div>
+                <div style="margin-top:auto;display:flex;align-items:flex-end;justify-content:space-between;">
+                  <div style="font-size:19px;font-weight:800;color:#F08A3C;">¥128<span style="font-size:11px;font-weight:600;margin-left:2px;">起</span></div>
+                  <span style="font-size:13px;font-weight:800;color:#FFFFFF;background:#3E8E5E;padding:7px 16px;border-radius:999px;">去拼团</span>
+                </div>
+              </div>
+            </a>
+            <div style="font-size:15px;font-weight:800;color:#243329;padding:18px 0 4px;">椰子系列</div>
+            <!-- 商品行 3 -->
+            <a href="#p2" style="text-decoration:none;display:flex;gap:12px;padding:14px 0 24px;">
+              <image-slot id="cat-co1" style="width:96px;height:96px;flex:none;" shape="rounded" radius="14" placeholder="图"></image-slot>
+              <div style="flex:1;display:flex;flex-direction:column;">
+                <div style="font-size:15px;font-weight:800;color:#243329;line-height:1.3;">斑斓椰子小方 · 4块装</div>
+                <div style="font-size:12px;color:#8A8574;margin-top:4px;">椰丝雪顶 · 一人食下午茶</div>
+                <div style="margin-top:8px;display:flex;align-items:center;gap:8px;">
+                  <div style="flex:1;height:6px;border-radius:999px;background:#EFEAE0;overflow:hidden;"><div style="width:70%;height:100%;border-radius:999px;background:#7BC96F;"></div></div>
+                  <span style="font-size:11px;font-weight:800;color:#2C6B47;flex:none;">还剩 14 份</span>
+                </div>
+                <div style="margin-top:auto;display:flex;align-items:flex-end;justify-content:space-between;">
+                  <div style="font-size:19px;font-weight:800;color:#F08A3C;">¥39<span style="font-size:11px;font-weight:600;margin-left:2px;">起</span></div>
+                  <span style="font-size:13px;font-weight:800;color:#FFFFFF;background:#3E8E5E;padding:7px 16px;border-radius:999px;">去拼团</span>
+                </div>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======== P2 商品详情 ======== -->
+    <div id="p2" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:8px;"><span style="min-width:26px;height:26px;border-radius:8px;background:#243329;color:#F3EFE2;font-size:13px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;">2</span><span style="font-size:15px;font-weight:700;color:#243329;">商品详情（主图轮播 · 单规格）</span></div>
+      <div style="width:390px;height:844px;background:#FAF7EE;border-radius:48px;border:10px solid #171B18;box-shadow:0 24px 48px rgba(23,40,28,.18);overflow:hidden;display:flex;flex-direction:column;">
+        <div style="height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 26px 0 30px;">
+          <span style="font-size:15px;font-weight:700;color:#243329;">9:41</span>
+          <div style="display:flex;align-items:center;gap:6px;"><svg width="17" height="11" viewBox="0 0 17 11"><rect x="0" y="6" width="3" height="5" rx="1" fill="#243329"></rect><rect x="4.5" y="4" width="3" height="7" rx="1" fill="#243329"></rect><rect x="9" y="2" width="3" height="9" rx="1" fill="#243329"></rect><rect x="13.5" y="0" width="3" height="11" rx="1" fill="#243329"></rect></svg><div style="width:24px;height:12px;border:1.5px solid #243329;border-radius:4px;padding:1.5px;display:flex;"><div style="width:70%;background:#243329;border-radius:1.5px;"></div></div></div>
+        </div>
+        <div style="flex:none;height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 16px 0 12px;">
+          <a href="#p1" style="text-decoration:none;width:34px;height:34px;border-radius:50%;background:#FFFFFF;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(40,60,45,.1);"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M10 3 L5 8 L10 13" stroke="#243329" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg></a>
+          <span style="font-size:16px;font-weight:800;color:#243329;">商品详情</span>
+          <div style="width:74px;height:28px;border-radius:999px;border:1px solid #E2DBC9;background:rgba(255,255,255,.8);display:flex;align-items:center;justify-content:center;gap:6px;"><span style="font-size:12px;color:#243329;letter-spacing:1px;">•••</span><span style="width:1px;height:12px;background:#E2DBC9;"></span><span style="width:10px;height:10px;border:1.5px solid #243329;border-radius:50%;"></span></div>
+        </div>
+        <div style="flex:1;overflow:auto;padding:8px 20px 8px;display:flex;flex-direction:column;gap:14px;">
+          <!-- 主图轮播占位 -->
+          <div style="flex:none;height:300px;border-radius:24px;background:#EFEAE0;position:relative;overflow:hidden;">
+            <image-slot id="pdp-main" style="position:absolute;inset:0;width:100%;height:100%;" shape="rect" placeholder="拖入主图 · 当日现烤实拍"></image-slot>
+            <span style="position:absolute;right:12px;bottom:12px;font-size:11px;font-weight:700;color:#FFFFFF;background:rgba(23,40,28,.5);padding:3px 10px;border-radius:999px;">1 / 5</span>
+          </div>
+          <div style="flex:none;display:flex;gap:8px;">
+            <image-slot id="pdp-t1" style="width:56px;height:56px;flex:none;" shape="rounded" radius="12" placeholder=""></image-slot>
+            <image-slot id="pdp-t2" style="width:56px;height:56px;flex:none;" shape="rounded" radius="12" placeholder=""></image-slot>
+            <image-slot id="pdp-t3" style="width:56px;height:56px;flex:none;" shape="rounded" radius="12" placeholder=""></image-slot>
+            <image-slot id="pdp-t4" style="width:56px;height:56px;flex:none;" shape="rounded" radius="12" placeholder=""></image-slot>
+          </div>
+          <div style="flex:none;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+            <div><div style="font-size:22px;font-weight:800;color:#243329;">斑斓蛋糕</div><div style="font-size:13px;color:#57614F;margin-top:4px;line-height:1.6;">现磨香兰叶汁 + 椰浆戚风，草木清香不齁甜，<br>绿色来自叶子本身，不加色素。</div></div>
+            <div style="text-align:right;flex:none;"><div style="font-size:24px;font-weight:800;color:#F08A3C;">¥{{ price }}</div><div style="font-size:11px;color:#8A8574;margin-top:2px;">{{ stockNote }}</div></div>
+          </div>
+          <div style="flex:none;display:flex;gap:8px;">
+            <span style="font-size:12px;font-weight:700;color:#2C6B47;background:#EDF7EC;padding:5px 11px;border-radius:999px;">冷藏保存</span>
+            <span style="font-size:12px;font-weight:700;color:#2C6B47;background:#EDF7EC;padding:5px 11px;border-radius:999px;">当日风味最佳</span>
+            <span style="font-size:12px;font-weight:700;color:#2C6B47;background:#EDF7EC;padding:5px 11px;border-radius:999px;">冷藏可存 2 天</span>
+          </div>
+          <!-- 规格 · 数量（单 SKU） -->
+          <div style="flex:none;background:#FFFFFF;border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:0 4px 14px rgba(40,60,45,.06);">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div style="font-size:14px;font-weight:800;color:#243329;">规格</div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:13px;font-weight:800;color:#2C6B47;background:#EDF7EC;padding:6px 14px;border-radius:999px;">斑斓蛋糕 · 6寸</span>
+                <span style="font-size:12px;color:#8A8574;">2-4人份</span>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div style="font-size:14px;font-weight:800;color:#243329;">数量</div>
+              <div style="display:flex;align-items:center;gap:0;">
+                <div onclick="{{ dec }}" style="{{ minusStyle }}">−</div>
+                <div style="width:52px;text-align:center;font-size:18px;font-weight:800;color:#243329;">{{ qty }}</div>
+                <div onclick="{{ inc }}" style="width:36px;height:36px;border-radius:12px;background:#3E8E5E;color:#FFFFFF;font-size:20px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;">+</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;background:#FFF3DD;border-radius:12px;padding:9px 12px;">
+              <svg width="16" height="16" viewBox="0 0 40 40" style="flex:none;"><path d="M20 4 C33 10 35 27 20 37 C5 27 7 10 20 4 Z" fill="#3E8E5E"></path></svg>
+              <span style="font-size:12px;color:#7A6335;font-weight:600;">不限购～可以帮室友、同学多带几份，一起到站拿</span>
+            </div>
+          </div>
+          <div style="flex:none;font-size:12px;color:#8A8574;line-height:1.8;padding:0 4px 6px;">今天拼 · 明天取：下单加入所选地铁站的团，满 4 份成团，次日到站凭码自提<br>取货日上午 10:00 前可退款；之后不退，可自行转卖 / 转让他人</div>
+        </div>
+        <!-- 吸底栏 -->
+        <div style="flex:none;background:#FFFFFF;border-top:1px solid #EFEAE0;padding:12px 20px 26px;display:flex;align-items:center;gap:14px;">
+          <div><div style="font-size:11px;color:#8A8574;">合计</div><div style="font-size:24px;font-weight:800;color:#F08A3C;">¥{{ total }}</div></div>
+          <a href="#p3" style="text-decoration:none;flex:1;height:50px;border-radius:999px;background:#3E8E5E;color:#FFFFFF;font-size:17px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px rgba(62,142,94,.3);">选自提站点</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======== P3 选自提站点 ======== -->
+    <div id="p3" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:8px;"><span style="min-width:26px;height:26px;border-radius:8px;background:#243329;color:#F3EFE2;font-size:13px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;">3</span><span style="font-size:15px;font-weight:700;color:#243329;">选自提站点（选站 = 参团）</span></div>
+      <div style="width:390px;height:844px;background:#FAF7EE;border-radius:48px;border:10px solid #171B18;box-shadow:0 24px 48px rgba(23,40,28,.18);overflow:hidden;display:flex;flex-direction:column;">
+        <div style="height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 26px 0 30px;">
+          <span style="font-size:15px;font-weight:700;color:#243329;">9:41</span>
+          <div style="display:flex;align-items:center;gap:6px;"><svg width="17" height="11" viewBox="0 0 17 11"><rect x="0" y="6" width="3" height="5" rx="1" fill="#243329"></rect><rect x="4.5" y="4" width="3" height="7" rx="1" fill="#243329"></rect><rect x="9" y="2" width="3" height="9" rx="1" fill="#243329"></rect><rect x="13.5" y="0" width="3" height="11" rx="1" fill="#243329"></rect></svg><div style="width:24px;height:12px;border:1.5px solid #243329;border-radius:4px;padding:1.5px;display:flex;"><div style="width:70%;background:#243329;border-radius:1.5px;"></div></div></div>
+        </div>
+        <div style="flex:none;height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 16px 0 12px;">
+          <a href="#p2" style="text-decoration:none;width:34px;height:34px;border-radius:50%;background:#FFFFFF;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(40,60,45,.1);"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M10 3 L5 8 L10 13" stroke="#243329" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg></a>
+          <span style="font-size:16px;font-weight:800;color:#243329;">选自提站点</span>
+          <div style="width:74px;height:28px;border-radius:999px;border:1px solid #E2DBC9;background:rgba(255,255,255,.8);display:flex;align-items:center;justify-content:center;gap:6px;"><span style="font-size:12px;color:#243329;letter-spacing:1px;">•••</span><span style="width:1px;height:12px;background:#E2DBC9;"></span><span style="width:10px;height:10px;border:1.5px solid #243329;border-radius:50%;"></span></div>
+        </div>
+        <!-- 步骤 -->
+        <div style="flex:none;display:flex;align-items:center;justify-content:center;gap:8px;padding:6px 0 2px;">
+          <span style="font-size:12px;font-weight:700;color:#8A8574;">① 选商品</span><span style="width:22px;height:1.5px;background:#D8D0BC;"></span>
+          <span style="font-size:12px;font-weight:800;color:#FFFFFF;background:#3E8E5E;padding:4px 12px;border-radius:999px;">② 选自提站</span><span style="width:22px;height:1.5px;background:#D8D0BC;"></span>
+          <span style="font-size:12px;font-weight:700;color:#8A8574;">③ 支付</span>
+        </div>
+        <div style="flex:1;overflow:auto;padding:12px 20px 8px;display:flex;flex-direction:column;gap:12px;">
+          <div style="flex:none;display:flex;align-items:center;gap:8px;background:#EDF7EC;border-radius:14px;padding:10px 14px;">
+            <svg width="18" height="18" viewBox="0 0 40 40" style="flex:none;"><path d="M20 4 C33 10 35 27 20 37 C5 27 7 10 20 4 Z" fill="#3E8E5E"></path></svg>
+            <span style="font-size:13px;font-weight:700;color:#2C6B47;">选哪个站，就是加入哪个站的团 · 满门槛就成团</span>
+          </div>
+          <!-- 车公庙 -->
+          <div onclick="{{ pickCgm }}" style="{{ cgmStyle }}">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:18px;font-weight:800;color:#243329;">车公庙站</span>
+                <span style="font-size:11px;font-weight:700;color:#57614F;background:#F5F1E6;padding:3px 9px;border-radius:999px;">1/7/9/11号线 · B口</span>
+              </div>
+              <div style="{{ cgmDot }}"><svg width="12" height="12" viewBox="0 0 14 14"><path d="M2 7.5 L5.5 11 L12 3.5" stroke="#FFFFFF" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;">
+              <span style="font-size:12px;font-weight:700;color:#2C6B47;background:#EDF7EC;padding:4px 10px;border-radius:999px;">拼团中</span>
+              <span style="font-size:12px;font-weight:800;color:#E8722A;">还差 1 份成团</span>
+            </div>
+            <div style="height:10px;border-radius:999px;background:#EAE4D6;overflow:hidden;margin-top:8px;"><div style="width:70%;height:100%;border-radius:999px;background:#7BC96F;"></div></div>
+            <div style="font-size:12px;color:#8A8574;margin-top:6px;">已拼 3/4 份 · 你的每 1 份都算进度</div>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:10px;background:#FAF7EE;border-radius:12px;padding:8px 10px;">
+              <image-slot id="spot-cgm" style="width:44px;height:44px;flex:none;" shape="rounded" radius="10" placeholder=""></image-slot>
+              <div style="flex:1;">
+                <div style="font-size:12px;font-weight:800;color:#243329;">明晚 18:30–19:00 · B口</div>
+                <div style="font-size:11px;color:#8A8574;margin-top:1px;">出站左手边花坛旁 · 看图找点</div>
+              </div>
+            </div>
+          </div>
+          <!-- 深圳北 -->
+          <div onclick="{{ pickSzb }}" style="{{ szbStyle }}">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:18px;font-weight:800;color:#243329;">深圳北站</span>
+                <span style="font-size:11px;font-weight:700;color:#57614F;background:#F5F1E6;padding:3px 9px;border-radius:999px;">4/5/6号线 · A口</span>
+              </div>
+              <div style="{{ szbDot }}"><svg width="12" height="12" viewBox="0 0 14 14"><path d="M2 7.5 L5.5 11 L12 3.5" stroke="#FFFFFF" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;">
+              <span style="font-size:12px;font-weight:700;color:#FFFFFF;background:#3E8E5E;padding:4px 10px;border-radius:999px;">已成团 · 买了就稳</span>
+              <span style="font-size:12px;font-weight:800;color:#2C6B47;">5/4 份</span>
+            </div>
+            <div style="height:10px;border-radius:999px;background:#EAE4D6;overflow:hidden;margin-top:8px;"><div style="width:100%;height:100%;border-radius:999px;background:#3E8E5E;"></div></div>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:10px;background:#FAF7EE;border-radius:12px;padding:8px 10px;">
+              <image-slot id="spot-szb" style="width:44px;height:44px;flex:none;" shape="rounded" radius="10" placeholder=""></image-slot>
+              <div style="flex:1;">
+                <div style="font-size:12px;font-weight:800;color:#243329;">明晚 19:45–20:15 · A口</div>
+                <div style="font-size:11px;color:#8A8574;margin-top:1px;">出站即到 · 花坛旁绿伞小摊</div>
+              </div>
+            </div>
+          </div>
+          <!-- 科技园 · 空团态（可发起） -->
+          <div onclick="{{ pickKjy }}" style="{{ kjyStyle }}">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:18px;font-weight:800;color:#243329;">科技园站</span>
+                <span style="font-size:11px;font-weight:700;color:#57614F;background:#F5F1E6;padding:3px 9px;border-radius:999px;">13号线 · C口</span>
+              </div>
+              <div style="{{ kjyDot }}"><svg width="12" height="12" viewBox="0 0 14 14"><path d="M2 7.5 L5.5 11 L12 3.5" stroke="#FFFFFF" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;">
+              <span style="font-size:12px;font-weight:700;color:#2C6B47;background:#EDF7EC;padding:4px 10px;border-radius:999px;">新团待发起</span>
+              <span style="font-size:12px;font-weight:800;color:#E8722A;">还差 4 份成团</span>
+            </div>
+            <div style="height:10px;border-radius:999px;background:#EAE4D6;overflow:hidden;margin-top:8px;"><div style="width:0%;height:100%;border-radius:999px;background:#7BC96F;"></div></div>
+            <div style="display:flex;align-items:center;gap:6px;margin-top:8px;">
+              <svg width="14" height="14" viewBox="0 0 40 40" style="flex:none;"><path d="M20 4 C33 10 35 27 20 37 C5 27 7 10 20 4 Z" fill="#3E8E5E"></path></svg>
+              <span style="font-size:12px;color:#2C6B47;font-weight:700;">还没有人参团 · 你下单，这个团就开起来了</span>
+            </div>
+            <div style="font-size:11px;color:#8A8574;margin-top:4px;">选这个站 = 当第一个发起人 · 满 4 份就成团，很快就满</div>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:10px;background:#FAF7EE;border-radius:12px;padding:8px 10px;">
+              <image-slot id="spot-kjy" style="width:44px;height:44px;flex:none;" shape="rounded" radius="10" placeholder=""></image-slot>
+              <div style="flex:1;">
+                <div style="font-size:12px;font-weight:800;color:#243329;">明晚 20:30–20:50 · C口</div>
+                <div style="font-size:11px;color:#8A8574;margin-top:1px;">出站直走 10 米便利店门口</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- 吸底支付 -->
+        <div style="flex:none;background:#FFFFFF;border-top:1px solid #EFEAE0;padding:12px 20px 26px;display:flex;align-items:center;gap:14px;">
+          <div style="flex:none;min-width:0;"><div style="font-size:12px;color:#8A8574;white-space:nowrap;">斑斓蛋糕 {{ skuName }} × {{ qty }}</div><div style="font-size:24px;font-weight:800;color:#F08A3C;margin-top:2px;">¥{{ total }}</div></div>
+          <a href="#p4" style="text-decoration:none;flex:1;min-width:0;height:50px;border-radius:999px;background:#3E8E5E;color:#FFFFFF;font-size:16px;font-weight:800;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:7px;box-shadow:0 6px 16px rgba(62,142,94,.3);"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" style="flex:none;"><path d="M8.5 4 C4.9 4 2 6.5 2 9.6 C2 11.4 3 13 4.6 14 L4 16 L6.3 14.9 C7 15.1 7.7 15.2 8.5 15.2 C8.4 14.8 8.3 14.3 8.3 13.9 C8.3 10.9 11.2 8.5 14.7 8.5 C15 8.5 15.3 8.5 15.6 8.6 C14.9 6 12 4 8.5 4 Z M14.8 9.6 C11.8 9.6 9.4 11.6 9.4 14 C9.4 16.4 11.8 18.4 14.8 18.4 C15.4 18.4 16 18.3 16.6 18.1 L18.5 19 L18 17.4 C19.3 16.5 20.2 15.3 20.2 14 C20.2 11.6 17.8 9.6 14.8 9.6 Z" fill="#FFFFFF"></path></svg>{{ payBtnText }}</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======== P4 支付成功强分享 ======== -->
+    <div id="p4" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:8px;"><span style="min-width:26px;height:26px;border-radius:8px;background:#243329;color:#F3EFE2;font-size:13px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;">4</span><span style="font-size:15px;font-weight:700;color:#243329;">支付成功 · 强分享（核心增长页）</span></div>
+      <div style="width:390px;height:844px;background:#3E8E5E;border-radius:48px;border:10px solid #171B18;box-shadow:0 24px 48px rgba(23,40,28,.18);overflow:hidden;display:flex;flex-direction:column;position:relative;">
+        <svg width="200" height="200" viewBox="0 0 40 40" style="position:absolute;right:-60px;top:40px;opacity:.14;"><path d="M20 4 C33 10 35 27 20 37 C5 27 7 10 20 4 Z" fill="#FFFFFF"></path></svg>
+        <div style="height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 26px 0 30px;">
+          <span style="font-size:15px;font-weight:700;color:#FFFFFF;">9:41</span>
+          <div style="display:flex;align-items:center;gap:6px;"><svg width="17" height="11" viewBox="0 0 17 11"><rect x="0" y="6" width="3" height="5" rx="1" fill="#FFFFFF"></rect><rect x="4.5" y="4" width="3" height="7" rx="1" fill="#FFFFFF"></rect><rect x="9" y="2" width="3" height="9" rx="1" fill="#FFFFFF"></rect><rect x="13.5" y="0" width="3" height="11" rx="1" fill="#FFFFFF"></rect></svg><div style="width:24px;height:12px;border:1.5px solid #FFFFFF;border-radius:4px;padding:1.5px;display:flex;"><div style="width:70%;background:#FFFFFF;border-radius:1.5px;"></div></div></div>
+        </div>
+        <div style="flex:none;display:flex;flex-direction:column;align-items:center;padding:22px 0 18px;position:relative;">
+          <div style="width:74px;height:74px;border-radius:50%;background:#FFFFFF;display:flex;align-items:center;justify-content:center;animation:pop .5s ease both;box-shadow:0 8px 24px rgba(0,0,0,.15);">
+            <svg width="38" height="38" viewBox="0 0 24 24"><path d="M4 12.5 L9.5 18 L20 6.5" stroke="#3E8E5E" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </div>
+          <sc-if value="{{ founderShow }}" hint-placeholder-val="{{ false }}">
+            <span style="font-size:11px;font-weight:800;color:#2C6B47;background:#FFFFFF;padding:5px 13px;border-radius:999px;margin-top:12px;">★ 你是这个团的发起人</span>
+          </sc-if>
+          <div style="font-size:22px;font-weight:800;color:#FFFFFF;margin-top:12px;text-align:center;padding:0 24px;">{{ successTitle }}</div>
+          <div style="font-size:14px;color:#D8EED9;margin-top:4px;text-align:center;padding:0 28px;">{{ successSub }}</div>
+        </div>
+        <div style="flex:1;background:#FAF7EE;border-radius:28px 28px 0 0;padding:20px 20px 24px;display:flex;flex-direction:column;gap:14px;overflow:auto;">
+          <!-- 进度 + 召唤 -->
+          <div style="flex:none;background:#FFFFFF;border-radius:20px;padding:16px;box-shadow:0 4px 14px rgba(40,60,45,.06);">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;">
+              <span style="font-size:14px;font-weight:800;color:#243329;">{{ progHead }}</span>
+              <span style="font-size:14px;font-weight:800;color:#E8722A;">{{ progRemain }}</span>
+            </div>
+            <div style="height:12px;border-radius:999px;background:#EAE4D6;overflow:hidden;margin-top:10px;"><div style="{{ progFill }}"></div></div>
+            <div style="font-size:15px;font-weight:800;color:#243329;margin-top:12px;">{{ calloutTitle }}</div>
+            <div style="font-size:12px;color:#8A8574;margin-top:4px;">{{ calloutSub }}</div>
+          </div>
+          <!-- 大分享按钮 -->
+          <a href="#p5" style="text-decoration:none;flex:none;height:58px;border-radius:999px;background:#3E8E5E;color:#FFFFFF;font-size:18px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 8px 20px rgba(62,142,94,.35);">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M8.5 4 C4.9 4 2 6.5 2 9.6 C2 11.4 3 13 4.6 14 L4 16 L6.3 14.9 C7 15.1 7.7 15.2 8.5 15.2 C8.4 14.8 8.3 14.3 8.3 13.9 C8.3 10.9 11.2 8.5 14.7 8.5 C15 8.5 15.3 8.5 15.6 8.6 C14.9 6 12 4 8.5 4 Z M14.8 9.6 C11.8 9.6 9.4 11.6 9.4 14 C9.4 16.4 11.8 18.4 14.8 18.4 C15.4 18.4 16 18.3 16.6 18.1 L18.5 19 L18 17.4 C19.3 16.5 20.2 15.3 20.2 14 C20.2 11.6 17.8 9.6 14.8 9.6 Z" fill="#FFFFFF"></path></svg>
+            {{ shareBtnText }}
+          </a>
+          <div style="flex:none;font-size:11px;color:#8A8574;text-align:center;margin-top:-4px;">群友点开直达 {{ selName }} 团页（原型中示意 → 第 5 屏）</div>
+          <!-- 复制文案 -->
+          <div onclick="{{ copyText }}" style="flex:none;background:#FFFFFF;border:1.5px dashed #BFD9B4;border-radius:16px;padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;">
+            <div style="flex:1;font-size:12px;color:#57614F;line-height:1.7;">{{ shareLine }}</div>
+            <span style="flex:none;font-size:13px;font-weight:800;color:#2C6B47;">复制<br>文案</span>
+          </div>
+          <!-- 订阅通知 -->
+          <div onclick="{{ toggleNotify }}" style="flex:none;background:#FFF3DD;border-radius:16px;padding:13px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex:none;"><path d="M12 3 C8.7 3 6.5 5.4 6.5 8.5 C6.5 12.5 4.5 14 4.5 14 H19.5 C19.5 14 17.5 12.5 17.5 8.5 C17.5 5.4 15.3 3 12 3 Z" stroke="#7A6335" stroke-width="1.8" stroke-linejoin="round"></path><path d="M10 17.5 C10 18.6 10.9 19.5 12 19.5 C13.1 19.5 14 18.6 14 17.5" stroke="#7A6335" stroke-width="1.8" stroke-linecap="round"></path></svg>
+            <div style="flex:1;"><div style="font-size:13px;font-weight:800;color:#5C4A22;">{{ notifyTitle }}</div><div style="font-size:11px;color:#9A824F;margin-top:2px;">成团 / 自提窗口确定时微信提醒你</div></div>
+            <div style="{{ notifyTrack }}"><div style="{{ notifyKnob }}"></div></div>
+          </div>
+          <div style="flex:none;display:flex;justify-content:center;gap:26px;padding-top:4px;">
+            <a href="#p6" style="text-decoration:none;font-size:13px;font-weight:700;color:#2C6B47;">查看订单</a>
+            <span style="width:1px;background:#DDD5C2;"></span>
+            <a href="#home" style="text-decoration:none;font-size:13px;font-weight:600;color:#8A8574;">回首页逛逛</a>
+          </div>
+          <sc-if value="{{ toastShow }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;left:50%;bottom:120px;transform:translateX(-50%);background:rgba(36,51,41,.92);color:#FFFFFF;font-size:13px;font-weight:600;padding:10px 18px;border-radius:999px;animation:rise .25s ease both;">已复制，去群里粘贴吧</div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======== P5 站点团页（分享落地） ======== -->
+    <div id="p5" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:8px;"><span style="min-width:26px;height:26px;border-radius:8px;background:#243329;color:#F3EFE2;font-size:13px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;">5</span><span style="font-size:15px;font-weight:700;color:#243329;">站点团页（微信群分享落地页）</span></div>
+      <div style="width:390px;height:844px;background:#FAF7EE;border-radius:48px;border:10px solid #171B18;box-shadow:0 24px 48px rgba(23,40,28,.18);overflow:hidden;display:flex;flex-direction:column;">
+        <div style="height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 26px 0 30px;">
+          <span style="font-size:15px;font-weight:700;color:#243329;">9:41</span>
+          <div style="display:flex;align-items:center;gap:6px;"><svg width="17" height="11" viewBox="0 0 17 11"><rect x="0" y="6" width="3" height="5" rx="1" fill="#243329"></rect><rect x="4.5" y="4" width="3" height="7" rx="1" fill="#243329"></rect><rect x="9" y="2" width="3" height="9" rx="1" fill="#243329"></rect><rect x="13.5" y="0" width="3" height="11" rx="1" fill="#243329"></rect></svg><div style="width:24px;height:12px;border:1.5px solid #243329;border-radius:4px;padding:1.5px;display:flex;"><div style="width:70%;background:#243329;border-radius:1.5px;"></div></div></div>
+        </div>
+        <div style="flex:none;height:40px;display:flex;align-items:center;justify-content:space-between;padding:0 16px 0 20px;">
+          <div style="display:flex;align-items:center;gap:8px;"><svg width="18" height="18" viewBox="0 0 40 40"><path d="M20 4 C33 10 35 27 20 37 C5 27 7 10 20 4 Z" fill="#3E8E5E"></path></svg><span style="font-size:14px;font-weight:800;color:#243329;">斑斓蛋糕 · 拼团自提</span></div>
+          <div style="width:74px;height:28px;border-radius:999px;border:1px solid #E2DBC9;background:rgba(255,255,255,.8);display:flex;align-items:center;justify-content:center;gap:6px;"><span style="font-size:12px;color:#243329;letter-spacing:1px;">•••</span><span style="width:1px;height:12px;background:#E2DBC9;"></span><span style="width:10px;height:10px;border:1.5px solid #243329;border-radius:50%;"></span></div>
+        </div>
+        <div style="flex:1;overflow:auto;padding:8px 20px;display:flex;flex-direction:column;gap:13px;">
+          <!-- 首屏说服卡 -->
+          <div style="flex:none;background:#FFFFFF;border-radius:24px;padding:18px 16px 16px;box-shadow:0 4px 14px rgba(40,60,45,.06);">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div>
+                <sc-if value="{{ founderShow }}" hint-placeholder-val="{{ false }}">
+                  <span style="display:inline-block;font-size:11px;font-weight:800;color:#2C6B47;background:#EDF7EC;padding:3px 10px;border-radius:999px;margin-bottom:6px;">★ 你发起的团</span>
+                </sc-if>
+                <div style="font-size:20px;font-weight:800;color:#243329;">车公庙站的团</div>
+                <div style="font-size:12px;color:#8A8574;margin-top:3px;">1/7/9/11号线 B口 · 7月8日批次</div>
+                <div style="font-size:12px;font-weight:700;color:#E8722A;margin-top:2px;">7月7日 20:00 截单</div>
+              </div>
+              <!-- 进度环 -->
+              <div style="position:relative;width:110px;height:110px;flex:none;">
+                <svg width="110" height="110" viewBox="0 0 120 120">
+                  <circle cx="60" cy="60" r="50" fill="none" stroke="#EAE4D6" stroke-width="12"></circle>
+                  <circle cx="60" cy="60" r="50" fill="none" stroke="#3E8E5E" stroke-width="12" stroke-linecap="round" stroke-dasharray="220 314" transform="rotate(-90 60 60)"></circle>
+                </svg>
+                <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                  <span style="font-size:20px;font-weight:800;color:#E8722A;">还差1份</span>
+                  <span style="font-size:11px;color:#8A8574;margin-top:1px;">已拼 3/4</span>
+                </div>
+              </div>
+            </div>
+            <!-- 社会证明 -->
+            <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
+              <div style="display:flex;">
+                <div style="width:32px;height:32px;border-radius:50%;background:#F6C87B;border:2px solid #FFFFFF;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#7A5A1E;">米</div>
+                <div style="width:32px;height:32px;border-radius:50%;background:#9BD284;border:2px solid #FFFFFF;margin-left:-9px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#2C6B47;">豆</div>
+                <div style="width:32px;height:32px;border-radius:50%;background:#F0A98A;border:2px solid #FFFFFF;margin-left:-9px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#8A4B27;">阿</div>
+                <div style="width:32px;height:32px;border-radius:50%;background:#B9D6F0;border:2px solid #FFFFFF;margin-left:-9px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#3A628A;">乐</div>
+                <div style="width:32px;height:32px;border-radius:50%;background:#EAE4D6;border:2px solid #FFFFFF;margin-left:-9px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#8A8574;">+9</div>
+              </div>
+              <span style="font-size:12px;color:#57614F;"><strong style="color:#243329;">阿米</strong> 发起 · 13 人已参团</span>
+            </div>
+            <!-- 信任三条 -->
+            <div style="display:flex;flex-direction:column;gap:7px;background:#EDF7EC;border-radius:14px;padding:12px 14px;margin-top:12px;">
+              <div style="display:flex;align-items:center;gap:8px;"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M4 12.5 L9.5 18 L20 6.5" stroke="#3E8E5E" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg><span style="font-size:12.5px;font-weight:700;color:#2C6B47;">取货日上午 10:00 前可退款，之后可转卖不退</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M4 12.5 L9.5 18 L20 6.5" stroke="#3E8E5E" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg><span style="font-size:12.5px;font-weight:700;color:#2C6B47;">各买各付，不用帮别人垫钱</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M4 12.5 L9.5 18 L20 6.5" stroke="#3E8E5E" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg><span style="font-size:12.5px;font-weight:700;color:#2C6B47;">凭 6 位码到站自提，出地铁顺手拿</span></div>
+            </div>
+          </div>
+          <!-- 快捷购买 -->
+          <div style="flex:none;font-size:14px;font-weight:800;color:#243329;padding-left:2px;">这个团在拼什么</div>
+          <a href="#p2" style="text-decoration:none;flex:none;background:#FFFFFF;border-radius:16px;padding:10px 12px;display:flex;align-items:center;gap:12px;box-shadow:0 4px 14px rgba(40,60,45,.06);">
+            <div style="width:52px;height:52px;flex:none;border-radius:12px;background:#EDF7EC;display:flex;align-items:center;justify-content:center;"><div style="width:34px;height:34px;border-radius:50%;background:#AEDC96;display:flex;align-items:center;justify-content:center;"><div style="width:20px;height:20px;border-radius:50%;background:#FFF3DD;"></div></div></div>
+            <div style="flex:1;"><div style="font-size:14px;font-weight:800;color:#243329;">斑斓蛋糕 6寸</div><div style="font-size:11px;color:#8A8574;margin-top:2px;">剩 9 份</div></div>
+            <span style="font-size:16px;font-weight:800;color:#F08A3C;">¥88</span>
+            <span style="flex:none;height:34px;padding:0 16px;border-radius:999px;background:#3E8E5E;color:#FFFFFF;font-size:13px;font-weight:800;display:flex;align-items:center;">去参团</span>
+          </a>
+          <a href="#p2" style="text-decoration:none;flex:none;background:#FFFFFF;border-radius:16px;padding:10px 12px;display:flex;align-items:center;gap:12px;box-shadow:0 4px 14px rgba(40,60,45,.06);">
+            <div style="width:52px;height:52px;flex:none;border-radius:12px;background:#FFF3DD;display:flex;align-items:center;justify-content:center;"><div style="width:40px;height:40px;border-radius:50%;background:#AEDC96;display:flex;align-items:center;justify-content:center;"><div style="width:24px;height:24px;border-radius:50%;background:#FFF3DD;"></div></div></div>
+            <div style="flex:1;"><div style="font-size:14px;font-weight:800;color:#243329;">斑斓蛋糕 8寸</div><div style="font-size:11px;font-weight:700;color:#E8722A;margin-top:2px;">仅剩 3 份</div></div>
+            <span style="font-size:16px;font-weight:800;color:#F08A3C;">¥128</span>
+            <span style="flex:none;height:34px;padding:0 16px;border-radius:999px;background:#3E8E5E;color:#FFFFFF;font-size:13px;font-weight:800;display:flex;align-items:center;">去参团</span>
+          </a>
+          <a href="#p2" style="text-decoration:none;flex:none;background:#FFFFFF;border-radius:16px;padding:10px 12px;display:flex;align-items:center;gap:12px;box-shadow:0 4px 14px rgba(40,60,45,.06);margin-bottom:4px;">
+            <div style="width:52px;height:52px;flex:none;border-radius:12px;background:#EDF7EC;display:flex;align-items:center;justify-content:center;"><div style="display:grid;grid-template-columns:16px 16px;gap:3px;"><div style="width:16px;height:16px;border-radius:4px;background:#BFE3A6;"></div><div style="width:16px;height:16px;border-radius:4px;background:#FFF3DD;"></div><div style="width:16px;height:16px;border-radius:4px;background:#FFF3DD;"></div><div style="width:16px;height:16px;border-radius:4px;background:#BFE3A6;"></div></div></div>
+            <div style="flex:1;"><div style="font-size:14px;font-weight:800;color:#243329;">斑斓椰子小方 4块装</div><div style="font-size:11px;color:#8A8574;margin-top:2px;">剩 14 份</div></div>
+            <span style="font-size:16px;font-weight:800;color:#F08A3C;">¥39</span>
+            <span style="flex:none;height:34px;padding:0 16px;border-radius:999px;background:#3E8E5E;color:#FFFFFF;font-size:13px;font-weight:800;display:flex;align-items:center;">去参团</span>
+          </a>
+        </div>
+        <div style="flex:none;background:#FFFFFF;border-top:1px solid #EFEAE0;padding:12px 20px 26px;display:flex;gap:12px;">
+          <a href="#p4" style="text-decoration:none;flex:1;height:50px;border-radius:999px;background:#FFFFFF;border:1.5px solid #3E8E5E;color:#2C6B47;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;">再喊几个人</a>
+          <a href="#p2" style="text-decoration:none;flex:1.4;height:50px;border-radius:999px;background:#3E8E5E;color:#FFFFFF;font-size:16px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px rgba(62,142,94,.3);">我也要买</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======== P6 我的订单 ======== -->
+    <div id="p6" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:8px;"><span style="min-width:26px;height:26px;border-radius:8px;background:#243329;color:#F3EFE2;font-size:13px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;">6</span><span style="font-size:15px;font-weight:700;color:#243329;">我的订单（tab · 四种状态）</span></div>
+      <div style="width:390px;height:844px;background:#FAF7EE;border-radius:48px;border:10px solid #171B18;box-shadow:0 24px 48px rgba(23,40,28,.18);overflow:hidden;display:flex;flex-direction:column;">
+        <div style="height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 26px 0 30px;">
+          <span style="font-size:15px;font-weight:700;color:#243329;">9:41</span>
+          <div style="display:flex;align-items:center;gap:6px;"><svg width="17" height="11" viewBox="0 0 17 11"><rect x="0" y="6" width="3" height="5" rx="1" fill="#243329"></rect><rect x="4.5" y="4" width="3" height="7" rx="1" fill="#243329"></rect><rect x="9" y="2" width="3" height="9" rx="1" fill="#243329"></rect><rect x="13.5" y="0" width="3" height="11" rx="1" fill="#243329"></rect></svg><div style="width:24px;height:12px;border:1.5px solid #243329;border-radius:4px;padding:1.5px;display:flex;"><div style="width:70%;background:#243329;border-radius:1.5px;"></div></div></div>
+        </div>
+        <div style="flex:none;display:flex;align-items:center;justify-content:space-between;padding:4px 16px 0 20px;">
+          <span style="font-size:22px;font-weight:800;color:#243329;">我的订单</span>
+          <div style="width:74px;height:28px;border-radius:999px;border:1px solid #E2DBC9;background:rgba(255,255,255,.8);display:flex;align-items:center;justify-content:center;gap:6px;"><span style="font-size:12px;color:#243329;letter-spacing:1px;">•••</span><span style="width:1px;height:12px;background:#E2DBC9;"></span><span style="width:10px;height:10px;border:1.5px solid #243329;border-radius:50%;"></span></div>
+        </div>
+        <div style="flex:none;display:flex;gap:8px;padding:12px 20px 2px;">
+          <span style="font-size:13px;font-weight:800;color:#FFFFFF;background:#3E8E5E;padding:7px 15px;border-radius:999px;">全部</span>
+          <span style="font-size:13px;font-weight:700;color:#57614F;background:#FFFFFF;padding:7px 15px;border-radius:999px;border:1px solid #EAE4D6;">待成团</span>
+          <span style="font-size:13px;font-weight:700;color:#57614F;background:#FFFFFF;padding:7px 15px;border-radius:999px;border:1px solid #EAE4D6;">待自提</span>
+          <span style="font-size:13px;font-weight:700;color:#57614F;background:#FFFFFF;padding:7px 15px;border-radius:999px;border:1px solid #EAE4D6;">已完成</span>
+        </div>
+        <div style="flex:1;overflow:auto;padding:12px 20px 8px;display:flex;flex-direction:column;gap:12px;">
+          <!-- 待成团 -->
+          <div style="flex:none;background:#FFFFFF;border-radius:20px;padding:14px 16px;box-shadow:0 4px 14px rgba(40,60,45,.06);">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div style="display:flex;align-items:center;gap:7px;">
+                <span style="font-size:13px;font-weight:800;color:#243329;">车公庙站 · 7月8日批次</span>
+                <sc-if value="{{ founderShow }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size:10px;font-weight:800;color:#2C6B47;background:#EDF7EC;padding:2px 8px;border-radius:999px;">你发起的</span>
+                </sc-if>
+              </div>
+              <span style="font-size:12px;font-weight:700;color:#E8722A;background:#FFF0E2;padding:3px 10px;border-radius:999px;">待成团</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;margin-top:12px;">
+              <div style="width:54px;height:54px;flex:none;border-radius:12px;background:#EDF7EC;display:flex;align-items:center;justify-content:center;"><div style="display:grid;grid-template-columns:16px 16px;gap:3px;"><div style="width:16px;height:16px;border-radius:4px;background:#BFE3A6;"></div><div style="width:16px;height:16px;border-radius:4px;background:#FFF3DD;"></div><div style="width:16px;height:16px;border-radius:4px;background:#FFF3DD;"></div><div style="width:16px;height:16px;border-radius:4px;background:#BFE3A6;"></div></div></div>
+              <div style="flex:1;"><div style="font-size:14px;font-weight:800;color:#243329;">斑斓椰子小方 4块装 × 2</div><div style="font-size:11px;color:#8A8574;margin-top:2px;">7月7日 20:00 截单</div></div>
+              <span style="font-size:16px;font-weight:800;color:#243329;">¥78</span>
+            </div>
+            <div style="height:8px;border-radius:999px;background:#EAE4D6;overflow:hidden;margin-top:12px;"><div style="width:70%;height:100%;border-radius:999px;background:#7BC96F;"></div></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+              <span style="font-size:12px;color:#8A8574;">已拼 3/4 份 · 还差 1 份</span>
+              <div style="display:flex;gap:8px;">
+                <span style="height:32px;padding:0 14px;border-radius:999px;border:1px solid #DDD5C2;color:#8A8574;font-size:12px;font-weight:700;display:flex;align-items:center;">退出拼团</span>
+                <a href="#p5" style="text-decoration:none;height:32px;padding:0 14px;border-radius:999px;background:#3E8E5E;color:#FFFFFF;font-size:12px;font-weight:800;display:flex;align-items:center;">喊人拼团</a>
+              </div>
+            </div>
+          </div>
+          <!-- 待自提 -->
+          <a href="#p7" style="text-decoration:none;flex:none;background:#FFFFFF;border-radius:20px;padding:14px 16px;box-shadow:0 4px 14px rgba(40,60,45,.06);border:1.5px solid #BFD9B4;display:block;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:13px;font-weight:800;color:#243329;">深圳北站 · 已成团 5/4</span>
+              <span style="font-size:12px;font-weight:700;color:#FFFFFF;background:#3E8E5E;padding:3px 10px;border-radius:999px;">待自提</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;margin-top:12px;">
+              <div style="width:54px;height:54px;flex:none;border-radius:12px;background:#EDF7EC;display:flex;align-items:center;justify-content:center;"><div style="width:36px;height:36px;border-radius:50%;background:#AEDC96;display:flex;align-items:center;justify-content:center;"><div style="width:22px;height:22px;border-radius:50%;background:#FFF3DD;"></div></div></div>
+              <div style="flex:1;"><div style="font-size:14px;font-weight:800;color:#243329;">斑斓蛋糕 6寸 × 1</div><div style="font-size:11px;font-weight:700;color:#2C6B47;margin-top:2px;">自提：7月8日 19:30–20:10 · A口</div></div>
+              <span style="font-size:16px;font-weight:800;color:#243329;">¥88</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;background:#EDF7EC;border-radius:12px;padding:9px 12px;">
+              <span style="font-size:12px;font-weight:700;color:#2C6B47;">核销码 638274 · 点击查看取货券</span>
+              <svg width="14" height="14" viewBox="0 0 16 16"><path d="M6 3 L11 8 L6 13" stroke="#2C6B47" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </div>
+          </a>
+          <!-- 已完成 -->
+          <div style="flex:none;background:#FFFFFF;border-radius:20px;padding:14px 16px;box-shadow:0 4px 14px rgba(40,60,45,.06);opacity:.85;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:13px;font-weight:800;color:#243329;">深圳北站 · 6月30日批次</span>
+              <span style="font-size:12px;font-weight:700;color:#8A8574;background:#F5F1E6;padding:3px 10px;border-radius:999px;">已完成</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;margin-top:12px;">
+              <div style="width:54px;height:54px;flex:none;border-radius:12px;background:#FFF3DD;display:flex;align-items:center;justify-content:center;"><div style="width:40px;height:40px;border-radius:50%;background:#AEDC96;display:flex;align-items:center;justify-content:center;"><div style="width:24px;height:24px;border-radius:50%;background:#FFF3DD;"></div></div></div>
+              <div style="flex:1;"><div style="font-size:14px;font-weight:800;color:#243329;">斑斓蛋糕 8寸 × 1</div><div style="font-size:11px;color:#8A8574;margin-top:2px;">6月30日 已核销取货</div></div>
+              <span style="font-size:16px;font-weight:800;color:#243329;">¥128</span>
+            </div>
+          </div>
+          <!-- 已退款 -->
+          <div style="flex:none;background:#FFFFFF;border-radius:20px;padding:14px 16px;box-shadow:0 4px 14px rgba(40,60,45,.06);opacity:.85;margin-bottom:4px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:13px;font-weight:800;color:#243329;">科技园站 · 6月24日批次</span>
+              <span style="font-size:12px;font-weight:700;color:#8A8574;background:#F5F1E6;padding:3px 10px;border-radius:999px;">已退款</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;margin-top:12px;">
+              <div style="width:54px;height:54px;flex:none;border-radius:12px;background:#EDF7EC;display:flex;align-items:center;justify-content:center;"><div style="display:grid;grid-template-columns:16px 16px;gap:3px;"><div style="width:16px;height:16px;border-radius:4px;background:#BFE3A6;"></div><div style="width:16px;height:16px;border-radius:4px;background:#FFF3DD;"></div><div style="width:16px;height:16px;border-radius:4px;background:#FFF3DD;"></div><div style="width:16px;height:16px;border-radius:4px;background:#BFE3A6;"></div></div></div>
+              <div style="flex:1;"><div style="font-size:14px;font-weight:800;color:#243329;">斑斓椰子小方 × 1</div><div style="font-size:11px;color:#8A8574;margin-top:2px;">未成团 · 已自动全额退款 ¥39 原路退回</div></div>
+              <span style="font-size:16px;font-weight:800;color:#8A8574;">¥39</span>
+            </div>
+          </div>
+        </div>
+        <!-- tabbar -->
+        <div style="flex:none;height:80px;background:#FFFFFF;border-top:1px solid #EFEAE0;display:flex;padding-bottom:16px;">
+          <a href="#home" style="text-decoration:none;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 11 L12 4 L20 11 V20 H14.5 V15 H9.5 V20 H4 Z" stroke="#A8A393" stroke-width="2" stroke-linejoin="round"></path></svg><span style="font-size:11px;font-weight:600;color:#A8A393;">首页</span></a>
+          <a href="#p6" style="text-decoration:none;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M6 3 H18 V21 L15 19 L12 21 L9 19 L6 21 Z" stroke="#3E8E5E" stroke-width="2" stroke-linejoin="round" fill="#EDF7EC"></path><path d="M9 8 H15 M9 12 H15" stroke="#3E8E5E" stroke-width="2" stroke-linecap="round"></path></svg><span style="font-size:11px;font-weight:700;color:#3E8E5E;">我的订单</span></a>
+          <a href="#p8" style="text-decoration:none;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="#A8A393" stroke-width="2"></circle><path d="M4 20 C4 16 8 14.5 12 14.5 C16 14.5 20 16 20 20" stroke="#A8A393" stroke-width="2" stroke-linecap="round"></path></svg><span style="font-size:11px;font-weight:600;color:#A8A393;">我的</span></a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======== P7 订单详情 取货券 ======== -->
+    <div id="p7" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:8px;"><span style="min-width:26px;height:26px;border-radius:8px;background:#243329;color:#F3EFE2;font-size:13px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;">7</span><span style="font-size:15px;font-weight:700;color:#243329;">订单详情 · 取货券票根（可截图代取）</span></div>
+      <div style="width:390px;height:844px;background:#2C6B47;border-radius:48px;border:10px solid #171B18;box-shadow:0 24px 48px rgba(23,40,28,.18);overflow:hidden;display:flex;flex-direction:column;position:relative;">
+        <svg width="180" height="180" viewBox="0 0 40 40" style="position:absolute;left:-50px;bottom:60px;opacity:.12;"><path d="M20 4 C33 10 35 27 20 37 C5 27 7 10 20 4 Z" fill="#FFFFFF"></path></svg>
+        <div style="height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 26px 0 30px;">
+          <span style="font-size:15px;font-weight:700;color:#FFFFFF;">9:41</span>
+          <div style="display:flex;align-items:center;gap:6px;"><svg width="17" height="11" viewBox="0 0 17 11"><rect x="0" y="6" width="3" height="5" rx="1" fill="#FFFFFF"></rect><rect x="4.5" y="4" width="3" height="7" rx="1" fill="#FFFFFF"></rect><rect x="9" y="2" width="3" height="9" rx="1" fill="#FFFFFF"></rect><rect x="13.5" y="0" width="3" height="11" rx="1" fill="#FFFFFF"></rect></svg><div style="width:24px;height:12px;border:1.5px solid #FFFFFF;border-radius:4px;padding:1.5px;display:flex;"><div style="width:70%;background:#FFFFFF;border-radius:1.5px;"></div></div></div>
+        </div>
+        <div style="flex:none;height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 16px 0 12px;">
+          <a href="#p6" style="text-decoration:none;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M10 3 L5 8 L10 13" stroke="#FFFFFF" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg></a>
+          <span style="font-size:16px;font-weight:800;color:#FFFFFF;">取货券</span>
+          <div style="width:74px;height:28px;border-radius:999px;border:1px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;gap:6px;"><span style="font-size:12px;color:#FFFFFF;letter-spacing:1px;">•••</span><span style="width:1px;height:12px;background:rgba(255,255,255,.35);"></span><span style="width:10px;height:10px;border:1.5px solid #FFFFFF;border-radius:50%;"></span></div>
+        </div>
+        <div style="flex:1;overflow:auto;padding:14px 24px 20px;display:flex;flex-direction:column;">
+          <!-- 票根 -->
+          <div style="flex:none;background:#FAF7EE;border-radius:24px;overflow:hidden;box-shadow:0 16px 40px rgba(0,0,0,.25);">
+            <div style="padding:20px 20px 16px;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                <div>
+                  <div style="font-size:12px;font-weight:700;color:#8A8574;letter-spacing:2px;">泰斓 TAILAN · 自提凭证</div>
+                  <div style="font-size:20px;font-weight:800;color:#243329;margin-top:6px;">斑斓蛋糕 6寸 × 1</div>
+                  <div style="font-size:13px;color:#57614F;margin-top:2px;">¥88 · 已付款 · 已成团</div>
+                </div>
+                <img src="8b1faa82-50c7-418f-8464-e4f5f389ecc9" style="width:40px;height:40px;border-radius:10px;object-fit:cover;border:1px solid #EAE4D6;">
+              </div>
+              <div style="display:flex;gap:10px;margin-top:14px;">
+                <div style="flex:1;background:#EDF7EC;border-radius:14px;padding:10px 12px;"><div style="font-size:11px;color:#8A8574;">自提站点</div><div style="font-size:14px;font-weight:800;color:#243329;margin-top:3px;">深圳北站 · A口</div><div style="font-size:11px;color:#57614F;margin-top:1px;">4/5/6号线</div></div>
+                <div style="flex:1;background:#FFF3DD;border-radius:14px;padding:10px 12px;"><div style="font-size:11px;color:#9A824F;">自提窗口</div><div style="font-size:14px;font-weight:800;color:#5C4A22;margin-top:3px;">7月8日 19:45–20:15</div><div style="font-size:11px;color:#9A824F;margin-top:1px;">过时未取联系商家</div></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;margin-top:10px;background:#EDF7EC;border-radius:14px;padding:10px 12px;">
+                <image-slot id="spot-szb-ticket" style="width:64px;height:64px;flex:none;" shape="rounded" radius="12" placeholder=""></image-slot>
+                <div style="flex:1;">
+                  <div style="font-size:12px;font-weight:800;color:#243329;">在哪拿：A口出站即到</div>
+                  <div style="font-size:11px;color:#57614F;margin-top:2px;line-height:1.5;">出闸右转花坛旁绿伞小摊 · 认准斑斓绿围裙<br>照片就是取货点实拍，对着找</div>
+                </div>
+              </div>
+            </div>
+            <!-- 撕票线 -->
+            <div style="position:relative;height:24px;display:flex;align-items:center;">
+              <div style="position:absolute;left:-12px;width:24px;height:24px;border-radius:50%;background:#2C6B47;"></div>
+              <div style="flex:1;margin:0 22px;border-top:2px dashed #D8D0BC;"></div>
+              <div style="position:absolute;right:-12px;width:24px;height:24px;border-radius:50%;background:#2C6B47;"></div>
+            </div>
+            <div style="padding:14px 20px 22px;display:flex;flex-direction:column;align-items:center;">
+              <div style="font-size:12px;font-weight:700;color:#8A8574;letter-spacing:2px;">到站报这个码</div>
+              <div style="display:flex;gap:8px;margin-top:10px;">
+                <span style="width:40px;height:52px;border-radius:12px;background:#243329;color:#B9F0A8;font-size:28px;font-weight:800;display:flex;align-items:center;justify-content:center;">6</span>
+                <span style="width:40px;height:52px;border-radius:12px;background:#243329;color:#B9F0A8;font-size:28px;font-weight:800;display:flex;align-items:center;justify-content:center;">3</span>
+                <span style="width:40px;height:52px;border-radius:12px;background:#243329;color:#B9F0A8;font-size:28px;font-weight:800;display:flex;align-items:center;justify-content:center;">8</span>
+                <span style="width:40px;height:52px;border-radius:12px;background:#243329;color:#B9F0A8;font-size:28px;font-weight:800;display:flex;align-items:center;justify-content:center;">2</span>
+                <span style="width:40px;height:52px;border-radius:12px;background:#243329;color:#B9F0A8;font-size:28px;font-weight:800;display:flex;align-items:center;justify-content:center;">7</span>
+                <span style="width:40px;height:52px;border-radius:12px;background:#243329;color:#B9F0A8;font-size:28px;font-weight:800;display:flex;align-items:center;justify-content:center;">4</span>
+              </div>
+              <!-- 假二维码 -->
+              <svg width="96" height="96" viewBox="0 0 29 29" style="margin-top:16px;border-radius:8px;background:#FFFFFF;padding:6px;box-sizing:content-box;border:1px solid #EAE4D6;">
+                <path fill="#243329" d="M0 0 h7 v7 h-7 Z M2 2 h3 v3 h-3 Z M22 0 h7 v7 h-7 Z M24 2 h3 v3 h-3 Z M0 22 h7 v7 h-7 Z M2 24 h3 v3 h-3 Z M9 0 h2 v2 h-2 Z M13 1 h2 v2 h-2 Z M17 0 h2 v3 h-2 Z M10 4 h3 v2 h-3 Z M15 4 h2 v3 h-2 Z M19 5 h2 v2 h-2 Z M9 8 h2 v3 h-2 Z M0 9 h2 v2 h-2 Z M3 10 h3 v2 h-3 Z M5 13 h2 v3 h-2 Z M0 16 h3 v2 h-3 Z M3 18 h2 v2 h-2 Z M12 9 h3 v3 h-3 Z M17 9 h2 v2 h-2 Z M21 9 h2 v3 h-2 Z M25 9 h2 v2 h-2 Z M9 12 h2 v2 h-2 Z M13 13 h3 v3 h-3 Z M18 12 h2 v3 h-2 Z M22 13 h3 v2 h-3 Z M26 12 h3 v2 h-3 Z M9 16 h3 v2 h-3 Z M14 17 h2 v3 h-2 Z M18 16 h3 v2 h-3 Z M23 17 h2 v2 h-2 Z M26 16 h2 v3 h-2 Z M9 20 h2 v3 h-2 Z M12 21 h3 v2 h-3 Z M17 20 h2 v3 h-2 Z M20 21 h3 v2 h-3 Z M25 20 h2 v2 h-2 Z M9 25 h3 v3 h-3 Z M14 24 h2 v3 h-2 Z M17 26 h3 v2 h-3 Z M22 25 h2 v3 h-2 Z M26 24 h3 v3 h-3 Z"></path>
+              </svg>
+              <div style="font-size:12px;color:#8A8574;margin-top:12px;text-align:center;line-height:1.7;">可以把这张券截图发给同学代取<br>报码或出示二维码都行</div>
+            </div>
+          </div>
+          <div style="flex:none;display:flex;gap:12px;margin-top:16px;">
+            <span style="flex:1;height:48px;border-radius:999px;border:1.5px solid rgba(255,255,255,.6);color:#FFFFFF;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;">保存图片</span>
+            <span style="flex:1;height:48px;border-radius:999px;background:#FFFFFF;color:#2C6B47;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;">联系商家</span>
+          </div>
+          <div style="flex:none;font-size:12px;color:rgba(255,255,255,.65);text-align:center;margin-top:14px;line-height:1.8;">过时未取会联系你改约下一批 · 有问题随时找商家</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======== P8 我的 ======== -->
+    <div id="p8" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:8px;"><span style="min-width:26px;height:26px;border-radius:8px;background:#243329;color:#F3EFE2;font-size:13px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;">8</span><span style="font-size:15px;font-weight:700;color:#243329;">我的（tab · 含管理员入口）</span></div>
+      <div style="width:390px;height:844px;background:#FAF7EE;border-radius:48px;border:10px solid #171B18;box-shadow:0 24px 48px rgba(23,40,28,.18);overflow:hidden;display:flex;flex-direction:column;">
+        <div style="height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 26px 0 30px;">
+          <span style="font-size:15px;font-weight:700;color:#243329;">9:41</span>
+          <div style="display:flex;align-items:center;gap:6px;"><svg width="17" height="11" viewBox="0 0 17 11"><rect x="0" y="6" width="3" height="5" rx="1" fill="#243329"></rect><rect x="4.5" y="4" width="3" height="7" rx="1" fill="#243329"></rect><rect x="9" y="2" width="3" height="9" rx="1" fill="#243329"></rect><rect x="13.5" y="0" width="3" height="11" rx="1" fill="#243329"></rect></svg><div style="width:24px;height:12px;border:1.5px solid #243329;border-radius:4px;padding:1.5px;display:flex;"><div style="width:70%;background:#243329;border-radius:1.5px;"></div></div></div>
+        </div>
+        <div style="flex:1;overflow:auto;padding:10px 20px;display:flex;flex-direction:column;gap:14px;">
+          <div style="flex:none;display:flex;align-items:center;gap:14px;padding:10px 4px;">
+            <div style="width:64px;height:64px;border-radius:50%;background:#F6C87B;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#7A5A1E;border:3px solid #FFFFFF;box-shadow:0 4px 12px rgba(40,60,45,.12);">米</div>
+            <div style="flex:1;"><div style="font-size:20px;font-weight:800;color:#243329;">米米酱</div><div style="font-size:12px;color:#8A8574;margin-top:2px;">微信用户 · 已拼过 3 次</div></div>
+          </div>
+          <!-- 订单入口卡 -->
+          <a href="#p6" style="text-decoration:none;flex:none;background:#FFFFFF;border-radius:20px;padding:16px;display:flex;align-items:center;box-shadow:0 4px 14px rgba(40,60,45,.06);">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><span style="font-size:18px;font-weight:800;color:#E8722A;">1</span><span style="font-size:12px;color:#57614F;">待成团</span></div>
+            <div style="width:1px;height:30px;background:#EFEAE0;"></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><span style="font-size:18px;font-weight:800;color:#2C6B47;">1</span><span style="font-size:12px;color:#57614F;">待自提</span></div>
+            <div style="width:1px;height:30px;background:#EFEAE0;"></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><span style="font-size:18px;font-weight:800;color:#243329;">2</span><span style="font-size:12px;color:#57614F;">全部订单</span></div>
+          </a>
+          <!-- 列表 -->
+          <div style="flex:none;background:#FFFFFF;border-radius:20px;box-shadow:0 4px 14px rgba(40,60,45,.06);overflow:hidden;">
+            <a href="#p6" style="text-decoration:none;display:flex;align-items:center;gap:12px;padding:15px 16px;border-bottom:1px solid #F5F1E6;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 3 H18 V21 L15 19 L12 21 L9 19 L6 21 Z" stroke="#3E8E5E" stroke-width="1.8" stroke-linejoin="round"></path></svg>
+              <span style="flex:1;font-size:15px;font-weight:700;color:#243329;">我的订单</span>
+              <svg width="14" height="14" viewBox="0 0 16 16"><path d="M6 3 L11 8 L6 13" stroke="#B9B29F" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </a>
+            <div style="display:flex;align-items:center;gap:12px;padding:15px 16px;border-bottom:1px solid #F5F1E6;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 6 C4 4.9 4.9 4 6 4 H18 C19.1 4 20 4.9 20 6 V15 C20 16.1 19.1 17 18 17 H9 L5 20 V17 H6 C4.9 17 4 16.1 4 15 Z" stroke="#3E8E5E" stroke-width="1.8" stroke-linejoin="round"></path></svg>
+              <span style="flex:1;font-size:15px;font-weight:700;color:#243329;">联系商家</span>
+              <span style="font-size:12px;color:#8A8574;">微信 banlan-cake</span>
+              <svg width="14" height="14" viewBox="0 0 16 16"><path d="M6 3 L11 8 L6 13" stroke="#B9B29F" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:15px 16px;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#3E8E5E" stroke-width="1.8"></circle><path d="M12 11 V17" stroke="#3E8E5E" stroke-width="1.8" stroke-linecap="round"></path><circle cx="12" cy="7.5" r="1.2" fill="#3E8E5E"></circle></svg>
+              <span style="flex:1;font-size:15px;font-weight:700;color:#243329;">规则说明</span>
+              <span style="font-size:12px;color:#8A8574;">拼团 / 退款 / 自提</span>
+              <svg width="14" height="14" viewBox="0 0 16 16"><path d="M6 3 L11 8 L6 13" stroke="#B9B29F" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </div>
+          </div>
+          <!-- 规则摘要 -->
+          <div style="flex:none;background:#EDF7EC;border-radius:16px;padding:13px 15px;font-size:12px;color:#2C6B47;line-height:1.9;">① 今天拼·明天取：选站下单先付款，满 4 份成团<br>② 取货日上午 10:00 前可退款；之后不退，可自行转卖转让<br>③ 成团后按窗口时间到站，报 6 位码取货</div>
+          <sc-if value="{{ adminOn }}" hint-placeholder-val="{{ true }}">
+            <a href="#p9" style="text-decoration:none;flex:none;background:#1C2620;border-radius:20px;padding:16px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 20px rgba(22,29,24,.3);">
+              <div style="width:40px;height:40px;border-radius:12px;background:rgba(123,201,111,.16);display:flex;align-items:center;justify-content:center;flex:none;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="5" y="10" width="14" height="10" rx="2.5" stroke="#7BC96F" stroke-width="1.8"></rect><path d="M8 10 V7.5 C8 5.3 9.8 3.5 12 3.5 C14.2 3.5 16 5.3 16 7.5 V10" stroke="#7BC96F" stroke-width="1.8"></path><circle cx="12" cy="15" r="1.6" fill="#7BC96F"></circle></svg>
+              </div>
+              <div style="flex:1;"><div style="font-size:15px;font-weight:800;color:#E9F2EA;">商家管理</div><div style="font-size:11px;color:#8FA491;margin-top:2px;">仅管理员可见 · 工作台 / 商品 / 批次 / 核销</div></div>
+              <span style="font-size:11px;font-weight:800;color:#7BC96F;border:1px solid rgba(123,201,111,.5);padding:4px 10px;border-radius:999px;">管理员</span>
+            </a>
+          </sc-if>
+        </div>
+        <!-- tabbar -->
+        <div style="flex:none;height:80px;background:#FFFFFF;border-top:1px solid #EFEAE0;display:flex;padding-bottom:16px;">
+          <a href="#home" style="text-decoration:none;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 11 L12 4 L20 11 V20 H14.5 V15 H9.5 V20 H4 Z" stroke="#A8A393" stroke-width="2" stroke-linejoin="round"></path></svg><span style="font-size:11px;font-weight:600;color:#A8A393;">首页</span></a>
+          <a href="#p6" style="text-decoration:none;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M6 3 H18 V21 L15 19 L12 21 L9 19 L6 21 Z" stroke="#A8A393" stroke-width="2" stroke-linejoin="round"></path><path d="M9 8 H15 M9 12 H15" stroke="#A8A393" stroke-width="2" stroke-linecap="round"></path></svg><span style="font-size:11px;font-weight:600;color:#A8A393;">我的订单</span></a>
+          <a href="#p8" style="text-decoration:none;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="#3E8E5E" stroke-width="2" fill="#EDF7EC"></circle><path d="M4 20 C4 16 8 14.5 12 14.5 C16 14.5 20 16 20 20" stroke="#3E8E5E" stroke-width="2" stroke-linecap="round"></path></svg><span style="font-size:11px;font-weight:700;color:#3E8E5E;">我的</span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 商家端 ============ -->
+  <div style="font-size:18px;font-weight:800;color:#243329;display:flex;align-items:center;gap:10px;">商家端 · 深色主题<span style="font-size:12px;font-weight:600;color:#8A8574;">入口在「我的」页 · 仅管理员可见</span></div>
+  <div style="display:flex;gap:44px;flex-wrap:wrap;align-items:flex-start;">
+
+    <!-- ======== P9 商家工作台 ======== -->
+    <div id="p9" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:8px;"><span style="min-width:26px;height:26px;border-radius:8px;background:#1C2620;color:#7BC96F;font-size:13px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;">9</span><span style="font-size:15px;font-weight:700;color:#243329;">商家工作台</span></div>
+      <div style="width:390px;height:844px;background:#161D18;border-radius:48px;border:10px solid #171B18;box-shadow:0 24px 48px rgba(23,40,28,.3);overflow:hidden;display:flex;flex-direction:column;">
+        <div style="height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 26px 0 30px;">
+          <span style="font-size:15px;font-weight:700;color:#E9F2EA;">9:41</span>
+          <div style="display:flex;align-items:center;gap:6px;"><svg width="17" height="11" viewBox="0 0 17 11"><rect x="0" y="6" width="3" height="5" rx="1" fill="#E9F2EA"></rect><rect x="4.5" y="4" width="3" height="7" rx="1" fill="#E9F2EA"></rect><rect x="9" y="2" width="3" height="9" rx="1" fill="#E9F2EA"></rect><rect x="13.5" y="0" width="3" height="11" rx="1" fill="#E9F2EA"></rect></svg><div style="width:24px;height:12px;border:1.5px solid #E9F2EA;border-radius:4px;padding:1.5px;display:flex;"><div style="width:70%;background:#E9F2EA;border-radius:1.5px;"></div></div></div>
+        </div>
+        <div style="flex:none;display:flex;align-items:center;justify-content:space-between;padding:2px 16px 0 20px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <a href="#p8" style="text-decoration:none;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;"><svg width="15" height="15" viewBox="0 0 16 16"><path d="M10 3 L5 8 L10 13" stroke="#E9F2EA" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg></a>
+            <div><div style="font-size:19px;font-weight:800;color:#E9F2EA;">斑斓工作台</div><div style="font-size:11px;color:#8FA491;">管理员 · 7月8日批次进行中</div></div>
+          </div>
+          <div style="width:74px;height:28px;border-radius:999px;border:1px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;gap:6px;"><span style="font-size:12px;color:#E9F2EA;letter-spacing:1px;">•••</span><span style="width:1px;height:12px;background:rgba(255,255,255,.25);"></span><span style="width:10px;height:10px;border:1.5px solid #E9F2EA;border-radius:50%;"></span></div>
+        </div>
+        <div style="flex:1;overflow:auto;padding:14px 18px 20px;display:flex;flex-direction:column;gap:13px;">
+          <!-- 今日自提 -->
+          <div style="flex:none;background:#202A22;border-radius:20px;padding:16px;border:1px solid rgba(123,201,111,.25);">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:12px;font-weight:800;color:#7BC96F;letter-spacing:1px;">今日自提 · 7月8日 19:30–20:10</span>
+              <span style="font-size:11px;font-weight:700;color:#161D18;background:#7BC96F;padding:3px 9px;border-radius:999px;">进行中</span>
+            </div>
+            <div style="font-size:20px;font-weight:800;color:#E9F2EA;margin-top:8px;">深圳北站 · 21 单</div>
+            <div style="display:flex;gap:18px;margin-top:6px;">
+              <span style="font-size:13px;color:#8FA491;">已核销 <strong style="color:#7BC96F;font-size:16px;">8</strong></span>
+              <span style="font-size:13px;color:#8FA491;">未核销 <strong style="color:#F0A85C;font-size:16px;">13</strong></span>
+            </div>
+            <div style="height:8px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:10px;"><div style="width:38%;height:100%;border-radius:999px;background:#7BC96F;"></div></div>
+            <div style="display:flex;gap:8px;margin-top:14px;">
+              <a href="#p12" style="text-decoration:none;flex:1.3;height:42px;border-radius:999px;background:#7BC96F;color:#161D18;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;">开始核销</a>
+              <span style="flex:1;height:42px;border-radius:999px;border:1px solid rgba(255,255,255,.25);color:#E9F2EA;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;">我已到达</span>
+              <span style="flex:1;height:42px;border-radius:999px;border:1px solid rgba(255,255,255,.25);color:#E9F2EA;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;">备料清单</span>
+            </div>
+          </div>
+          <!-- 进行中批次 -->
+          <div style="flex:none;background:#202A22;border-radius:20px;padding:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;">
+              <span style="font-size:15px;font-weight:800;color:#E9F2EA;">7月8日批次 · 各站进度</span>
+              <span style="font-size:11px;color:#8FA491;">7月7日 20:00 自动截单</span>
+            </div>
+            <!-- 车公庙 -->
+            <div style="margin-top:14px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.07);">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:14px;font-weight:800;color:#E9F2EA;">车公庙站</span>
+                <span style="font-size:12px;font-weight:800;color:#F0A85C;">3/4 · 还差1份</span>
+              </div>
+              <div style="height:7px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:8px;"><div style="width:70%;height:100%;border-radius:999px;background:#F0A85C;"></div></div>
+              <div style="display:flex;gap:8px;margin-top:10px;">
+                <span style="height:30px;padding:0 13px;border-radius:999px;background:rgba(123,201,111,.15);color:#7BC96F;font-size:12px;font-weight:800;display:flex;align-items:center;">手动成团</span>
+                <span style="height:30px;padding:0 13px;border-radius:999px;background:rgba(240,138,60,.14);color:#F0A85C;font-size:12px;font-weight:800;display:flex;align-items:center;">关团退款</span>
+                <span style="height:30px;padding:0 13px;border-radius:999px;border:1px solid rgba(255,255,255,.2);color:#B9C8BB;font-size:12px;font-weight:700;display:flex;align-items:center;">手动截单</span>
+              </div>
+            </div>
+            <!-- 深圳北 -->
+            <div style="margin-top:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.07);">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:14px;font-weight:800;color:#E9F2EA;">深圳北站 <span style="font-size:11px;font-weight:800;color:#161D18;background:#7BC96F;padding:2px 8px;border-radius:999px;margin-left:6px;">已成团</span></span>
+                <span style="font-size:12px;font-weight:800;color:#7BC96F;">5/4 份</span>
+              </div>
+              <div style="height:7px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:8px;"><div style="width:100%;height:100%;border-radius:999px;background:#7BC96F;"></div></div>
+              <div style="display:flex;gap:8px;margin-top:10px;">
+                <span style="height:30px;padding:0 13px;border-radius:999px;border:1px solid rgba(255,255,255,.2);color:#B9C8BB;font-size:12px;font-weight:700;display:flex;align-items:center;">手动截单</span>
+                <span style="font-size:11px;color:#8FA491;display:flex;align-items:center;">自提窗口 7月8日 19:30–20:10 已通知</span>
+              </div>
+            </div>
+            <!-- 科技园 -->
+            <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:14px;font-weight:700;color:#5E6E61;">科技园站 · 本批次未开放</span>
+              <span style="font-size:12px;color:#5E6E61;">下批次可勾选开放</span>
+            </div>
+          </div>
+          <!-- 共享库存 -->
+          <div style="flex:none;background:#202A22;border-radius:20px;padding:16px;">
+            <div style="font-size:15px;font-weight:800;color:#E9F2EA;">共享库存 <span style="font-size:11px;font-weight:600;color:#8FA491;">全站点共用 · 卖完即止</span></div>
+            <div style="display:flex;justify-content:space-between;margin-top:12px;"><span style="font-size:13px;color:#B9C8BB;">斑斓蛋糕 6寸</span><span style="font-size:12px;font-weight:800;color:#7BC96F;">剩 21 / 40</span></div>
+            <div style="height:7px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:6px;"><div style="width:47.5%;height:100%;border-radius:999px;background:#7BC96F;"></div></div>
+            <div style="display:flex;justify-content:space-between;margin-top:10px;"><span style="font-size:13px;color:#B9C8BB;">斑斓蛋糕 8寸</span><span style="font-size:12px;font-weight:800;color:#F0A85C;">仅剩 12 / 30</span></div>
+            <div style="height:7px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:6px;"><div style="width:40%;height:100%;border-radius:999px;background:#F0A85C;"></div></div>
+            <div style="display:flex;justify-content:space-between;margin-top:10px;"><span style="font-size:13px;color:#B9C8BB;">斑斓椰子小方 4块装</span><span style="font-size:12px;font-weight:800;color:#7BC96F;">剩 26 / 40</span></div>
+            <div style="height:7px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:6px;"><div style="width:65%;height:100%;border-radius:999px;background:#7BC96F;"></div></div>
+          </div>
+          <!-- 待处理 + 入口 -->
+          <div style="flex:none;background:#202A22;border-radius:20px;padding:16px;">
+            <div style="font-size:15px;font-weight:800;color:#E9F2EA;">待处理</div>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:10px;"><span style="width:7px;height:7px;border-radius:50%;background:#F0A85C;flex:none;"></span><span style="font-size:13px;color:#B9C8BB;">车公庙站还差 6 份，截单前可在群里再推一把</span></div>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:8px;"><span style="width:7px;height:7px;border-radius:50%;background:#7BC96F;flex:none;"></span><span style="font-size:13px;color:#B9C8BB;">深圳北站今晚自提，记得带保温箱和围裙</span></div>
+          </div>
+          <div style="flex:none;display:flex;gap:10px;">
+            <a href="#p10" style="text-decoration:none;flex:1;background:#202A22;border-radius:16px;padding:14px 0;display:flex;flex-direction:column;align-items:center;gap:6px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="4" stroke="#7BC96F" stroke-width="1.8"></rect><path d="M8 9 H16 M8 13 H13" stroke="#7BC96F" stroke-width="1.8" stroke-linecap="round"></path></svg><span style="font-size:12px;font-weight:800;color:#E9F2EA;">商品管理</span></a>
+            <a href="#p11" style="text-decoration:none;flex:1;background:#202A22;border-radius:16px;padding:14px 0;display:flex;flex-direction:column;align-items:center;gap:6px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="#7BC96F" stroke-width="1.8"></circle><path d="M12 8 V16 M8 12 H16" stroke="#7BC96F" stroke-width="1.8" stroke-linecap="round"></path></svg><span style="font-size:12px;font-weight:800;color:#E9F2EA;">创建批次</span></a>
+            <a href="#p12" style="text-decoration:none;flex:1;background:#202A22;border-radius:16px;padding:14px 0;display:flex;flex-direction:column;align-items:center;gap:6px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="7" height="7" rx="1.5" stroke="#7BC96F" stroke-width="1.8"></rect><rect x="13" y="4" width="7" height="7" rx="1.5" stroke="#7BC96F" stroke-width="1.8"></rect><rect x="4" y="13" width="7" height="7" rx="1.5" stroke="#7BC96F" stroke-width="1.8"></rect><path d="M13 13 H16 V16 H13 Z M17 17 H20 V20 H17 Z" stroke="#7BC96F" stroke-width="1.8"></path></svg><span style="font-size:12px;font-weight:800;color:#E9F2EA;">现场核销</span></a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======== P10 商品管理 ======== -->
+    <div id="p10" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:8px;"><span style="min-width:26px;height:26px;border-radius:8px;background:#1C2620;color:#7BC96F;font-size:13px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;">10</span><span style="font-size:15px;font-weight:700;color:#243329;">商品管理（列表 + 编辑）</span></div>
+      <div style="width:390px;height:844px;background:#161D18;border-radius:48px;border:10px solid #171B18;box-shadow:0 24px 48px rgba(23,40,28,.3);overflow:hidden;display:flex;flex-direction:column;">
+        <div style="height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 26px 0 30px;">
+          <span style="font-size:15px;font-weight:700;color:#E9F2EA;">9:41</span>
+          <div style="display:flex;align-items:center;gap:6px;"><svg width="17" height="11" viewBox="0 0 17 11"><rect x="0" y="6" width="3" height="5" rx="1" fill="#E9F2EA"></rect><rect x="4.5" y="4" width="3" height="7" rx="1" fill="#E9F2EA"></rect><rect x="9" y="2" width="3" height="9" rx="1" fill="#E9F2EA"></rect><rect x="13.5" y="0" width="3" height="11" rx="1" fill="#E9F2EA"></rect></svg><div style="width:24px;height:12px;border:1.5px solid #E9F2EA;border-radius:4px;padding:1.5px;display:flex;"><div style="width:70%;background:#E9F2EA;border-radius:1.5px;"></div></div></div>
+        </div>
+        <div style="flex:none;height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 16px 0 12px;">
+          <a href="#p9" style="text-decoration:none;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M10 3 L5 8 L10 13" stroke="#E9F2EA" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg></a>
+          <span style="font-size:16px;font-weight:800;color:#E9F2EA;">商品管理</span>
+          <div style="width:74px;height:28px;border-radius:999px;border:1px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;gap:6px;"><span style="font-size:12px;color:#E9F2EA;letter-spacing:1px;">•••</span><span style="width:1px;height:12px;background:rgba(255,255,255,.25);"></span><span style="width:10px;height:10px;border:1.5px solid #E9F2EA;border-radius:50%;"></span></div>
+        </div>
+        <div style="flex:1;overflow:auto;padding:10px 18px 20px;display:flex;flex-direction:column;gap:12px;">
+          <!-- 列表 -->
+          <div style="flex:none;background:#202A22;border-radius:18px;padding:13px 14px;display:flex;align-items:center;gap:12px;border:1px solid rgba(123,201,111,.35);">
+            <div style="width:48px;height:48px;flex:none;border-radius:12px;background:#2C3A2E;display:flex;align-items:center;justify-content:center;"><div style="width:30px;height:30px;border-radius:50%;background:#7BC96F;display:flex;align-items:center;justify-content:center;"><div style="width:18px;height:18px;border-radius:50%;background:#FFF3DD;"></div></div></div>
+            <div style="flex:1;"><div style="font-size:14px;font-weight:800;color:#E9F2EA;">斑斓蛋糕</div><div style="font-size:11px;color:#8FA491;margin-top:2px;">2 个 SKU · 编辑中</div></div>
+            <div style="width:44px;height:26px;border-radius:999px;background:#7BC96F;padding:3px;display:flex;justify-content:flex-end;"><div style="width:20px;height:20px;border-radius:50%;background:#161D18;"></div></div>
+          </div>
+          <div style="flex:none;background:#202A22;border-radius:18px;padding:13px 14px;display:flex;align-items:center;gap:12px;">
+            <div style="width:48px;height:48px;flex:none;border-radius:12px;background:#2C3A2E;display:flex;align-items:center;justify-content:center;"><div style="display:grid;grid-template-columns:14px 14px;gap:3px;"><div style="width:14px;height:14px;border-radius:3px;background:#7BC96F;"></div><div style="width:14px;height:14px;border-radius:3px;background:#FFF3DD;"></div><div style="width:14px;height:14px;border-radius:3px;background:#FFF3DD;"></div><div style="width:14px;height:14px;border-radius:3px;background:#7BC96F;"></div></div></div>
+            <div style="flex:1;"><div style="font-size:14px;font-weight:800;color:#E9F2EA;">斑斓椰子小方 4块装</div><div style="font-size:11px;color:#8FA491;margin-top:2px;">1 个 SKU · 上架中</div></div>
+            <div style="width:44px;height:26px;border-radius:999px;background:#7BC96F;padding:3px;display:flex;justify-content:flex-end;"><div style="width:20px;height:20px;border-radius:50%;background:#161D18;"></div></div>
+          </div>
+          <div style="flex:none;height:44px;border-radius:14px;border:1.5px dashed rgba(123,201,111,.4);display:flex;align-items:center;justify-content:center;gap:8px;"><span style="font-size:16px;color:#7BC96F;font-weight:800;">+</span><span style="font-size:13px;font-weight:700;color:#7BC96F;">新增商品</span></div>
+          <!-- 编辑面板 -->
+          <div style="flex:none;font-size:12px;font-weight:800;color:#8FA491;letter-spacing:1px;padding-left:2px;margin-top:4px;">编辑 · 斑斓蛋糕</div>
+          <div style="flex:none;background:#202A22;border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:13px;">
+            <div style="display:flex;gap:10px;">
+              <div style="width:76px;height:76px;flex:none;border-radius:14px;background:#2C3A2E;display:flex;align-items:center;justify-content:center;position:relative;"><div style="width:44px;height:44px;border-radius:50%;background:#7BC96F;display:flex;align-items:center;justify-content:center;"><div style="width:26px;height:26px;border-radius:50%;background:#FFF3DD;"></div></div><span style="position:absolute;right:-4px;top:-4px;width:20px;height:20px;border-radius:50%;background:#F0A85C;color:#161D18;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;">×</span></div>
+              <div style="width:76px;height:76px;flex:none;border-radius:14px;border:1.5px dashed rgba(255,255,255,.25);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;"><span style="font-size:20px;color:#8FA491;font-weight:300;">+</span><span style="font-size:10px;color:#8FA491;">上传图片</span></div>
+            </div>
+            <div><div style="font-size:11px;font-weight:700;color:#8FA491;margin-bottom:6px;">商品名称</div><div style="height:42px;border-radius:12px;background:#161D18;border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;padding:0 13px;font-size:14px;font-weight:700;color:#E9F2EA;">斑斓蛋糕</div></div>
+            <div><div style="font-size:11px;font-weight:700;color:#8FA491;margin-bottom:6px;">描述</div><div style="min-height:56px;border-radius:12px;background:#161D18;border:1px solid rgba(255,255,255,.12);padding:10px 13px;font-size:12px;color:#B9C8BB;line-height:1.7;">现磨香兰叶汁 + 椰浆戚风，草木清香不齁甜，绿色来自叶子本身，不加色素。</div></div>
+            <div>
+              <div style="font-size:11px;font-weight:700;color:#8FA491;margin-bottom:6px;">SKU 规格</div>
+              <div style="display:flex;align-items:center;gap:10px;background:#161D18;border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:10px 13px;">
+                <span style="flex:1;font-size:13px;font-weight:800;color:#E9F2EA;">6寸 · 2-4人</span>
+                <span style="font-size:14px;font-weight:800;color:#F0A85C;">¥88</span>
+                <div style="width:40px;height:24px;border-radius:999px;background:#7BC96F;padding:3px;display:flex;justify-content:flex-end;"><div style="width:18px;height:18px;border-radius:50%;background:#161D18;"></div></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;background:#161D18;border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:10px 13px;margin-top:8px;">
+                <span style="flex:1;font-size:13px;font-weight:800;color:#E9F2EA;">8寸 · 6-8人</span>
+                <span style="font-size:14px;font-weight:800;color:#F0A85C;">¥128</span>
+                <div style="width:40px;height:24px;border-radius:999px;background:#7BC96F;padding:3px;display:flex;justify-content:flex-end;"><div style="width:18px;height:18px;border-radius:50%;background:#161D18;"></div></div>
+              </div>
+              <div style="height:38px;border-radius:12px;border:1.5px dashed rgba(123,201,111,.4);display:flex;align-items:center;justify-content:center;gap:6px;margin-top:8px;"><span style="font-size:14px;color:#7BC96F;font-weight:800;">+</span><span style="font-size:12px;font-weight:700;color:#7BC96F;">新增 SKU</span></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;background:rgba(240,168,92,.1);border-radius:10px;padding:8px 11px;"><span style="width:6px;height:6px;border-radius:50%;background:#F0A85C;flex:none;"></span><span style="font-size:11.5px;color:#F0A85C;font-weight:600;">改价只对新订单生效，不影响已付款订单</span></div>
+            <div style="height:46px;border-radius:999px;background:#7BC96F;color:#161D18;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;">保存修改</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======== P11 创建批次 ======== -->
+    <div id="p11" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:8px;"><span style="min-width:26px;height:26px;border-radius:8px;background:#1C2620;color:#7BC96F;font-size:13px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;">11</span><span style="font-size:15px;font-weight:700;color:#243329;">创建批次</span></div>
+      <div style="width:390px;height:844px;background:#161D18;border-radius:48px;border:10px solid #171B18;box-shadow:0 24px 48px rgba(23,40,28,.3);overflow:hidden;display:flex;flex-direction:column;">
+        <div style="height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 26px 0 30px;">
+          <span style="font-size:15px;font-weight:700;color:#E9F2EA;">9:41</span>
+          <div style="display:flex;align-items:center;gap:6px;"><svg width="17" height="11" viewBox="0 0 17 11"><rect x="0" y="6" width="3" height="5" rx="1" fill="#E9F2EA"></rect><rect x="4.5" y="4" width="3" height="7" rx="1" fill="#E9F2EA"></rect><rect x="9" y="2" width="3" height="9" rx="1" fill="#E9F2EA"></rect><rect x="13.5" y="0" width="3" height="11" rx="1" fill="#E9F2EA"></rect></svg><div style="width:24px;height:12px;border:1.5px solid #E9F2EA;border-radius:4px;padding:1.5px;display:flex;"><div style="width:70%;background:#E9F2EA;border-radius:1.5px;"></div></div></div>
+        </div>
+        <div style="flex:none;height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 16px 0 12px;">
+          <a href="#p9" style="text-decoration:none;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M10 3 L5 8 L10 13" stroke="#E9F2EA" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg></a>
+          <span style="font-size:16px;font-weight:800;color:#E9F2EA;">创建批次</span>
+          <div style="width:74px;height:28px;border-radius:999px;border:1px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;gap:6px;"><span style="font-size:12px;color:#E9F2EA;letter-spacing:1px;">•••</span><span style="width:1px;height:12px;background:rgba(255,255,255,.25);"></span><span style="width:10px;height:10px;border:1.5px solid #E9F2EA;border-radius:50%;"></span></div>
+        </div>
+        <div style="flex:1;overflow:auto;padding:10px 18px;display:flex;flex-direction:column;gap:13px;">
+          <div style="flex:none;"><div style="font-size:11px;font-weight:700;color:#8FA491;margin-bottom:6px;">批次名</div><div style="height:44px;border-radius:12px;background:#202A22;border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;padding:0 13px;font-size:14px;font-weight:800;color:#E9F2EA;">7月12日批次</div></div>
+          <!-- 开放站点 -->
+          <div style="flex:none;background:#202A22;border-radius:20px;padding:16px;">
+            <div style="font-size:14px;font-weight:800;color:#E9F2EA;">开放站点 &amp; 成团门槛</div>
+            <div style="display:flex;align-items:center;gap:11px;margin-top:13px;">
+              <div style="width:22px;height:22px;flex:none;border-radius:7px;background:#7BC96F;display:flex;align-items:center;justify-content:center;"><svg width="13" height="13" viewBox="0 0 14 14"><path d="M2 7.5 L5.5 11 L12 3.5" stroke="#161D18" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+              <div style="flex:1;"><div style="font-size:13px;font-weight:800;color:#E9F2EA;">车公庙站</div><div style="font-size:10px;color:#8FA491;">1/7/9/11号线 B口</div></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="width:28px;height:28px;border-radius:9px;border:1px solid rgba(255,255,255,.2);color:#B9C8BB;font-size:15px;display:flex;align-items:center;justify-content:center;">−</span><span style="font-size:15px;font-weight:800;color:#E9F2EA;min-width:44px;text-align:center;">4 份</span><span style="width:28px;height:28px;border-radius:9px;background:#7BC96F;color:#161D18;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;">+</span></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:9px;margin:9px 0 0 33px;">
+              <image-slot id="mspot-cgm" style="width:40px;height:40px;flex:none;" shape="rounded" radius="9" placeholder=""></image-slot>
+              <div style="flex:1;">
+                <div style="display:flex;gap:6px;"><span style="font-size:10.5px;font-weight:800;color:#7BC96F;background:rgba(123,201,111,.12);padding:3px 8px;border-radius:999px;">B口</span><span style="font-size:10.5px;font-weight:800;color:#E9F2EA;background:rgba(255,255,255,.08);padding:3px 8px;border-radius:999px;">窗口 18:30–19:00</span></div>
+                <div style="font-size:10.5px;color:#8FA491;margin-top:4px;">出站左手边花坛旁 · 照片和指引会展示给用户</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:11px;margin-top:13px;">
+              <div style="width:22px;height:22px;flex:none;border-radius:7px;background:#7BC96F;display:flex;align-items:center;justify-content:center;"><svg width="13" height="13" viewBox="0 0 14 14"><path d="M2 7.5 L5.5 11 L12 3.5" stroke="#161D18" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+              <div style="flex:1;"><div style="font-size:13px;font-weight:800;color:#E9F2EA;">深圳北站</div><div style="font-size:10px;color:#8FA491;">4/5/6号线 A口</div></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="width:28px;height:28px;border-radius:9px;border:1px solid rgba(255,255,255,.2);color:#B9C8BB;font-size:15px;display:flex;align-items:center;justify-content:center;">−</span><span style="font-size:15px;font-weight:800;color:#E9F2EA;min-width:44px;text-align:center;">4 份</span><span style="width:28px;height:28px;border-radius:9px;background:#7BC96F;color:#161D18;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;">+</span></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:9px;margin:9px 0 0 33px;">
+              <image-slot id="mspot-szb" style="width:40px;height:40px;flex:none;" shape="rounded" radius="9" placeholder=""></image-slot>
+              <div style="flex:1;">
+                <div style="display:flex;gap:6px;"><span style="font-size:10.5px;font-weight:800;color:#7BC96F;background:rgba(123,201,111,.12);padding:3px 8px;border-radius:999px;">A口</span><span style="font-size:10.5px;font-weight:800;color:#E9F2EA;background:rgba(255,255,255,.08);padding:3px 8px;border-radius:999px;">窗口 19:45–20:15</span></div>
+                <div style="font-size:10.5px;color:#8FA491;margin-top:4px;">出站即到 · 花坛旁绿伞小摊</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:11px;margin-top:13px;opacity:.6;">
+              <div style="width:22px;height:22px;flex:none;border-radius:7px;border:1.5px solid rgba(255,255,255,.3);"></div>
+              <div style="flex:1;"><div style="font-size:13px;font-weight:800;color:#B9C8BB;">科技园站</div><div style="font-size:10px;color:#8FA491;">13号线 C口 · 上批未开放</div></div>
+              <span style="font-size:12px;color:#8FA491;">未勾选</span>
+            </div>
+          </div>
+          <!-- 库存 -->
+          <div style="flex:none;background:#202A22;border-radius:20px;padding:16px;">
+            <div style="font-size:14px;font-weight:800;color:#E9F2EA;">本批次库存 <span style="font-size:11px;font-weight:600;color:#8FA491;">全站点共享</span></div>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:13px;"><span style="flex:1;font-size:13px;color:#B9C8BB;">斑斓蛋糕 6寸 <span style="color:#F0A85C;font-weight:800;">¥88</span></span><div style="width:82px;height:38px;border-radius:11px;background:#161D18;border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#E9F2EA;">40 份</div></div>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:9px;"><span style="flex:1;font-size:13px;color:#B9C8BB;">斑斓蛋糕 8寸 <span style="color:#F0A85C;font-weight:800;">¥128</span></span><div style="width:82px;height:38px;border-radius:11px;background:#161D18;border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#E9F2EA;">30 份</div></div>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:9px;"><span style="flex:1;font-size:13px;color:#B9C8BB;">斑斓椰子小方 <span style="color:#F0A85C;font-weight:800;">¥39</span></span><div style="width:82px;height:38px;border-radius:11px;background:#161D18;border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#E9F2EA;">40 份</div></div>
+          </div>
+          <!-- 截止时间 -->
+          <div style="flex:none;background:#202A22;border-radius:20px;padding:16px;">
+            <div style="font-size:14px;font-weight:800;color:#E9F2EA;">截单时间</div>
+            <div style="height:44px;border-radius:12px;background:#161D18;border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:space-between;padding:0 13px;margin-top:10px;"><span style="font-size:14px;font-weight:800;color:#E9F2EA;">7月11日（周六）22:00</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="#8FA491" stroke-width="1.8"></circle><path d="M12 7.5 V12 L15 14" stroke="#8FA491" stroke-width="1.8" stroke-linecap="round"></path></svg></div>
+            <div style="display:flex;align-items:center;gap:8px;background:rgba(123,201,111,.1);border-radius:10px;padding:8px 11px;margin-top:10px;"><span style="width:6px;height:6px;border-radius:50%;background:#7BC96F;flex:none;"></span><span style="font-size:11.5px;color:#7BC96F;font-weight:600;">截止时间仅兜底，工作台可随时手动成团 / 截单 / 关团</span></div>
+          </div>
+        </div>
+        <div style="flex:none;padding:12px 18px 26px;background:#161D18;border-top:1px solid rgba(255,255,255,.07);">
+          <div style="height:50px;border-radius:999px;background:#7BC96F;color:#161D18;font-size:16px;font-weight:800;display:flex;align-items:center;justify-content:center;">发布批次 · 各站开团</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======== P12 现场核销 ======== -->
+    <div id="p12" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:8px;"><span style="min-width:26px;height:26px;border-radius:8px;background:#1C2620;color:#7BC96F;font-size:13px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;">12</span><span style="font-size:15px;font-weight:700;color:#243329;">现场核销（输 638274 试试）</span></div>
+      <div style="width:390px;height:844px;background:#161D18;border-radius:48px;border:10px solid #171B18;box-shadow:0 24px 48px rgba(23,40,28,.3);overflow:hidden;display:flex;flex-direction:column;">
+        <div style="height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 26px 0 30px;">
+          <span style="font-size:15px;font-weight:700;color:#E9F2EA;">9:41</span>
+          <div style="display:flex;align-items:center;gap:6px;"><svg width="17" height="11" viewBox="0 0 17 11"><rect x="0" y="6" width="3" height="5" rx="1" fill="#E9F2EA"></rect><rect x="4.5" y="4" width="3" height="7" rx="1" fill="#E9F2EA"></rect><rect x="9" y="2" width="3" height="9" rx="1" fill="#E9F2EA"></rect><rect x="13.5" y="0" width="3" height="11" rx="1" fill="#E9F2EA"></rect></svg><div style="width:24px;height:12px;border:1.5px solid #E9F2EA;border-radius:4px;padding:1.5px;display:flex;"><div style="width:70%;background:#E9F2EA;border-radius:1.5px;"></div></div></div>
+        </div>
+        <div style="flex:none;height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 16px 0 12px;">
+          <a href="#p9" style="text-decoration:none;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M10 3 L5 8 L10 13" stroke="#E9F2EA" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg></a>
+          <span style="font-size:16px;font-weight:800;color:#E9F2EA;">现场核销 · 深圳北站</span>
+          <div style="width:74px;height:28px;border-radius:999px;border:1px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;gap:6px;"><span style="font-size:12px;color:#E9F2EA;letter-spacing:1px;">•••</span><span style="width:1px;height:12px;background:rgba(255,255,255,.25);"></span><span style="width:10px;height:10px;border:1.5px solid #E9F2EA;border-radius:50%;"></span></div>
+        </div>
+        <div style="flex:1;overflow:auto;padding:12px 18px 20px;display:flex;flex-direction:column;gap:13px;">
+          <!-- 输码 -->
+          <div style="flex:none;background:#202A22;border-radius:20px;padding:18px 16px;">
+            <div style="font-size:13px;font-weight:800;color:#8FA491;text-align:center;letter-spacing:1px;">顾客报 6 位取货码</div>
+            <input value="{{ code }}" onchange="{{ onCode }}" placeholder="输入取货码" maxlength="6" style="width:100%;box-sizing:border-box;height:64px;margin-top:12px;border-radius:16px;background:#161D18;border:1.5px solid rgba(123,201,111,.4);color:#B9F0A8;font-size:32px;font-weight:800;text-align:center;letter-spacing:12px;">
+            <sc-if value="{{ errShow }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:12px;font-weight:700;color:#F0A85C;text-align:center;margin-top:8px;">没找到这个码，和顾客再对一下？</div>
+            </sc-if>
+            <div style="display:flex;gap:10px;margin-top:14px;">
+              <div onclick="{{ onVerify }}" style="{{ verifyBtnStyle }}">核销</div>
+              <div style="flex:1;height:48px;border-radius:999px;border:1px solid rgba(255,255,255,.25);color:#E9F2EA;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 8 V5.5 C4 4.7 4.7 4 5.5 4 H8 M16 4 H18.5 C19.3 4 20 4.7 20 5.5 V8 M20 16 V18.5 C20 19.3 19.3 20 18.5 20 H16 M8 20 H5.5 C4.7 20 4 19.3 4 18.5 V16 M4 12 H20" stroke="#E9F2EA" stroke-width="1.8" stroke-linecap="round"></path></svg>扫码核销</div>
+            </div>
+            <div onclick="{{ fillDemo }}" style="font-size:11px;color:#8FA491;text-align:center;margin-top:10px;cursor:pointer;">原型演示：点这里自动填入 638274</div>
+          </div>
+          <!-- 成功反馈 -->
+          <sc-if value="{{ verified }}" hint-placeholder-val="{{ false }}">
+            <div style="flex:none;background:rgba(123,201,111,.12);border:1.5px solid rgba(123,201,111,.5);border-radius:20px;padding:16px;display:flex;align-items:center;gap:14px;animation:pop .45s ease both;">
+              <div style="width:52px;height:52px;flex:none;border-radius:50%;background:#7BC96F;display:flex;align-items:center;justify-content:center;"><svg width="28" height="28" viewBox="0 0 24 24"><path d="M4 12.5 L9.5 18 L20 6.5" stroke="#161D18" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+              <div style="flex:1;"><div style="font-size:17px;font-weight:800;color:#B9F0A8;">核销成功！</div><div style="font-size:12px;color:#8FA491;margin-top:3px;">638274 · 米米酱 · 斑斓蛋糕 6寸 × 1</div></div>
+            </div>
+          </sc-if>
+          <!-- 本场进度 -->
+          <div style="flex:none;background:#202A22;border-radius:20px;padding:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;">
+              <span style="font-size:14px;font-weight:800;color:#E9F2EA;">本场进度</span>
+              <span style="font-size:18px;font-weight:800;color:#7BC96F;">{{ progDone }}<span style="font-size:12px;color:#8FA491;font-weight:700;"> / 21 单</span></span>
+            </div>
+            <div style="height:9px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:10px;"><div style="{{ progBar }}"></div></div>
+          </div>
+          <!-- 待核销列表 -->
+          <div style="flex:none;font-size:12px;font-weight:800;color:#8FA491;letter-spacing:1px;padding-left:2px;">待核销</div>
+          <div style="flex:none;background:#202A22;border-radius:18px;padding:6px 14px;">
+            <div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.06);">
+              <span style="font-size:14px;font-weight:800;color:{{ firstCodeColor }};letter-spacing:2px;">638274</span>
+              <span style="flex:1;font-size:12px;color:#B9C8BB;">斑斓蛋糕 6寸 × 1 · 米米酱</span>
+              <span style="font-size:11px;font-weight:800;color:{{ firstTagColor }};">{{ firstTag }}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.06);">
+              <span style="font-size:14px;font-weight:800;color:#E9F2EA;letter-spacing:2px;">204915</span>
+              <span style="flex:1;font-size:12px;color:#B9C8BB;">斑斓蛋糕 8寸 × 1 · 豆豆</span>
+              <span style="font-size:11px;font-weight:800;color:#F0A85C;">待核销</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.06);">
+              <span style="font-size:14px;font-weight:800;color:#E9F2EA;letter-spacing:2px;">771308</span>
+              <span style="flex:1;font-size:12px;color:#B9C8BB;">椰子小方 × 3 · 阿乐（帮室友代买）</span>
+              <span style="font-size:11px;font-weight:800;color:#F0A85C;">待核销</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:11px 0;">
+              <span style="font-size:14px;font-weight:800;color:#5E6E61;letter-spacing:2px;">592047</span>
+              <span style="flex:1;font-size:12px;color:#5E6E61;">斑斓蛋糕 6寸 × 2 · 小婉</span>
+              <span style="font-size:11px;font-weight:800;color:#5E6E61;">已核销</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;adminVisible&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;角色演示&quot;},&quot;defaultStation&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;车公庙站&quot;,&quot;深圳北站&quot;],&quot;default&quot;:&quot;车公庙站&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;角色演示&quot;},&quot;founderPreview&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;角色演示&quot;}}">
+class Component extends DCLogic {
+  state = { sku: '6', qty: 1, station: null, notify: false, toastShow: false, code: '', verified: false, errShow: false };
+
+  renderVals() {
+    const s = this.state;
+    const price = s.sku === '6' ? 88 : 128;
+    const total = price * s.qty;
+    const stationKey = s.station || ((this.props.defaultStation ?? '车公庙站') === '深圳北站' ? 'szb' : 'cgm');
+    const selName = stationKey === 'szb' ? '深圳北站' : (stationKey === 'kjy' ? '科技园站' : '车公庙站');
+    const founder = stationKey === 'kjy' || (this.props.founderPreview ?? false);
+    const goal = 4;
+    const cur = founder ? 1 : (stationKey === 'szb' ? 5 : 3);
+    const remain = Math.max(goal - cur, 0);
+    const fillPct = Math.min(cur / goal * 100, 100);
+
+    const skuBase = {
+      flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
+      padding: '12px 14px', borderRadius: 14, cursor: 'pointer'
+    };
+    const skuOn = { ...skuBase, border: '2px solid #3E8E5E', background: '#EDF7EC', color: '#2C6B47', boxShadow: '0 4px 12px rgba(62,142,94,.15)' };
+    const skuOff = { ...skuBase, border: '2px solid #EAE4D6', background: '#FFFFFF', color: '#57614F' };
+
+    const cardBase = { flex: 'none', background: '#FFFFFF', borderRadius: 20, padding: 16, cursor: 'pointer' };
+    const cardOn = { ...cardBase, border: '2px solid #3E8E5E', boxShadow: '0 8px 20px rgba(62,142,94,.18)' };
+    const cardOff = { ...cardBase, border: '2px solid transparent', boxShadow: '0 4px 14px rgba(40,60,45,.06)' };
+
+    const dotBase = { width: 24, height: 24, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' };
+    const dotOn = { ...dotBase, background: '#3E8E5E' };
+    const dotOff = { ...dotBase, background: '#FFFFFF', border: '2px solid #D8D0BC', boxSizing: 'border-box' };
+
+    const progDone = s.verified ? 9 : 8;
+
+    return {
+      qty: s.qty,
+      price: price,
+      total: total,
+      skuName: s.sku === '6' ? '6寸' : '8寸',
+      stockNote: s.sku === '6' ? '剩 9 份' : '仅剩 3 份',
+      selName: selName,
+      sku6Style: s.sku === '6' ? skuOn : skuOff,
+      sku8Style: s.sku === '8' ? skuOn : skuOff,
+      minusStyle: {
+        width: 36, height: 36, borderRadius: 12, fontSize: 20, fontWeight: 700,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+        background: s.qty > 1 ? '#EDF7EC' : '#F5F1E6', color: s.qty > 1 ? '#2C6B47' : '#C9C2AE'
+      },
+      cgmStyle: stationKey === 'cgm' ? cardOn : cardOff,
+      szbStyle: stationKey === 'szb' ? cardOn : cardOff,
+      kjyStyle: stationKey === 'kjy' ? cardOn : cardOff,
+      cgmDot: stationKey === 'cgm' ? dotOn : dotOff,
+      szbDot: stationKey === 'szb' ? dotOn : dotOff,
+      kjyDot: stationKey === 'kjy' ? dotOn : dotOff,
+      founderShow: founder,
+      successTitle: founder ? '团开起来了，你是发起人！' : '支付成功！',
+      successSub: founder ? ('你在 ' + selName + ' 开了新团 · 斑斓蛋糕 ' + (s.sku === '6' ? '6寸' : '8寸') + ' × ' + s.qty) : ('已加入 ' + selName + ' 的团 · 斑斓蛋糕 ' + (s.sku === '6' ? '6寸' : '8寸') + ' × ' + s.qty),
+      progHead: selName + ' · 已拼 ' + cur + '/' + goal + ' 份',
+      progRemain: remain > 0 ? ('还差 ' + remain + ' 份') : '已成团',
+      progFill: { width: fillPct + '%', height: '100%', borderRadius: 999, background: fillPct >= 100 ? '#3E8E5E' : '#7BC96F' },
+      calloutTitle: founder ? ('你开的团，还差 ' + remain + ' 份，喊人的时候到了！') : (remain > 0 ? ('还差 ' + remain + ' 份，喊人的时候到了！') : '已成团，坐等自提！'),
+      calloutSub: founder ? '把团发出去，第一波人拼齐就成团，大家一起在地铁站拿蛋糕' : '发到室友群、同事群，人齐了大家一起在地铁站拿蛋糕',
+      shareBtnText: founder ? '把团发出去 · 喊人来拼' : '分享到微信群',
+      payBtnText: founder ? '发起拼团 · 当第一个' : '微信支付',
+      shareLine: founder ? ('"我在 ' + selName + ' 开了个斑斓蛋糕团，还差' + remain + '份成团，今天拼明天取、下班地铁口顺手拿，取货日上午10点前可退，来拼一份呀～"') : ('"我在 ' + selName + ' 拼了个斑斓蛋糕，还差' + remain + '份成团，今天拼明天取、下班地铁口顺手拿～"'),
+      pickSku6: () => this.setState({ sku: '6' }),
+      pickSku8: () => this.setState({ sku: '8' }),
+      inc: () => this.setState(st => ({ qty: Math.min(st.qty + 1, 9) })),
+      dec: () => this.setState(st => ({ qty: Math.max(st.qty - 1, 1) })),
+      pickCgm: () => this.setState({ station: 'cgm' }),
+      pickSzb: () => this.setState({ station: 'szb' }),
+      pickKjy: () => this.setState({ station: 'kjy' }),
+      toastShow: s.toastShow,
+      copyText: () => {
+        this.setState({ toastShow: true });
+        clearTimeout(this._tt);
+        this._tt = setTimeout(() => this.setState({ toastShow: false }), 1800);
+      },
+      notifyTitle: s.notify ? '已开启自提通知' : '开启自提通知',
+      notifyTrack: {
+        width: 46, height: 27, borderRadius: 999, padding: 3, boxSizing: 'border-box',
+        display: 'flex', justifyContent: s.notify ? 'flex-end' : 'flex-start',
+        background: s.notify ? '#3E8E5E' : '#E2D8BE', flex: 'none', transition: 'background .2s'
+      },
+      notifyKnob: { width: 21, height: 21, borderRadius: '50%', background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,.2)' },
+      toggleNotify: () => this.setState(st => ({ notify: !st.notify })),
+      adminOn: this.props.adminVisible ?? true,
+      code: s.code,
+      onCode: (e) => this.setState({ code: e.target.value.replace(/\D/g, '').slice(0, 6), errShow: false }),
+      fillDemo: () => this.setState({ code: '638274', errShow: false }),
+      onVerify: () => {
+        if (this.state.code === '638274') {
+          this.setState({ verified: true, errShow: false });
+        } else {
+          this.setState({ errShow: true, verified: false });
+        }
+      },
+      verified: s.verified,
+      errShow: s.errShow,
+      verifyBtnStyle: {
+        flex: 1.2, height: 48, borderRadius: 999, fontSize: 15, fontWeight: 800, cursor: 'pointer',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: s.code.length === 6 ? '#7BC96F' : 'rgba(123,201,111,.25)',
+        color: s.code.length === 6 ? '#161D18' : 'rgba(233,242,234,.5)'
+      },
+      progDone: progDone,
+      progBar: { width: (progDone / 21 * 100) + '%', height: '100%', borderRadius: 999, background: '#7BC96F', transition: 'width .4s' },
+      firstCodeColor: s.verified ? '#5E6E61' : '#B9F0A8',
+      firstTagColor: s.verified ? '#5E6E61' : '#7BC96F',
+      firstTag: s.verified ? '已核销' : '刚才在门口 · 优先'
+    };
+  }
+}
+</script>
+
+
+</body></html>

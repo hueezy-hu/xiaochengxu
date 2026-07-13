@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "泰斓 TAILAN",
+  "usingComponents": {
+    "rule-sheet": "/components/ruleSheet/ruleSheet"
+  }
+}
