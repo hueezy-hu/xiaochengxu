@@ -12,10 +12,14 @@ const { createOrderActions } = require('./src/services/order-actions')
 const { createBatchActions } = require('./src/services/batch-actions')
 const { createLifecycleActions } = require('./src/services/lifecycle-actions')
 const { createFulfillmentActions } = require('./src/services/fulfillment-actions')
+const { createCatalogActions } = require('./src/services/catalog-actions')
+const { createCartActions } = require('./src/services/cart-actions')
+const { createProfileActions } = require('./src/services/profile-actions')
 const { createOrderRepository } = require('./src/repositories/order-repository')
 const { createBatchRepository } = require('./src/repositories/batch-repository')
 const { createFulfillmentRepository } = require('./src/repositories/fulfillment-repository')
 const { createCloudDbHelpers } = require('./src/repositories/cloud-db')
+const { createShoppingRepository } = require('./src/repositories/shopping-repository')
 const { ERROR_CODES: V16_ERROR_CODES, failure: v16Failure } = require('./src/shared/response')
 const { resolveEntryContext } = require('./src/shared/entry-context')
 
@@ -45,11 +49,16 @@ const lifecycleOrderActions = {
 }
 const v16LifecycleActions = createLifecycleActions({ repository: cloudBatchRepository, orderActions: lifecycleOrderActions, now })
 const v16FulfillmentActions = createFulfillmentActions({ repository: createFulfillmentRepository({ db, command: _ }), now })
+const shoppingRepository = createShoppingRepository({ db, command: _ })
+const catalogActions = createCatalogActions({ repository: shoppingRepository, now })
+const cartActions = createCartActions({ repository: shoppingRepository, now })
+const profileActions = createProfileActions({ repository: shoppingRepository, now })
 
 const COLLECTIONS = [
   'products', 'skus', 'stations', 'batches', 'batchStations', 'batchInventory',
   'orders', 'admins', 'users', 'refunds', 'verificationLogs', 'deliveryWindows', 'config',
-  'placementLogs', 'contactLogs', 'operationLogs', 'notificationOutbox', 'paymentEvents', 'runtimeLocks'
+  'placementLogs', 'contactLogs', 'operationLogs', 'notificationOutbox', 'paymentEvents', 'runtimeLocks',
+  'carts', 'openGroupNudges', 'businessDays'
 ]
 let collectionsReadyPromise = null
 
@@ -61,6 +70,14 @@ exports.main = async (event = {}, context = {}) => {
     switch (action) {
       case 'initDemo': return trustedSystemTrigger ? await initDemo(openid) : v16Failure(event, now(), V16_ERROR_CODES.FORBIDDEN, '仅受信内部任务可初始化演示数据')
       case 'getCatalogPage': return await getCatalogPage()
+      case 'getHomeStatus': return await invokeUserAction(catalogActions, 'getHomeStatus', event, openid)
+      case 'nudgeOpenGroup': return await invokeUserAction(catalogActions, 'nudgeOpenGroup', event, openid)
+      case 'addToCart': return await invokeUserAction(cartActions, 'addToCart', event, openid)
+      case 'getCart': return await invokeUserAction(cartActions, 'getCart', event, openid)
+      case 'updateCartItem': return await invokeUserAction(cartActions, 'updateCartItem', event, openid)
+      case 'removeCartItem': return await invokeUserAction(cartActions, 'removeCartItem', event, openid)
+      case 'clearInvalidCart': return await invokeUserAction(cartActions, 'clearInvalidCart', event, openid)
+      case 'updateProfile': return await invokeUserAction(profileActions, 'updateProfile', event, openid)
       case 'getProductDetail': return await getProductDetail(event)
       case 'getStationOptions': return await getStationOptions(event)
       case 'getGroupPage': return await getGroupPage(event, openid)
@@ -120,6 +137,16 @@ async function invokeV16OrderAction(action, event, openid) {
   } catch (err) {
     const t = now()
     return v16Failure(input, t, V16_ERROR_CODES.INTERNAL_ERROR, err.message || '服务器错误')
+  }
+}
+
+async function invokeUserAction(actions, action, event, openid) {
+  const input = { ...event, openid }
+  try {
+    await ensureCollections()
+    return await actions[action](input)
+  } catch (err) {
+    return v16Failure(input, now(), V16_ERROR_CODES.INTERNAL_ERROR, err.message || '服务器错误')
   }
 }
 
