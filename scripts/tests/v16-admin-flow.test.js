@@ -5,11 +5,11 @@ const root = path.resolve(__dirname, '..', '..')
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8')
 function test(name, fn) { try { fn(); console.log(`PASS ${name}`) } catch (err) { console.error(`FAIL ${name}`); console.error(err.stack || err.message); process.exitCode = 1 } }
 
-test('batch page is a four-step draft then manual-publish wizard with fixed threshold', () => {
+test('V1.7 batch page is a simplified manual-publish form with fixed station material', () => {
   const js = read('miniprogram/pages/adminBatch/adminBatch.js'); const wxml = read('miniprogram/pages/adminBatch/adminBatch.wxml')
   assert.match(js, /saveBatchDraft/); assert.match(js, /publishBatch/); assert.doesNotMatch(js, /createBatch|thresholdN|manualFormGroup/)
-  for (const label of ['基础信息', 'SKU库存', '站点窗口', '预览发布']) assert.match(wxml, new RegExp(label))
-  assert.match(wxml, /每站累计满5件/)
+  for (const label of ['基础信息', '勾选 SKU', '勾选启用站点', '确认手动发布']) assert.match(wxml, new RegExp(label))
+  assert.match(wxml, /固定资料/); assert.match(wxml, /10:00/)
 })
 
 test('admin workspace contains no old group, extension, review, postpone, or no-show actions', () => {

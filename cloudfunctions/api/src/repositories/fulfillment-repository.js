@@ -8,6 +8,7 @@ function createFulfillmentRepository({ db, command } = {}) {
     async listOrdersByStation(batchStationId, statuses) { return listOrdersByStation(batchStationId, statuses) },
     async getStation(id) { try { return (await db.collection('stations').doc(id).get()).data || null } catch (err) { return null } },
     async getDeliveryWindowByStation(batchStationId) { return (await queryAll(db, 'deliveryWindows', { batchStationId }))[0] || null },
+    async listPendingRefundRequests() { return queryAll(db, 'refundRequests', { status: '待处理' }) },
     async runTransaction(work) {
       const wrapped = await db.runTransaction(async (transaction) => {
         const tx = {

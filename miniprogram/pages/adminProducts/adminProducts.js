@@ -75,6 +75,12 @@ Page({
     wx.showToast({ title: res.ok ? '商品已保存' : res.msg, icon: res.ok ? 'success' : 'none' })
     if (res.ok) { this.setData({ productId: res.productId }); this.load() }
   },
+  async deleteProduct() {
+    if (!this.data.productId) return
+    const res = await app.call('deleteProduct', { productId: this.data.productId })
+    wx.showModal({ title: res.ok ? '处理完成' : '无法处理', content: res.ok ? (res.archived ? '商品已有引用，已按规则下架，未物理删除。' : '商品已删除。') : (res.msg || '操作失败'), showCancel: false })
+    if (res.ok) { this.newProduct(); this.load() }
+  },
   async saveSku(e) {
     if (!this.data.productId) { wx.showToast({ title: '先保存商品再加SKU', icon: 'none' }); return }
     if (!this.data.skuName || !Number(this.data.skuPrice)) { wx.showToast({ title: 'SKU名和价格必填', icon: 'none' }); return }
@@ -83,6 +89,12 @@ Page({
     if (this.data.skuId) sku._id = this.data.skuId
     const res = await app.call('saveSku', { sku })
     wx.showToast({ title: res.ok ? 'SKU已保存' : res.msg, icon: res.ok ? 'success' : 'none' })
+    if (res.ok) { this.setData({ skuId: '' }); this.load() }
+  },
+  async deleteSku() {
+    if (!this.data.skuId) return
+    const res = await app.call('deleteSku', { skuId: this.data.skuId })
+    wx.showModal({ title: res.ok ? '处理完成' : '无法处理', content: res.ok ? (res.archived ? 'SKU 已被订单或库存引用，只能下架。' : 'SKU 已删除。') : (res.msg || '操作失败'), showCancel: false })
     if (res.ok) { this.setData({ skuId: '' }); this.load() }
   },
   onShareAppMessage() { return { title: '泰斓 TAILAN 商品管理', path: '/pages/mine/mine' } },

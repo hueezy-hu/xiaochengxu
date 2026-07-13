@@ -60,7 +60,8 @@ function createFulfillmentActions({ repository, now = Date.now } = {}) {
       const duplicateTailWarnings = Object.entries(tailGroups).filter(([, orderIds]) => orderIds.length > 1).map(([phoneTail, orderIds]) => ({ phoneTail, orderIds }))
       rows.push({ ...station, stationName: physical && physical.name || station.stationName || '', deliveryWindow, orders, duplicateTailWarnings })
     }
-    return success(input, t, { role: input.actor && input.actor.role, batchStations: rows })
+    const pendingRefundRequests = typeof repository.listPendingRefundRequests === 'function' ? await repository.listPendingRefundRequests() : []
+    return success(input, t, { role: input.actor && input.actor.role, batchStations: rows, pendingRefundRequests })
   }
 
   async function getPrepList(input = {}) {
