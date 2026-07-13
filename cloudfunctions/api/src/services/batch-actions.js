@@ -3,7 +3,7 @@ const { ERROR_CODES, success, failure } = require('../shared/response')
 
 const THRESHOLD = 5
 const ORDER_REFUNDABLE = ['待配送确认', '待自提', '退款处理中', '待退款', '退款失败']
-const MANUAL_CONFIRMABLE_STATION_STATUSES = ['拼团中', '已达门槛待确认']
+const MANUAL_CONFIRMABLE_STATION_STATUSES = ['拼团中', '已成团待确认', '未成团待处理']
 const UNSETTLED_REFUND_STATUSES = ['待退款', '退款处理中', '退款失败']
 
 function id(prefix, seed) {
@@ -26,20 +26,32 @@ function isRefundSettled(result) {
   return Boolean(result && result.ok && !UNSETTLED_REFUND_STATUSES.includes(result.refundStatus))
 }
 
+function stationRows(batch) {
+  if (Array.isArray(batch.stations) && batch.stations.length) return batch.stations
+  return (batch.stationIds || []).map((stationId) => ({ stationId, useFixedProfile: true }))
+}
+
+function inventoryRows(batch) {
+  if (Array.isArray(batch.inventory) && batch.inventory.length) return batch.inventory
+  return (batch.skuRows || []).map((row) => ({ ...row, isUnlimited: Boolean(row.isUnlimited) }))
+}
+
 function validateDraft(batch) {
   if (!batch || !String(batch.name || '').trim()) return '批次名称必填'
   if (!/^\d{4}-\d{2}-\d{2}$/.test(String(batch.saleDate || ''))) return 'saleDate格式错误'
   if (batch.pickupDate !== addDate(batch.saleDate, 1)) return '取货日必须是销售日次日'
-  if (!Array.isArray(batch.stations) || !batch.stations.length) return '至少选择一个站点'
-  if (!Array.isArray(batch.inventory) || !batch.inventory.length) return '至少选择一个SKU'
+  const stations = stationRows(batch)
+  const inventory = inventoryRows(batch)
+  if (!stations.length) return '至少选择一个站点'
+  if (!inventory.length) return '至少选择一个SKU'
   const stationIds = new Set()
-  for (const row of batch.stations) {
+  for (const row of stations) {
     if (!row.stationId || stationIds.has(row.stationId)) return '站点不能为空或重复'
     stationIds.add(row.stationId)
-    if (!/^\d{2}:\d{2}$/.test(String(row.arriveAt || '')) || !/^\d{2}:\d{2}$/.test(String(row.leaveAt || '')) || row.arriveAt >= row.leaveAt) return '站点取货窗口必须开始早于结束'
+    if (!row.useFixedProfile && (!/^\d{2}:\d{2}$/.test(String(row.arriveAt || '')) || !/^\d{2}:\d{2}$/.test(String(row.leaveAt || '')) || row.arriveAt >= row.leaveAt)) return '站点取货窗口必须开始早于结束'
   }
   const skuIds = new Set()
-  for (const row of batch.inventory) {
+  for (const row of inventory) {
     if (!row.skuId || skuIds.has(row.skuId)) return 'SKU不能为空或重复'
     skuIds.add(row.skuId)
     if (!row.isUnlimited && (!Number.isInteger(Number(row.totalQty)) || Number(row.totalQty) < 0)) return 'SKU库存必须是非负整数'
@@ -64,8 +76,8 @@ function createBatchActions({ repository, now = Date.now, systemRefundOrder } = 
         name: String(draft.name).trim(), saleDate: draft.saleDate, pickupDate: draft.pickupDate,
         deadlineAt: beijingTimestamp(draft.saleDate, '22:00'), confirmAt: beijingTimestamp(draft.pickupDate, '12:00'),
         thresholdN: THRESHOLD, status: '草稿', revision,
-        draftStations: draft.stations.map((row) => ({ ...row, thresholdN: THRESHOLD, locationImages: (row.locationImages || []).slice(0, 3) })),
-        draftInventory: draft.inventory.map((row) => ({ skuId: row.skuId, totalQty: row.isUnlimited ? 0 : Number(row.totalQty), isUnlimited: Boolean(row.isUnlimited) })),
+        draftStations: stationRows(draft).map((row) => ({ ...row, thresholdN: THRESHOLD, locationImages: (row.locationImages || []).slice(0, 3) })),
+        draftInventory: inventoryRows(draft).map((row) => ({ skuId: row.skuId, totalQty: row.isUnlimited ? 0 : Number(row.totalQty), isUnlimited: Boolean(row.isUnlimited) })),
         createdBy: existing && existing.createdBy || input.openid || '', createdAt: existing && existing.createdAt || t,
         updatedBy: input.openid || '', updatedAt: t
       })
@@ -101,10 +113,14 @@ function createBatchActions({ repository, now = Date.now, systemRefundOrder } = 
       for (const row of batch.draftStations || []) {
         const station = await tx.getStation(row.stationId)
         if (!station || station.status !== 'active') return { error: `站点${row.stationId}未启用` }
-        if (row.arriveAt >= row.leaveAt) return { error: '站点取货窗口必须开始早于结束' }
-        const images = (row.locationImages && row.locationImages.length ? row.locationImages : station.locationImages || []).slice(0, 3)
+        const arriveAt = row.arriveAt || station.arriveAt
+        const leaveAt = row.leaveAt || station.leaveAt
+        if (!arriveAt || !leaveAt || arriveAt >= leaveAt) return { error: '站点取货窗口必须开始早于结束' }
+        const images = (row.locationImages && row.locationImages.length ? row.locationImages : station.defaultLocationImages || station.locationImages || []).slice(0, 3)
         if (!images.length) return { error: `站点${station.name || row.stationId}至少需要一张地点图片` }
-        preparedStations.push({ row, station, images })
+        const verifyMode = row.verifyMode || station.verifyMode
+        if (!['有人核销', '无人放置'].includes(verifyMode)) return { error: `站点${station.name || row.stationId}交付模式不完整` }
+        preparedStations.push({ row: { ...row, arriveAt, leaveAt, verifyMode }, station, images })
       }
       for (const row of batch.draftInventory || []) {
         const sku = await tx.getSku(row.skuId)
@@ -114,7 +130,7 @@ function createBatchActions({ repository, now = Date.now, systemRefundOrder } = 
 
       for (const item of preparedStations) {
         const batchStationId = id('bs', `${batch._id}:${item.row.stationId}`)
-        await tx.createBatchStation(batchStationId, { batchId: batch._id, stationId: item.row.stationId, thresholdN: THRESHOLD, status: '拼团中', paidItemCount: 0, paidOrderCount: 0, manuallyConfirmed: false, createdAt: t, updatedAt: t })
+        await tx.createBatchStation(batchStationId, { batchId: batch._id, stationId: item.row.stationId, thresholdN: THRESHOLD, verifyMode: item.row.verifyMode, status: '拼团中', paidUserOpenids: [], paidUserCount: 0, paidItemCount: 0, paidOrderCount: 0, manuallyConfirmed: false, createdAt: t, updatedAt: t })
         await tx.createDeliveryWindow(id('dw', batchStationId), { batchId: batch._id, batchStationId, pickupDate: batch.pickupDate, arriveAt: item.row.arriveAt, leaveAt: item.row.leaveAt, locationNote: item.row.locationNote || item.station.pickupNote || '', locationImages: item.images, createdBy: input.openid || '', createdAt: t, updatedAt: t })
       }
       for (const row of batch.draftInventory || []) {
@@ -123,7 +139,7 @@ function createBatchActions({ repository, now = Date.now, systemRefundOrder } = 
       }
       await tx.saveBatch(batch._id, { status: '接单中', publishedAt: t, publishedBy: input.openid || '', updatedAt: t })
       await tx.saveOperationLog(id('op', `${batch._id}:publish`), { action: 'publishBatch', batchId: batch._id, operatorOpenid: input.openid || '', reason: '', createdAt: t })
-      return { batchId: batch._id, deadlineAt: batch.deadlineAt, confirmAt: batch.confirmAt, pickupDate: batch.pickupDate }
+      return { batchId: batch._id, deadlineAt: batch.deadlineAt, confirmAt: batch.confirmAt, pickupDate: batch.pickupDate, latePublishWarning: t >= beijingTimestamp(batch.saleDate, '10:00') }
     })
     return result.error ? failure(input, t, ERROR_CODES.ORDER_STATE_CONFLICT, result.error) : success(input, t, result)
   }
@@ -201,7 +217,35 @@ function createBatchActions({ repository, now = Date.now, systemRefundOrder } = 
     return success(input, t, { batchId: input.batchId, refunded, incomplete, status })
   }
 
-  return { saveBatchDraft, getBatchDraft, publishBatch, manualConfirmDelivery, closeBatch, closeBatchStation }
+  async function appendInventory(input = {}) {
+    const t = Number(now())
+    const quantity = Number(input.quantity)
+    if (!input.batchId || !input.skuId || !Number.isInteger(quantity) || quantity <= 0) return failure(input, t, ERROR_CODES.INVALID_ARGUMENT, 'batchId、skuId和正整数quantity必填')
+    const result = await repository.runTransaction(async (tx) => {
+      const batch = await tx.getBatch(input.batchId)
+      const inventory = await tx.getInventory(input.batchId, input.skuId)
+      if (!batch || !inventory) return { error: '批次库存不存在' }
+      if (inventory.isUnlimited) return { error: '无限库存无需追加' }
+      await tx.saveInventory(inventory._id, { totalQty: Number(inventory.totalQty || 0) + quantity, availableQty: Number(inventory.availableQty || 0) + quantity, updatedAt: t })
+      await tx.saveOperationLog(id('op', `${input.batchId}:${input.skuId}:append:${t}`), { action: 'appendInventory', batchId: input.batchId, skuId: input.skuId, quantity, operatorOpenid: input.openid || '', createdAt: t })
+      return { batchId: input.batchId, skuId: input.skuId, quantity }
+    })
+    return result.error ? failure(input, t, ERROR_CODES.NOT_FOUND, result.error) : success(input, t, result)
+  }
+
+  async function setTodayRest(input = {}) {
+    const t = Number(now())
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(input.date || ''))) return failure(input, t, ERROR_CODES.INVALID_ARGUMENT, 'date格式错误')
+    const result = await repository.runTransaction(async (tx) => {
+      if (input.rest !== false && await tx.findAcceptingBatch('')) return { error: '已有接单中批次，不能设置今日休息' }
+      const status = input.rest === false ? '未开团' : '今日休息'
+      await tx.saveBusinessDay(input.date, { date: input.date, status, updatedBy: input.openid || '', updatedAt: t })
+      return { date: input.date, status }
+    })
+    return result.error ? failure(input, t, ERROR_CODES.ACTIVE_BATCH_EXISTS, result.error) : success(input, t, result)
+  }
+
+  return { saveBatchDraft, getBatchDraft, publishBatch, manualConfirmDelivery, closeBatch, closeBatchStation, appendInventory, setTodayRest }
 }
 
 module.exports = { createBatchActions, beijingTimestamp, addDate }

@@ -110,6 +110,8 @@ exports.main = async (event = {}, context = {}) => {
       case 'manualConfirmDelivery': return await adminOnly(openid, ['superAdmin'], () => invokeV16BatchAction('manualConfirmDelivery', event, openid))
       case 'closeBatch': return await adminOnly(openid, ['superAdmin'], () => invokeV16BatchAction('closeBatch', event, openid))
       case 'closeBatchStation': return await adminOnly(openid, ['superAdmin'], () => invokeV16BatchAction('closeBatchStation', event, openid))
+      case 'appendInventory': return await adminOnly(openid, ['superAdmin'], () => invokeV16BatchAction('appendInventory', event, openid))
+      case 'setTodayRest': return await adminOnly(openid, ['superAdmin'], () => invokeV16BatchAction('setTodayRest', event, openid))
       case 'setDeliveryWindow': return await adminOnly(openid, ['superAdmin'], () => setDeliveryWindow(event, openid))
       case 'markArrived': return await adminOnly(openid, ['superAdmin', 'verifier'], (admin) => invokeV16FulfillmentAction('markArrived', event, admin))
       case 'prepList': return await adminOnly(openid, ['superAdmin', 'verifier'], (admin) => invokeV16FulfillmentAction('getPrepList', event, admin))

@@ -17,6 +17,7 @@ function createBatchRepository({ db, command, now = Date.now, random = Math.rand
           async getBatchStation(id) { return transactionDoc(transaction, 'batchStations', id) },
           async getStation(id) { return transactionDoc(transaction, 'stations', id) },
           async getSku(id) { return transactionDoc(transaction, 'skus', id) },
+          async getInventory(batchId, skuId) { return (await query('batchInventory', { batchId, skuId }))[0] || null },
           async findPublishedBatchBySaleDate(saleDate, exceptId) { return (await query('batches', { saleDate })).find((row) => row._id !== exceptId && row.status !== '草稿') || null },
           async findAcceptingBatch(exceptId) { return (await query('batches', { status: '接单中' })).find((row) => row._id !== exceptId) || null },
           async listBatchStations(batchId) { return query('batchStations', { batchId }) },
@@ -28,6 +29,8 @@ function createBatchRepository({ db, command, now = Date.now, random = Math.rand
           async createBatchStation(id, row) { await transaction.collection('batchStations').doc(id).set({ data: row }) },
           async createDeliveryWindow(id, row) { await transaction.collection('deliveryWindows').doc(id).set({ data: row }) },
           async createInventory(id, row) { await transaction.collection('batchInventory').doc(id).set({ data: row }) },
+          async saveInventory(id, patch) { await saveMerged(transaction, 'batchInventory', id, patch) },
+          async saveBusinessDay(id, row) { await saveMerged(transaction, 'businessDays', id, row) },
           async saveOperationLog(id, row) { await transaction.collection('operationLogs').doc(id).set({ data: row }) },
           async saveNotification(id, row) { await transaction.collection('notificationOutbox').doc(id).set({ data: row }) },
           async touchPublishLock(id, row) { await saveMerged(transaction, 'runtimeLocks', id, row) }

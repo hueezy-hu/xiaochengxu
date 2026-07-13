@@ -1,5 +1,6 @@
 const crypto = require('crypto')
 const { ERROR_CODES, success, failure } = require('../shared/response')
+const { lockStationAtCutoff } = require('../../domain')
 
 const ACCEPTING = '接单中'
 const WAITING_CONFIRMATION = '已截单待配送确认'
@@ -28,6 +29,11 @@ function createLifecycleActions({ repository, orderActions, now = Date.now } = {
         const batch = await tx.getBatch(row._id)
         if (!batch || batch.status !== ACCEPTING || t < Number(batch.deadlineAt)) return
         await tx.saveBatch(batch._id, { status: WAITING_CONFIRMATION, cutoffAt: t, updatedAt: t })
+        const stations = await tx.listBatchStations(batch._id)
+        for (const station of stations) {
+          if ([DELIVERY_CONFIRMED, CLOSED, CLOSING, '已完成'].includes(station.status)) continue
+          await tx.saveBatchStation(station._id, { ...lockStationAtCutoff(station, t), updatedAt: t })
+        }
         await tx.saveOperationLog(id('op', `${batch._id}:cutoff`), {
           action: 'closeSalesAt22', batchId: batch._id, operatorOpenid: 'system', reason: '到达销售日22:00', createdAt: t
         })
@@ -38,7 +44,7 @@ function createLifecycleActions({ repository, orderActions, now = Date.now } = {
 
   async function confirmStation(batch, station, t) {
     if (station.status === DELIVERY_CONFIRMED || station.status === CLOSED) return { confirmed: 0, closed: 0, refunded: 0 }
-    if (station.status !== CLOSING && Number(station.paidItemCount || 0) >= 5) {
+    if (station.status !== CLOSING && (station.status === '已成团待确认' || Number(station.paidUserCount || 0) >= 5)) {
       return repository.runTransaction(async (tx) => {
         const current = await tx.getBatchStation(station._id)
         if (!current || current.status === DELIVERY_CONFIRMED || current.status === CLOSED || current.status === CLOSING) return { confirmed: 0, closed: 0, refunded: 0 }
@@ -47,7 +53,7 @@ function createLifecycleActions({ repository, orderActions, now = Date.now } = {
         for (const order of orders) await tx.saveOrder(order._id, { status: '待自提', deliveryConfirmedAt: t, updatedAt: t })
         await tx.saveOperationLog(id('op', `${current._id}:auto-confirm`), {
           action: 'confirmPickupDayStation', batchId: batch._id, batchStationId: current._id,
-          operatorOpenid: 'system', reason: '已付款商品达到5件', createdAt: t
+          operatorOpenid: 'system', reason: '已付款用户达到5人', createdAt: t
         })
         await tx.saveNotification(id('notice', `${current._id}:delivery-confirmed`), {
           type: 'deliveryConfirmed', batchStationId: current._id, status: '待发送', createdAt: t, updatedAt: t
@@ -62,7 +68,7 @@ function createLifecycleActions({ repository, orderActions, now = Date.now } = {
         return { orderIds: [], skipped: true }
       }
       if (current.status !== CLOSING) {
-        await tx.saveBatchStation(current._id, { status: CLOSING, closeReason: '取货日12:00未达到5件', updatedAt: t })
+        await tx.saveBatchStation(current._id, { status: CLOSING, closeReason: '取货日12:00未达到5人', updatedAt: t })
       }
       const orders = await tx.listOrdersByStation(current._id, REFUNDABLE_ORDER_STATUSES)
       return { orderIds: orders.map((order) => order._id), skipped: false }
@@ -73,7 +79,7 @@ function createLifecycleActions({ repository, orderActions, now = Date.now } = {
     let incomplete = 0
     for (const orderId of prepared.orderIds) {
       const result = await orderActions.systemRefundOrder({
-        system: true, orderId, reason: '取货日12:00未达到5件', requestId: `noon-${station._id}-${orderId}`
+        system: true, orderId, reason: '取货日12:00未达到5人', requestId: `noon-${station._id}-${orderId}`
       })
       if (isRefundSettled(result)) refunded += 1
       else incomplete += 1
@@ -85,7 +91,7 @@ function createLifecycleActions({ repository, orderActions, now = Date.now } = {
       await tx.saveBatchStation(station._id, { status: CLOSED, closedAt: t, updatedAt: t })
       await tx.saveOperationLog(id('op', `${station._id}:auto-close`), {
         action: 'closeBatchStationAtNoon', batchId: batch._id, batchStationId: station._id,
-        operatorOpenid: 'system', reason: '取货日12:00未达到5件', createdAt: t
+        operatorOpenid: 'system', reason: '取货日12:00未达到5人', createdAt: t
       })
     })
     return { confirmed: 0, closed: 1, refunded, incomplete: 0 }

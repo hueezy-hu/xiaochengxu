@@ -10,7 +10,8 @@ function createRepository(seed = {}) {
   const state = {
     batches: clone(seed.batches || {}), stations: clone(seed.stations || {}), skus: clone(seed.skus || {}),
     batchStations: clone(seed.batchStations || {}), windows: clone(seed.windows || {}), inventories: clone(seed.inventories || {}),
-    orders: clone(seed.orders || {}), logs: clone(seed.logs || {}), notifications: clone(seed.notifications || {}), locks: clone(seed.locks || {})
+    orders: clone(seed.orders || {}), logs: clone(seed.logs || {}), notifications: clone(seed.notifications || {}), locks: clone(seed.locks || {}),
+    businessDays: clone(seed.businessDays || {})
   }
   let sequence = 0
   const tx = () => ({
@@ -19,10 +20,13 @@ function createRepository(seed = {}) {
     findPublishedBatchBySaleDate: async (saleDate, exceptId) => clone(Object.values(state.batches).find((b) => b._id !== exceptId && b.saleDate === saleDate && b.status !== '草稿') || null),
     findAcceptingBatch: async (exceptId) => clone(Object.values(state.batches).find((b) => b._id !== exceptId && b.status === '接单中') || null),
     getStation: async (id) => clone(state.stations[id] || null), getSku: async (id) => clone(state.skus[id] || null),
+    getInventory: async (batchId, skuId) => clone(Object.values(state.inventories).find((row) => row.batchId === batchId && row.skuId === skuId) || null),
     saveBatch: async (id, patch) => { state.batches[id] = { ...(state.batches[id] || { _id: id }), ...clone(patch) } },
     createBatchStation: async (id, row) => { state.batchStations[id] = { _id: id, ...clone(row) } },
     createDeliveryWindow: async (id, row) => { state.windows[id] = { _id: id, ...clone(row) } },
     createInventory: async (id, row) => { state.inventories[id] = { _id: id, ...clone(row) } },
+    saveInventory: async (id, patch) => { state.inventories[id] = { ...state.inventories[id], ...clone(patch) } },
+    saveBusinessDay: async (id, row) => { state.businessDays[id] = { _id: id, ...clone(row) } },
     saveOperationLog: async (id, row) => { state.logs[id] = { _id: id, ...clone(row) } },
     listBatchStations: async (batchId) => clone(Object.values(state.batchStations).filter((s) => s.batchId === batchId)),
     listOrdersByBatch: async (batchId, statuses) => clone(Object.values(state.orders).filter((o) => o.batchId === batchId && statuses.includes(o.status))),
@@ -66,7 +70,7 @@ test('saveBatchDraft derives fixed V1.6 times and increments revision without pu
 })
 
 test('publishBatch validates active station images and uniqueness before materializing documents', async () => {
-  const repository = createRepository({ stations: { st1: { _id: 'st1', status: 'active', locationImages: [] } }, skus: { sku1: { _id: 'sku1', status: '上架' } } })
+  const repository = createRepository({ stations: { st1: { _id: 'st1', status: 'active', locationImages: [], verifyMode: '有人核销' } }, skus: { sku1: { _id: 'sku1', status: '上架' } } })
   const actions = createBatchActions({ repository, now: () => D22 - 1 })
   const saved = await actions.saveBatchDraft({ batch: { ...validDraft(), stations: [{ ...validDraft().stations[0], locationImages: [] }] }, openid: 'admin' })
   const noImage = await actions.publishBatch({ batchId: saved.batchId, revision: 1, openid: 'admin' })
@@ -83,7 +87,13 @@ test('publishBatch validates active station images and uniqueness before materia
 })
 
 test('lifecycle does not cutoff at 21:59:59 and at 22:00 only cuts off sales', async () => {
-  const seed = { batches: { b1: { _id: 'b1', status: '接单中', deadlineAt: D22, confirmAt: D1NOON } } }
+  const seed = {
+    batches: { b1: { _id: 'b1', status: '接单中', deadlineAt: D22, confirmAt: D1NOON } },
+    batchStations: {
+      people5: { _id: 'people5', batchId: 'b1', status: '拼团中', paidUserCount: 5, paidItemCount: 5 },
+      items20: { _id: 'items20', batchId: 'b1', status: '拼团中', paidUserCount: 1, paidItemCount: 20 }
+    }
+  }
   const beforeRepo = createRepository(seed)
   const before = createLifecycleActions({ repository: beforeRepo, orderActions: { expirePendingOrders: async () => ({ ok: true, expired: 0 }) }, now: () => D22 - 1 })
   await before.lifecycleTick({ system: true }); assert.equal(beforeRepo.state.batches.b1.status, '接单中')
@@ -91,12 +101,53 @@ test('lifecycle does not cutoff at 21:59:59 and at 22:00 only cuts off sales', a
   const at = createLifecycleActions({ repository: atRepo, orderActions: { expirePendingOrders: async () => ({ ok: true, expired: 2 }) }, now: () => D22 })
   const result = await at.lifecycleTick({ system: true })
   assert.equal(atRepo.state.batches.b1.status, '已截单待配送确认'); assert.equal(result.expired, 2)
+  assert.equal(atRepo.state.batchStations.people5.status, '已成团待确认')
+  assert.equal(atRepo.state.batchStations.items20.status, '未成团待处理')
+  assert.equal(atRepo.state.batchStations.people5.cutoffLockedAt, D22)
 })
 
-test('12:00 confirms stations with five items and refunds stations below five idempotently', async () => {
+test('V1.7 draft only selects SKU stock and enabled station while publish copies fixed station data', async () => {
+  const repository = createRepository({
+    stations: { st1: { _id: 'st1', name: '布吉站', status: 'active', pickupNote: 'A口', defaultLocationImages: ['cloud://station.jpg'], verifyMode: '有人核销', arriveAt: '18:00', leaveAt: '19:00' } },
+    skus: { sku1: { _id: 'sku1', status: '上架' } }
+  })
+  const actions = createBatchActions({ repository, now: () => D22 - 1 })
+  const draft = await actions.saveBatchDraft({
+    openid: 'admin',
+    batch: { name: 'V1.7批次', saleDate: '2026-07-11', pickupDate: '2026-07-12', stationIds: ['st1'], skuRows: [{ skuId: 'sku1', totalQty: 8 }] }
+  })
+  const published = await actions.publishBatch({ batchId: draft.batchId, revision: draft.revision, openid: 'admin' })
+  const station = Object.values(repository.state.batchStations)[0]
+  const window = Object.values(repository.state.windows)[0]
+
+  assert.equal(published.ok, true)
+  assert.equal(published.latePublishWarning, true)
+  assert.equal(station.verifyMode, '有人核销')
+  assert.equal(station.paidUserCount, 0)
+  assert.equal(window.locationNote, 'A口')
+  assert.deepEqual(window.locationImages, ['cloud://station.jpg'])
+})
+
+test('V1.7 appends stock and records today rest only without an accepting batch', async () => {
+  const repository = createRepository({
+    batches: { b1: { _id: 'b1', status: '草稿', saleDate: '2026-07-11' } },
+    inventories: { inv1: { _id: 'inv1', batchId: 'b1', skuId: 'sku1', totalQty: 10, availableQty: 4, reservedQty: 1, soldQty: 5, refundedQty: 0 } }
+  })
+  const actions = createBatchActions({ repository, now: () => D22 - 1 })
+  const added = await actions.appendInventory({ batchId: 'b1', skuId: 'sku1', quantity: 3, openid: 'admin' })
+  const rested = await actions.setTodayRest({ date: '2026-07-11', rest: true, openid: 'admin' })
+
+  assert.equal(added.ok, true)
+  assert.equal(repository.state.inventories.inv1.totalQty, 13)
+  assert.equal(repository.state.inventories.inv1.availableQty, 7)
+  assert.equal(rested.ok, true)
+  assert.equal(repository.state.businessDays['2026-07-11'].status, '今日休息')
+})
+
+test('12:00 confirms stations with five people and refunds stations below five idempotently', async () => {
   const repository = createRepository({
     batches: { b1: { _id: 'b1', status: '已截单待配送确认', deadlineAt: D22, confirmAt: D1NOON } },
-    batchStations: { s5: { _id: 's5', batchId: 'b1', status: '已达门槛待确认', paidItemCount: 5 }, s4: { _id: 's4', batchId: 'b1', status: '拼团中', paidItemCount: 4 } },
+    batchStations: { s5: { _id: 's5', batchId: 'b1', status: '已成团待确认', paidUserCount: 5, paidItemCount: 5 }, s4: { _id: 's4', batchId: 'b1', status: '未成团待处理', paidUserCount: 4, paidItemCount: 20 } },
     orders: { o5: { _id: 'o5', batchId: 'b1', batchStationId: 's5', status: '待配送确认' }, o4: { _id: 'o4', batchId: 'b1', batchStationId: 's4', status: '待配送确认' } }
   })
   const refunded = []
@@ -142,7 +193,7 @@ test('12:00 stale five-item snapshot cannot revive a concurrently closing statio
     now: () => D1NOON
   })
   await lifecycle.lifecycleTick({ system: true })
-  assert.equal(repository.state.batchStations.s1.status, '关闭退款中')
+  assert.equal(repository.state.batchStations.s1.status, '已关闭')
 })
 
 test('manual confirmation is allowed only after cutoff and before noon, requires reason and is skipped at noon', async () => {
@@ -214,7 +265,7 @@ test('closing a completed station is idempotent and never rewrites it to closed'
 
 test('index exposes only V1.6 batch routes behind superAdmin and timer is every minute', async () => {
   const index = fs.readFileSync(path.resolve(__dirname, '..', 'index.js'), 'utf8')
-  for (const action of ['saveBatchDraft', 'getBatchDraft', 'publishBatch', 'manualConfirmDelivery', 'closeBatch', 'closeBatchStation']) {
+  for (const action of ['saveBatchDraft', 'getBatchDraft', 'publishBatch', 'manualConfirmDelivery', 'closeBatch', 'closeBatchStation', 'appendInventory', 'setTodayRest']) {
     assert.match(index, new RegExp(`case ['"]${action}['"]:[^\\n]*adminOnly\\(openid, \\['superAdmin'\\]`))
   }
   for (const old of ['createBatch', 'manualFormGroup', 'manualCutoff', 'extendDeadline', 'closeGroupRefund']) assert.doesNotMatch(index, new RegExp(`case ['"]${old}['"]:`))
