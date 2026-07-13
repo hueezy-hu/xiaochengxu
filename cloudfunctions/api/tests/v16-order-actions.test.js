@@ -24,7 +24,7 @@ function createMemoryRepository(seed = {}, options = {}) {
   return {
     state,
     async listPendingOrderIds(limit = 100) {
-      return Object.values(state.orders).filter((row) => row.status === '待支付').slice(0, limit).map((row) => row._id)
+      return Object.values(state.orders).filter((row) => row.status === '预占中').slice(0, limit).map((row) => row._id)
     },
     async runTransaction(work) {
       const draft = clone(state)
@@ -84,7 +84,7 @@ async function test(name, fn) {
   }
 }
 
-test('createOrder validates V1.6 identity fields before reserving inventory', async () => {
+test('createOrder validates V1.7 identity fields before reserving inventory', async () => {
   const { repository, actions } = createHarness()
   const result = await actions.createOrder({ openid: 'u1', requestId: 'r1', clientRequestId: '', batchStationId: 's1', items: [{ skuId: 'sku1', quantity: 1 }], contactName: 'A', phone: '13800138000' })
   assert.equal(result.ok, false)
@@ -101,7 +101,7 @@ test('createOrder trusts server SKU price, reserves inventory and is idempotent'
   const second = await actions.createOrder({ ...input, requestId: 'r2' })
   assert.equal(first.ok, true)
   assert.equal(first.amount, 5600)
-  assert.equal(first.expiresAt, 1900000)
+  assert.equal(first.expiresAt, 1180000)
   assert.equal(second.orderId, first.orderId)
   assert.equal(second.idempotent, true)
   assert.equal(repository.state.inventories['b1:sku1'].availableQty, 8)
@@ -110,7 +110,7 @@ test('createOrder trusts server SKU price, reserves inventory and is idempotent'
   assert.equal(Object.keys(repository.state.orders).length, 1)
 })
 
-test('payOrder converts reserved inventory to sold and counts station items once', async () => {
+test('payOrder converts reserved inventory to sold while one buyer still counts as one person', async () => {
   const { repository, actions } = createHarness()
   const created = await actions.createOrder({ openid: 'u1', requestId: 'r1', clientRequestId: 'c1', batchStationId: 's1', items: [{ skuId: 'sku1', quantity: 5 }], contactName: 'Alice', phone: '13800138000' })
   const paid = await actions.payOrder({ openid: 'u1', requestId: 'pay1', orderId: created.orderId })
@@ -121,12 +121,13 @@ test('payOrder converts reserved inventory to sold and counts station items once
   assert.equal(repository.state.inventories['b1:sku1'].reservedQty, 0)
   assert.equal(repository.state.inventories['b1:sku1'].soldQty, 5)
   assert.equal(repository.state.batchStations.s1.paidItemCount, 5)
-  assert.equal(repository.state.batchStations.s1.status, '已达门槛待确认')
+  assert.equal(repository.state.batchStations.s1.paidUserCount, 1)
+  assert.equal(repository.state.batchStations.s1.status, '拼团中')
 })
 
 test('payOrder expires late payment and releases reservation', async () => {
-  const { repository, actions } = createHarness(baseSeed(), 1900001)
-  const seedOrder = { _id: 'o1', batchId: 'b1', batchStationId: 's1', stationId: 'station-1', userOpenid: 'u1', items: [{ skuId: 'sku1', quantity: 2, unitPrice: 2800, subtotal: 5600 }], amount: 5600, status: '待支付', expiresAt: 1900000 }
+  const { repository, actions } = createHarness(baseSeed(), 1180001)
+  const seedOrder = { _id: 'o1', batchId: 'b1', batchStationId: 's1', stationId: 'station-1', userOpenid: 'u1', items: [{ skuId: 'sku1', quantity: 2, unitPrice: 2800, subtotal: 5600 }], amount: 5600, status: '预占中', expiresAt: 1180000 }
   repository.state.orders.o1 = seedOrder
   repository.state.inventories['b1:sku1'].availableQty = 8
   repository.state.inventories['b1:sku1'].reservedQty = 2
@@ -151,11 +152,11 @@ test('cancelPendingOrder releases reservation exactly once', async () => {
 })
 
 test('queryPaymentResult permits only the owner', async () => {
-  const { actions } = createHarness({ ...baseSeed(), orders: { o1: { _id: 'o1', userOpenid: 'u1', status: '待支付', expiresAt: 123 } } })
+  const { actions } = createHarness({ ...baseSeed(), orders: { o1: { _id: 'o1', userOpenid: 'u1', status: '预占中', expiresAt: 123 } } })
   const denied = await actions.queryPaymentResult({ openid: 'u2', requestId: 'q1', orderId: 'o1' })
   const allowed = await actions.queryPaymentResult({ openid: 'u1', requestId: 'q2', orderId: 'o1' })
   assert.equal(denied.code, ERROR_CODES.FORBIDDEN)
-  assert.deepEqual({ status: allowed.status, expiresAt: allowed.expiresAt }, { status: '待支付', expiresAt: 123 })
+  assert.deepEqual({ status: allowed.status, expiresAt: allowed.expiresAt }, { status: '预占中', expiresAt: 123 })
 })
 
 test('requestRefund writes stable refund record and applies accounting once', async () => {
@@ -207,7 +208,7 @@ test('legacy inventory without V1.6 counters keeps its inferred total during res
 
 test('queryPaymentResult lazily expires a stale pending order and releases stock', async () => {
   const seed = baseSeed({
-    orders: { o1: { _id: 'o1', batchId: 'b1', batchStationId: 's1', userOpenid: 'u1', items: [{ skuId: 'sku1', quantity: 2 }], status: '待支付', expiresAt: 999999 } },
+    orders: { o1: { _id: 'o1', batchId: 'b1', batchStationId: 's1', userOpenid: 'u1', items: [{ skuId: 'sku1', quantity: 2 }], status: '预占中', expiresAt: 999999 } },
     inventories: { 'b1:sku1': { _id: 'inv1', batchId: 'b1', skuId: 'sku1', totalQty: 10, availableQty: 8, reservedQty: 2, soldQty: 0, refundedQty: 0, status: '上架' } }
   })
   const { repository, actions } = createHarness(seed, 1000000)
@@ -251,7 +252,7 @@ test('non-MOCK refund writes a stable pending refund and applies accounting once
 
 test('expirePendingOrders is restricted and releases stale orders one by one', async () => {
   const seed = baseSeed({
-    orders: { o1: { _id: 'o1', batchId: 'b1', batchStationId: 's1', userOpenid: 'u1', items: [{ skuId: 'sku1', quantity: 1 }], status: '待支付', expiresAt: 999999 } },
+    orders: { o1: { _id: 'o1', batchId: 'b1', batchStationId: 's1', userOpenid: 'u1', items: [{ skuId: 'sku1', quantity: 1 }], status: '预占中', expiresAt: 999999 } },
     inventories: { 'b1:sku1': { _id: 'inv1', batchId: 'b1', skuId: 'sku1', totalQty: 10, availableQty: 9, reservedQty: 1, soldQty: 0, refundedQty: 0, status: '上架' } }
   })
   const { repository, actions } = createHarness(seed, 1000000)

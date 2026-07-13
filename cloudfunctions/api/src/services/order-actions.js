@@ -9,12 +9,12 @@ const crypto = require('crypto')
 const { ERROR_CODES, success, failure } = require('../shared/response')
 
 const PHONE_RE = /^1\d{10}$/
-const ORDER_PENDING = '待支付'
+const ORDER_PENDING = '预占中'
 const ORDER_CANCELLED = '已取消'
 const ORDER_EXPIRED = '已超时'
 const ORDER_REFUNDED = '已退款'
 const BATCH_ACCEPTING = '接单中'
-const STATION_ORDERABLE = new Set(['拼团中', '已达门槛待确认'])
+const STATION_ORDERABLE = new Set(['拼团中', '已成团待确认'])
 
 function normalizeInventory(original, patch) {
   return {

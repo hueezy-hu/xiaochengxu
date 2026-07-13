@@ -151,7 +151,7 @@ async function invokeV16FulfillmentAction(action, event, actor) {
 function createCloudOrderRepository() {
   return {
     async listPendingOrderIds(limit = 100) {
-      const rows = (await db.collection('orders').where({ status: '待支付' }).limit(limit).get()).data || []
+      const rows = (await db.collection('orders').where({ status: '预占中' }).limit(limit).get()).data || []
       return rows.map((row) => row._id)
     },
     async runTransaction(work) {

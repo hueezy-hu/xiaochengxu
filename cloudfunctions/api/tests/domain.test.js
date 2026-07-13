@@ -44,9 +44,9 @@ function inventory(overrides = {}) {
   }
 }
 
-test('V1.6 uses Beijing time, a fixed five-item station threshold, and a fifteen-minute reservation', () => {
+test('V1.7 uses Beijing time, a fixed five-person station threshold, and a three-minute reservation', () => {
   assert.equal(V16_STATION_THRESHOLD, 5)
-  assert.equal(V16_RESERVATION_TTL_MS, 15 * 60 * 1000)
+  assert.equal(V16_RESERVATION_TTL_MS, 3 * 60 * 1000)
   assert.equal(beijingTime(Date.UTC(2026, 6, 7, 14, 0)).time, '22:00:00')
   assert.equal(beijingTimestamp('2026-07-08', '12:00'), Date.UTC(2026, 6, 8, 4, 0))
 })
@@ -69,8 +69,8 @@ test('creating a reservation moves available stock to reserved without counting 
   })
 
   assert.equal(result.ok, true)
-  assert.equal(result.expiresAt, now + 15 * 60 * 1000)
-  assert.equal(result.orderPatch.status, '待支付')
+  assert.equal(result.expiresAt, now + 3 * 60 * 1000)
+  assert.equal(result.orderPatch.status, '预占中')
   assert.equal(result.inventoryPatches[0].availableQty, 5)
   assert.equal(result.inventoryPatches[0].reservedQty, 3)
   assert.equal(result.batchStationPatch, null)
@@ -81,8 +81,8 @@ test('payment confirmation moves reserved to cumulative sold and marks the order
   const result = confirmReservationPayment({
     now: 1000,
     batch: { status: '接单中', deadlineAt: 3000 },
-    order: { status: '待支付', expiresAt: 2000, items: [{ skuId: 'sku-a', quantity: 2 }] },
-    batchStation: { status: '待配送确认', paidItemCount: 2, paidOrderCount: 1 },
+    order: { userOpenid: 'buyer-c', status: '预占中', expiresAt: 2000, items: [{ skuId: 'sku-a', quantity: 2 }] },
+    batchStation: { status: '拼团中', paidUserOpenids: ['buyer-a', 'buyer-b'], paidUserCount: 2, paidItemCount: 2, paidOrderCount: 1 },
     inventoryBySkuId: { 'sku-a': inventory({ availableQty: 5, reservedQty: 3 }) }
   })
 
@@ -95,17 +95,17 @@ test('payment confirmation moves reserved to cumulative sold and marks the order
   assert.equal(inventoryBalance(result.inventoryPatches[0]).balanced, true)
 })
 
-test('the fifth paid item changes the station to reached-threshold pending confirmation', () => {
+test('the fifth distinct paid user changes the station to formed pending confirmation', () => {
   const result = confirmReservationPayment({
     now: 1000,
     batch: { status: '接单中', deadlineAt: 3000 },
-    order: { status: '待支付', expiresAt: 2000, items: [{ skuId: 'sku-a', quantity: 1 }] },
-    batchStation: { status: '待配送确认', paidItemCount: 4, paidOrderCount: 2 },
+    order: { userOpenid: 'buyer-e', status: '预占中', expiresAt: 2000, items: [{ skuId: 'sku-a', quantity: 1 }] },
+    batchStation: { status: '拼团中', paidUserOpenids: ['buyer-a', 'buyer-b', 'buyer-c', 'buyer-d'], paidUserCount: 4, paidItemCount: 4, paidOrderCount: 4 },
     inventoryBySkuId: { 'sku-a': inventory() }
   })
 
   assert.equal(result.batchStationPatch.paidItemCount, 5)
-  assert.equal(result.batchStationPatch.status, '已达门槛待确认')
+  assert.equal(result.batchStationPatch.status, '已成团待确认')
   assert.equal(result.triggeredThreshold, true)
 })
 
@@ -113,7 +113,7 @@ test('payment confirmation rejects callbacks after batch deadline or reservation
   const input = {
     now: 2000,
     batch: { status: '接单中', deadlineAt: 3000 },
-    order: { status: '待支付', expiresAt: 2000, items: [{ skuId: 'sku-a', quantity: 1 }] },
+    order: { userOpenid: 'buyer-a', status: '预占中', expiresAt: 2000, items: [{ skuId: 'sku-a', quantity: 1 }] },
     batchStation: { status: '拼团中', paidItemCount: 1, paidOrderCount: 1 },
     inventoryBySkuId: { 'sku-a': inventory() }
   }
@@ -133,7 +133,7 @@ test('payment confirmation never downgrades a station already confirmed for deli
   const result = confirmReservationPayment({
     now: 1000,
     batch: { status: '接单中', deadlineAt: 3000 },
-    order: { status: '待支付', expiresAt: 2000, items: [{ skuId: 'sku-a', quantity: 1 }] },
+    order: { userOpenid: 'buyer-f', status: '预占中', expiresAt: 2000, items: [{ skuId: 'sku-a', quantity: 1 }] },
     batchStation: { status: '已确认配送', paidItemCount: 5, paidOrderCount: 2 },
     inventoryBySkuId: { 'sku-a': inventory() }
   })
@@ -146,7 +146,7 @@ test('cancelling or expiring a pending order releases its reservation only once'
   const input = {
     now: 2000,
     reason: '用户取消',
-    order: { status: '待支付', items: [{ skuId: 'sku-a', quantity: 1 }] },
+    order: { status: '预占中', items: [{ skuId: 'sku-a', quantity: 1 }] },
     inventoryBySkuId: { 'sku-a': inventory() }
   }
   const first = releaseReservation(input)

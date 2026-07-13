@@ -1,6 +1,16 @@
 const BEIJING_OFFSET_MS = 8 * 60 * 60 * 1000
-const V16_STATION_THRESHOLD = 5
-const V16_RESERVATION_TTL_MS = 15 * 60 * 1000
+const {
+  STATION_THRESHOLD,
+  RESERVATION_TTL_MS,
+  ORDER_STATUS,
+  STATION_STATUS
+} = require('./src/constants/v17')
+const { recalculateStationCounts } = require('./src/domain/grouping')
+const { lockStationAtCutoff, decideStationAtNoon } = require('./src/domain/lifecycle')
+const { applyV17Refund } = require('./src/domain/inventory')
+const { transitionV17Order } = require('./src/domain/order-state')
+const V16_STATION_THRESHOLD = STATION_THRESHOLD
+const V16_RESERVATION_TTL_MS = RESERVATION_TTL_MS
 
 function pad2(value) {
   return String(value).padStart(2, '0')
@@ -292,14 +302,14 @@ function createReservation({ items = [], inventoryBySkuId = {}, now = Date.now()
   return {
     ok: true,
     expiresAt,
-    orderPatch: { status: '待支付', reservedAt: Number(now), expiresAt },
+    orderPatch: { status: ORDER_STATUS.RESERVED, reservedAt: Number(now), expiresAt },
     batchStationPatch: null,
     inventoryPatches
   }
 }
 
 function confirmReservationPayment({ order, batch, batchStation, inventoryBySkuId = {}, now = Date.now() } = {}) {
-  if (!order || order.status !== '待支付') {
+  if (!order || order.status !== ORDER_STATUS.RESERVED) {
     return { ok: false, reason: '订单已处理', inventoryPatches: [] }
   }
   if (!batch || batch.status !== '接单中') {
@@ -334,28 +344,37 @@ function confirmReservationPayment({ order, batch, batchStation, inventoryBySkuI
     })
   })
   const paidItemCount = Number(batchStation && batchStation.paidItemCount || 0) + sumItems(order.items)
-  const previousPaidItemCount = Number(batchStation && batchStation.paidItemCount || 0)
+  const paidUserOpenids = [...new Set([
+    ...((batchStation && batchStation.paidUserOpenids) || []),
+    order.userOpenid
+  ].filter(Boolean))]
+  const previousPaidUserCount = Number(batchStation && batchStation.paidUserCount || 0)
+  const paidUserCount = paidUserOpenids.length
 
   return {
     ok: true,
     orderPatch: {
-      status: batchStation && batchStation.status === '已确认配送' ? '待自提' : '待配送确认',
+      status: batchStation && batchStation.status === STATION_STATUS.DELIVERY_CONFIRMED
+        ? ORDER_STATUS.WAITING_PICKUP
+        : ORDER_STATUS.WAITING_DELIVERY,
       paidAt: Number(now)
     },
     batchStationPatch: {
       paidItemCount,
       paidOrderCount: Number(batchStation && batchStation.paidOrderCount || 0) + 1,
-      status: batchStation && batchStation.status === '已确认配送'
-        ? '已确认配送'
-        : (paidItemCount >= V16_STATION_THRESHOLD ? '已达门槛待确认' : '拼团中')
+      paidUserOpenids,
+      paidUserCount,
+      status: batchStation && batchStation.status === STATION_STATUS.DELIVERY_CONFIRMED
+        ? STATION_STATUS.DELIVERY_CONFIRMED
+        : (paidUserCount >= STATION_THRESHOLD ? STATION_STATUS.FORMED : STATION_STATUS.GROUPING)
     },
     inventoryPatches,
-    triggeredThreshold: previousPaidItemCount < V16_STATION_THRESHOLD && paidItemCount >= V16_STATION_THRESHOLD
+    triggeredThreshold: previousPaidUserCount < STATION_THRESHOLD && paidUserCount >= STATION_THRESHOLD
   }
 }
 
 function releaseReservation({ order, inventoryBySkuId = {}, now = Date.now(), reason = '预占已释放' } = {}) {
-  if (!order || order.status !== '待支付' || order.reservationReleasedAt) {
+  if (!order || order.status !== ORDER_STATUS.RESERVED || order.reservationReleasedAt) {
     return { released: false, orderPatch: null, inventoryPatches: [] }
   }
   const grouped = itemQuantitiesBySku(order.items)
@@ -382,7 +401,7 @@ function releaseReservation({ order, inventoryBySkuId = {}, now = Date.now(), re
   return {
     released: true,
     orderPatch: {
-      status: reason === '支付超时' ? '已超时' : '已取消',
+      status: reason === '支付超时' ? ORDER_STATUS.EXPIRED : ORDER_STATUS.CANCELLED,
       reservationReleasedAt: Number(now),
       cancelReason: reason
     },
@@ -557,5 +576,10 @@ module.exports = {
   canSelfCancelOrder,
   applyRefundToSnapshots,
   advanceBatchLifecycle,
-  buildVerifyCode
+  buildVerifyCode,
+  recalculateStationCounts,
+  lockStationAtCutoff,
+  decideStationAtNoon,
+  applyV17Refund,
+  transitionV17Order
 }
