@@ -110,6 +110,41 @@ test('createOrder trusts server SKU price, reserves inventory and is idempotent'
   assert.equal(Object.keys(repository.state.orders).length, 1)
 })
 
+test('createOrder atomically reserves multiple SKUs and stores tail plus random pickup token', async () => {
+  const seed = baseSeed()
+  seed.skus.sku2 = { _id: 'sku2', name: 'Pandan', spec: '1box', price: 1500, status: '上架' }
+  seed.inventories['b1:sku2'] = { _id: 'inv2', batchId: 'b1', skuId: 'sku2', totalQty: 4, availableQty: 4, reservedQty: 0, soldQty: 0, refundedQty: 0, status: '上架' }
+  const { repository, actions } = createHarness(seed)
+  const result = await actions.createOrder({
+    openid: 'u1', requestId: 'r1', clientRequestId: 'multi-1', batchStationId: 's1', contactName: 'Alice', phone: '13800138000',
+    items: [{ skuId: 'sku1', quantity: 2 }, { skuId: 'sku2', quantity: 3 }]
+  })
+
+  assert.equal(result.ok, true)
+  assert.equal(result.amount, 10100)
+  assert.equal(repository.state.inventories['b1:sku1'].reservedQty, 2)
+  assert.equal(repository.state.inventories['b1:sku2'].reservedQty, 3)
+  assert.equal(repository.state.orders[result.orderId].phoneTail, '8000')
+  assert.match(repository.state.orders[result.orderId].pickupQrToken, /^[a-f0-9]{48}$/)
+})
+
+test('createOrder leaves every SKU untouched when any selected SKU is short', async () => {
+  const seed = baseSeed()
+  seed.skus.sku2 = { _id: 'sku2', name: 'Pandan', spec: '1box', price: 1500, status: '上架' }
+  seed.inventories['b1:sku2'] = { _id: 'inv2', batchId: 'b1', skuId: 'sku2', totalQty: 1, availableQty: 1, reservedQty: 0, soldQty: 0, refundedQty: 0, status: '上架' }
+  const { repository, actions } = createHarness(seed)
+  const result = await actions.createOrder({
+    openid: 'u1', requestId: 'r1', clientRequestId: 'multi-short', batchStationId: 's1', contactName: 'Alice', phone: '13800138000',
+    items: [{ skuId: 'sku1', quantity: 2 }, { skuId: 'sku2', quantity: 2 }]
+  })
+
+  assert.equal(result.ok, false)
+  assert.equal(result.code, ERROR_CODES.INVENTORY_INSUFFICIENT)
+  assert.equal(repository.state.inventories['b1:sku1'].reservedQty, 0)
+  assert.equal(repository.state.inventories['b1:sku2'].reservedQty, 0)
+  assert.equal(Object.keys(repository.state.orders).length, 0)
+})
+
 test('payOrder converts reserved inventory to sold while one buyer still counts as one person', async () => {
   const { repository, actions } = createHarness()
   const created = await actions.createOrder({ openid: 'u1', requestId: 'r1', clientRequestId: 'c1', batchStationId: 's1', items: [{ skuId: 'sku1', quantity: 5 }], contactName: 'Alice', phone: '13800138000' })

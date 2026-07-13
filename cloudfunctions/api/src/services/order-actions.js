@@ -7,8 +7,9 @@ const {
 } = require('../../domain')
 const crypto = require('crypto')
 const { ERROR_CODES, success, failure } = require('../shared/response')
+const { PHONE_RE } = require('../shared/validation')
+const { randomToken } = require('../shared/ids')
 
-const PHONE_RE = /^1\d{10}$/
 const ORDER_PENDING = '预占中'
 const ORDER_CANCELLED = '已取消'
 const ORDER_EXPIRED = '已超时'
@@ -72,9 +73,10 @@ function validateCreate(input) {
   if (!input.openid || input.openid === 'anonymous') return '缺少用户身份'
   if (!String(input.clientRequestId || '').trim()) return 'clientRequestId必填'
   if (!String(input.batchStationId || '').trim()) return 'batchStationId必填'
-  if (!Array.isArray(input.items) || input.items.length !== 1) return 'items必须且只能包含一项'
-  const item = input.items[0] || {}
-  if (!String(item.skuId || '').trim() || !Number.isInteger(Number(item.quantity)) || Number(item.quantity) <= 0) return 'SKU和数量不合法'
+  if (!Array.isArray(input.items) || input.items.length === 0) return 'items至少包含一项'
+  for (const item of input.items) {
+    if (!String(item && item.skuId || '').trim() || !Number.isInteger(Number(item && item.quantity)) || Number(item.quantity) <= 0) return 'SKU和数量不合法'
+  }
   if (!String(input.contactName || '').trim()) return 'contactName必填'
   if (!PHONE_RE.test(String(input.phone || ''))) return 'phone必须是11位手机号'
   return ''
@@ -83,6 +85,12 @@ function validateCreate(input) {
 function idempotentOrderId(openid, clientRequestId) {
   const digest = crypto.createHash('sha256').update(`${openid}\0${clientRequestId}`).digest('hex').slice(0, 32)
   return `order-${digest}`
+}
+
+function aggregateItems(items) {
+  const quantities = new Map()
+  for (const item of items) quantities.set(String(item.skuId), Number(quantities.get(String(item.skuId)) || 0) + Number(item.quantity))
+  return [...quantities.entries()].map(([skuId, quantity]) => ({ skuId, quantity }))
 }
 
 function createOrderActions({ repository, now = Date.now, mockPay = true } = {}) {
@@ -106,23 +114,26 @@ function createOrderActions({ repository, now = Date.now, mockPay = true } = {})
       }
       if (!STATION_ORDERABLE.has(station.status)) return { error: [ERROR_CODES.STATION_CLOSED, '站点不可下单'] }
 
-      const item = input.items[0]
-      const sku = await tx.getSku(item.skuId)
-      if (!sku || sku.status !== '上架') return { error: [ERROR_CODES.NOT_FOUND, 'SKU不存在或已下架'] }
-      const inventory = normalizeInventorySnapshot(await tx.getInventory(batch._id, sku._id))
-      const quantity = Number(item.quantity)
-      const orderItems = [{
-        skuId: sku._id,
-        name: sku.name,
-        spec: sku.spec || '',
-        quantity,
-        unitPrice: Number(sku.price),
-        subtotal: Number(sku.price) * quantity
-      }]
-      const reservation = createReservation({ items: orderItems, inventoryBySkuId: { [sku._id]: inventory }, now: t })
+      const orderItems = []
+      const inventoryBySkuId = {}
+      for (const item of aggregateItems(input.items)) {
+        const sku = await tx.getSku(item.skuId)
+        if (!sku || sku.status !== '上架') return { error: [ERROR_CODES.NOT_FOUND, 'SKU不存在或已下架'] }
+        const inventory = normalizeInventorySnapshot(await tx.getInventory(batch._id, sku._id))
+        inventoryBySkuId[sku._id] = inventory
+        orderItems.push({
+          skuId: sku._id,
+          name: sku.name,
+          spec: sku.spec || '',
+          quantity: item.quantity,
+          unitPrice: Number(sku.price),
+          subtotal: Number(sku.price) * item.quantity
+        })
+      }
+      const reservation = createReservation({ items: orderItems, inventoryBySkuId, now: t })
       if (!reservation.ok) return { error: [mapDomainError(reservation.reason, ERROR_CODES.INVENTORY_INSUFFICIENT), reservation.reason] }
-      await persistInventory(tx, { [sku._id]: inventory }, reservation.inventoryPatches, t)
-      const amount = orderItems[0].subtotal
+      await persistInventory(tx, inventoryBySkuId, reservation.inventoryPatches, t)
+      const amount = orderItems.reduce((sum, item) => sum + item.subtotal, 0)
       const orderId = await tx.createOrder({
         batchId: batch._id,
         batchStationId: station._id,
@@ -133,6 +144,8 @@ function createOrderActions({ repository, now = Date.now, mockPay = true } = {})
         amount,
         contactName: String(input.contactName).trim(),
         phone: String(input.phone),
+        phoneTail: String(input.phone).slice(-4),
+        pickupQrToken: randomToken(24),
         ...reservation.orderPatch,
         createdAt: t,
         updatedAt: t
