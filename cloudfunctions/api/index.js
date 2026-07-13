@@ -4,35 +4,36 @@
 // ============================================================
 const cloud = require('wx-server-sdk')
 const {
-  evaluatePaidOrder,
-  applyRefundToSnapshots,
   buildVerifyCode,
   beijingTime,
-  beijingTimestamp,
-  canSelfCancelOrder,
-  advanceBatchLifecycle
+  beijingTimestamp
 } = require('./domain')
 const { createOrderActions } = require('./src/services/order-actions')
 const { createBatchActions } = require('./src/services/batch-actions')
 const { createLifecycleActions } = require('./src/services/lifecycle-actions')
 const { createFulfillmentActions } = require('./src/services/fulfillment-actions')
+const { createOrderRepository } = require('./src/repositories/order-repository')
+const { createBatchRepository } = require('./src/repositories/batch-repository')
+const { createFulfillmentRepository } = require('./src/repositories/fulfillment-repository')
+const { createCloudDbHelpers } = require('./src/repositories/cloud-db')
 const { ERROR_CODES: V16_ERROR_CODES, failure: v16Failure } = require('./src/shared/response')
 const { resolveEntryContext } = require('./src/shared/entry-context')
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
 const _ = db.command
+const { transactionDoc } = createCloudDbHelpers({ db, command: _ })
 
 // PRD 8 / 目标补充：true 用于无商户号时跑通全流程；false 走 cloudPay。
 const MOCK_PAY = true
 
-const cloudOrderRepository = createCloudOrderRepository()
+const cloudOrderRepository = createOrderRepository({ db, command: _ })
 const v16OrderActions = createOrderActions({
   repository: cloudOrderRepository,
   now,
   mockPay: MOCK_PAY
 })
-const cloudBatchRepository = createCloudBatchRepository()
+const cloudBatchRepository = createBatchRepository({ db, command: _, now })
 const v16BatchActions = createBatchActions({
   repository: cloudBatchRepository,
   now,
@@ -43,7 +44,7 @@ const lifecycleOrderActions = {
   systemRefundOrder: (input = {}) => v16OrderActions.systemRefundOrder({ system: true, ...input })
 }
 const v16LifecycleActions = createLifecycleActions({ repository: cloudBatchRepository, orderActions: lifecycleOrderActions, now })
-const v16FulfillmentActions = createFulfillmentActions({ repository: createCloudFulfillmentRepository(), now })
+const v16FulfillmentActions = createFulfillmentActions({ repository: createFulfillmentRepository({ db, command: _ }), now })
 
 const COLLECTIONS = [
   'products', 'skus', 'stations', 'batches', 'batchStations', 'batchInventory',
@@ -148,172 +149,6 @@ async function invokeV16FulfillmentAction(action, event, actor) {
   }
 }
 
-function createCloudOrderRepository() {
-  return {
-    async listPendingOrderIds(limit = 100) {
-      const rows = (await db.collection('orders').where({ status: '预占中' }).limit(limit).get()).data || []
-      return rows.map((row) => row._id)
-    },
-    async runTransaction(work) {
-      const wrapped = await db.runTransaction(async (transaction) => {
-        const tx = {
-          async findOrderByClientRequestId(openid, clientRequestId) {
-            const rows = (await transaction.collection('orders').where({ userOpenid: openid, clientRequestId }).limit(1).get()).data || []
-            return rows[0] || null
-          },
-          async getOrder(id) { return await transactionDoc(transaction, 'orders', id) },
-          async getBatch(id) { return await transactionDoc(transaction, 'batches', id) },
-          async getBatchStation(id) { return await transactionDoc(transaction, 'batchStations', id) },
-          async getSku(id) { return await transactionDoc(transaction, 'skus', id) },
-          async getInventory(batchId, skuId) {
-            const rows = (await transaction.collection('batchInventory').where({ batchId, skuId }).limit(1).get()).data || []
-            return rows[0] || null
-          },
-          async getRefund(id) { return await transactionDoc(transaction, 'refunds', id) },
-          async createOrder(data, id) {
-            await transaction.collection('orders').doc(id).set({ data })
-            return id
-          },
-          async saveOrder(id, data) { await transaction.collection('orders').doc(id).update({ data }) },
-          async saveBatchStation(id, data) { await transaction.collection('batchStations').doc(id).update({ data }) },
-          async saveInventory(row) {
-            const { _id, ...data } = row
-            await transaction.collection('batchInventory').doc(_id).update({ data })
-          },
-          async saveRefund(id, data) { await transaction.collection('refunds').doc(id).set({ data }) }
-        }
-        return await work(tx)
-      }, 3)
-      return wrapped && Object.prototype.hasOwnProperty.call(wrapped, 'result') ? wrapped.result : wrapped
-    }
-  }
-}
-
-function createCloudBatchRepository() {
-  function generatedId(prefix) { return `${prefix}-${now()}-${Math.random().toString(16).slice(2)}` }
-  async function listBatchStations(batchId) {
-    const rows = []
-    const pageSize = 100
-    for (let offset = 0; ; offset += pageSize) {
-      const page = (await db.collection('batchStations').where({ batchId }).skip(offset).limit(pageSize).get()).data || []
-      rows.push(...page)
-      if (page.length < pageSize) return rows
-    }
-  }
-  return {
-    newId: generatedId,
-    async getBatch(id) { return getDoc('batches', id) },
-    async listBatchStations(batchId) { return listBatchStations(batchId) },
-    async listDueBatches(status, field, timestamp) {
-      return (await db.collection('batches').where({ status, [field]: _.lte(timestamp) }).get()).data || []
-    },
-    async runTransaction(work) {
-      const wrapped = await db.runTransaction(async (transaction) => {
-        const query = async (collection, where) => {
-          const rows = []
-          const pageSize = 100
-          for (let offset = 0; ; offset += pageSize) {
-            const page = (await transaction.collection(collection).where(where).skip(offset).limit(pageSize).get()).data || []
-            rows.push(...page)
-            if (page.length < pageSize) return rows
-          }
-        }
-        const saveMerged = async (collection, docId, patch) => {
-          const existing = await transactionDoc(transaction, collection, docId) || {}
-          const { _id, ...data } = { ...existing, ...patch }
-          await transaction.collection(collection).doc(docId).set({ data })
-        }
-        const tx = {
-          async getBatch(id) { return transactionDoc(transaction, 'batches', id) },
-          async getBatchStation(id) { return transactionDoc(transaction, 'batchStations', id) },
-          async getStation(id) { return transactionDoc(transaction, 'stations', id) },
-          async getSku(id) { return transactionDoc(transaction, 'skus', id) },
-          async findPublishedBatchBySaleDate(saleDate, exceptId) {
-            return (await query('batches', { saleDate })).find((row) => row._id !== exceptId && row.status !== '草稿') || null
-          },
-          async findAcceptingBatch(exceptId) {
-            return (await query('batches', { status: '接单中' })).find((row) => row._id !== exceptId) || null
-          },
-          async listBatchStations(batchId) { return query('batchStations', { batchId }) },
-          async listOrdersByBatch(batchId, statuses) { return query('orders', { batchId, status: _.in(statuses) }) },
-          async listOrdersByStation(batchStationId, statuses) { return query('orders', { batchStationId, status: _.in(statuses) }) },
-          async saveBatch(id, patch) { await saveMerged('batches', id, patch) },
-          async saveBatchStation(id, patch) { await saveMerged('batchStations', id, patch) },
-          async saveOrder(id, patch) { await saveMerged('orders', id, patch) },
-          async createBatchStation(id, row) { await transaction.collection('batchStations').doc(id).set({ data: row }) },
-          async createDeliveryWindow(id, row) { await transaction.collection('deliveryWindows').doc(id).set({ data: row }) },
-          async createInventory(id, row) { await transaction.collection('batchInventory').doc(id).set({ data: row }) },
-          async saveOperationLog(id, row) { await transaction.collection('operationLogs').doc(id).set({ data: row }) },
-          async saveNotification(id, row) { await transaction.collection('notificationOutbox').doc(id).set({ data: row }) },
-          async touchPublishLock(id, row) { await saveMerged('runtimeLocks', id, row) }
-        }
-        return work(tx)
-      }, 3)
-      return wrapped && Object.prototype.hasOwnProperty.call(wrapped, 'result') ? wrapped.result : wrapped
-    }
-  }
-}
-
-function createCloudFulfillmentRepository() {
-  async function queryAll(source, collection, where = {}) {
-    const rows = []
-    const pageSize = 100
-    for (let offset = 0; ; offset += pageSize) {
-      const collectionRef = source.collection(collection)
-      const queryRef = Object.keys(where).length ? collectionRef.where(where) : collectionRef
-      const page = (await queryRef.skip(offset).limit(pageSize).get()).data || []
-      rows.push(...page)
-      if (page.length < pageSize) return rows
-    }
-  }
-  async function listOrdersByStation(batchStationId, statuses) {
-    return queryAll(db, 'orders', { batchStationId, status: _.in(statuses) })
-  }
-  return {
-    async listBatchStations() { return queryAll(db, 'batchStations') },
-    async listOrdersByStation(batchStationId, statuses) { return listOrdersByStation(batchStationId, statuses) },
-    async getStation(id) { return getDoc('stations', id) },
-    async getDeliveryWindowByStation(batchStationId) { return (await queryAll(db, 'deliveryWindows', { batchStationId }))[0] || null },
-    async runTransaction(work) {
-      const wrapped = await db.runTransaction(async (transaction) => {
-        const saveMerged = async (collection, docId, patch) => {
-          const existing = await transactionDoc(transaction, collection, docId) || {}
-          const { _id, ...data } = { ...existing, ...patch }
-          await transaction.collection(collection).doc(docId).set({ data })
-        }
-        const tx = {
-          async getBatchStation(id) { return transactionDoc(transaction, 'batchStations', id) },
-          async getOrder(id) { return transactionDoc(transaction, 'orders', id) },
-          async getDeliveryWindowByStation(batchStationId) {
-            return (await queryAll(transaction, 'deliveryWindows', { batchStationId }))[0] || null
-          },
-          async findOrderByCode(code) { return (await queryAll(transaction, 'orders', { verifyCode: code }))[0] || null },
-          async findAdminByOpenid(openid) { return (await queryAll(transaction, 'admins', { openid }))[0] || null },
-          async listOrdersByStation(batchStationId, statuses) { return queryAll(transaction, 'orders', { batchStationId, status: _.in(statuses) }) },
-          async listBatchStations(batchId) { return queryAll(transaction, 'batchStations', { batchId }) },
-          async saveOrder(id, patch) { await saveMerged('orders', id, patch) },
-          async saveBatch(id, patch) { await saveMerged('batches', id, patch) },
-          async saveBatchStation(id, patch) { await saveMerged('batchStations', id, patch) },
-          async saveDeliveryWindow(id, patch) { await saveMerged('deliveryWindows', id, patch) },
-          async saveAdmin(id, patch) { await saveMerged('admins', id, patch) },
-          async saveVerificationLog(id, row) { await transaction.collection('verificationLogs').doc(id).set({ data: row }) },
-          async saveContactLog(id, row) { await transaction.collection('contactLogs').doc(id).set({ data: row }) },
-          async savePlacementLog(id, row) { await transaction.collection('placementLogs').doc(id).set({ data: row }) },
-          async saveOperationLog(id, row) { await transaction.collection('operationLogs').doc(id).set({ data: row }) },
-          async saveNotification(id, row) { await transaction.collection('notificationOutbox').doc(id).set({ data: row }) }
-        }
-        return work(tx)
-      }, 3)
-      return wrapped && Object.prototype.hasOwnProperty.call(wrapped, 'result') ? wrapped.result : wrapped
-    }
-  }
-}
-
-async function transactionDoc(transaction, collection, id) {
-  if (!id) return null
-  try { return (await transaction.collection(collection).doc(id).get()).data || null } catch (err) { return null }
-}
-
 function addDaysToBeijingDate(date, days) {
   return beijingTime(beijingTimestamp(date, '00:00') + days * 24 * 3600 * 1000).date
 }
@@ -391,12 +226,6 @@ async function adminOnly(openid, roles, fn) {
 
 function assertText(value, label) {
   if (!value || typeof value !== 'string') throw new Error(label + '不能为空')
-}
-
-function toQty(value) {
-  const qty = Number(value)
-  if (!Number.isInteger(qty) || qty <= 0) throw new Error('购买数量必须为正整数')
-  return qty
 }
 
 function publicBatchStation(row) {
@@ -573,109 +402,6 @@ async function getGroupPage(event, openid) {
   return ok({ batch, batchStation: publicBatchStation(batchStation), station, deliveryWindow, isLeader, leaderText: isLeader ? '你发起的团' : '' })
 }
 
-// PRD 8.1 / 13.3：创建待支付订单，items 固化价格快照；待支付不占库存。
-async function createOrder(event, openid) {
-  assertText(event.batchStationId, 'batchStationId')
-  if (!Array.isArray(event.items) || event.items.length === 0) throw new Error('请选择SKU')
-  const batchStation = await getDoc('batchStations', event.batchStationId)
-  if (!batchStation) return fail('站点团不存在')
-  const batch = await getDoc('batches', batchStation.batchId)
-  if (!batch || batch.status !== '接单中') return fail('批次未接单')
-  if (Number(batch.deadlineAt || 0) <= now()) return fail('今晚批次已截单，明晚 22:00 前再来拼')
-  if (!['拼团中', '已成团继续接单'].includes(batchStation.status)) return fail('站点不可下单')
-
-  const normalizedItems = event.items.map((item) => ({ skuId: item.skuId, quantity: toQty(item.quantity) }))
-  const skuIds = [...new Set(normalizedItems.map((item) => item.skuId).filter(Boolean))]
-  const [skus, inventoryRows] = await Promise.all([
-    listDocsByIds('skus', skuIds),
-    skuIds.length ? db.collection('batchInventory').where({ batchId: batch._id, skuId: _.in(skuIds), status: '上架' }).get().then((res) => res.data) : Promise.resolve([])
-  ])
-  const skuById = keyById(skus)
-  const inventoryBySkuId = {}
-  for (const inventory of inventoryRows) inventoryBySkuId[inventory.skuId] = inventory
-  const orderItems = []
-  let amount = 0
-  for (const item of normalizedItems) {
-    const sku = skuById[item.skuId]
-    if (!sku || sku.status !== '上架') return fail('SKU不存在或已下架')
-    const inventory = inventoryBySkuId[sku._id]
-    if (!inventory) return fail('SKU未加入本批次')
-    const quantity = item.quantity
-    const subtotal = Number(sku.price) * quantity
-    amount += subtotal
-    orderItems.push({ skuId: sku._id, name: sku.name, spec: sku.spec, quantity, unitPrice: sku.price, subtotal })
-  }
-  const verifyCode = await generateVerifyCode(openid + '-' + Date.now(), false)
-  const res = await db.collection('orders').add({ data: { batchId: batch._id, batchStationId: batchStation._id, stationId: batchStation.stationId, userOpenid: openid, items: orderItems, amount, status: '待支付', phone: event.phone || '', verifyCode, paidAt: null, refundedAt: null, verifiedAt: null, subscribePickupNotice: Boolean(event.subscribePickupNotice), createdAt: now(), updatedAt: now() } })
-  return ok({ orderId: res._id, amount, verifyCode })
-}
-
-// PRD 8.1 / 目标补充：MOCK_PAY=true 直接确认；false 返回 cloudPay 参数。
-async function payOrder(event, openid) {
-  assertText(event.orderId, 'orderId')
-  const order = await getDoc('orders', event.orderId)
-  if (!order || order.userOpenid !== openid) return fail('订单不存在或无权操作')
-  if (order.status !== '待支付') return fail('订单状态不可支付')
-  if (MOCK_PAY) return await confirmPaidOrder(order._id, { transactionId: 'mock-' + order._id })
-
-  const outTradeNo = 'BL' + Date.now() + Math.floor(Math.random() * 1000)
-  await db.collection('orders').doc(order._id).update({ data: { status: '支付中', outTradeNo, updatedAt: now() } })
-  const payment = await cloud.cloudPay.unifiedOrder({ body: '泰斓 TAILAN 拼团自提', outTradeNo, spbillCreateIp: '127.0.0.1', totalFee: order.amount, envId: cloud.DYNAMIC_CURRENT_ENV, functionName: 'api' })
-  return ok({ payment, outTradeNo })
-}
-
-// PRD 8.2：真实支付回调独立 action，幂等进入统一确认逻辑。
-async function payCallback(event) {
-  const outTradeNo = event.outTradeNo || event.out_trade_no
-  const transactionId = event.transactionId || event.transaction_id || ''
-  if (!outTradeNo) return fail('缺少outTradeNo')
-  const order = (await db.collection('orders').where({ outTradeNo }).limit(1).get()).data[0]
-  if (!order) return fail('订单不存在')
-  return await confirmPaidOrder(order._id, { transactionId })
-}
-
-async function confirmPaidOrder(orderId, payInfo = {}) {
-  const transaction = await db.startTransaction()
-  let shouldPushPickupNotice = false
-  try {
-    const t = now()
-    const order = (await transaction.collection('orders').doc(orderId).get()).data
-    if (!['待支付', '支付中'].includes(order.status)) {
-      await transaction.rollback()
-      return ok({ msg: '支付回调已处理', orderId, status: order.status, idempotent: true })
-    }
-    const batch = (await transaction.collection('batches').doc(order.batchId).get()).data
-    const batchStation = (await transaction.collection('batchStations').doc(order.batchStationId).get()).data
-    const deliveryWindow = (await transaction.collection('deliveryWindows').where({ batchStationId: order.batchStationId }).limit(1).get()).data[0] || null
-    const inventoryBySkuId = {}
-    const skuIds = [...new Set((order.items || []).map((item) => item.skuId).filter(Boolean))]
-    const inventoryRows = skuIds.length ? (await transaction.collection('batchInventory').where({ batchId: order.batchId, skuId: _.in(skuIds) }).get()).data : []
-    for (const inventory of inventoryRows) inventoryBySkuId[inventory.skuId] = inventory
-    const decision = evaluatePaidOrder({ now: t, batch, batchStation, deliveryWindow, inventoryBySkuId, order })
-    if (!decision.ok) {
-      const refundFinal = { ...decision.refundPatch, ...(MOCK_PAY ? { status: '已退款', refundedAt: t } : {}) }
-      await transaction.collection('orders').doc(orderId).update({ data: { ...refundFinal, transactionId: payInfo.transactionId || '', updatedAt: t } })
-      await transaction.collection('refunds').add({ data: { orderId, refundNo: 'RF' + t + Math.floor(Math.random() * 1000), amount: order.amount, reason: decision.reason, status: MOCK_PAY ? '已退款' : '待退款', requestedAt: t, completedAt: MOCK_PAY ? t : null, retryCount: 0, createdAt: t, updatedAt: t } })
-      await transaction.commit()
-      return ok({ msg: '支付后自动退款', reason: decision.reason, orderId })
-    }
-    await transaction.collection('orders').doc(orderId).update({ data: { ...decision.orderPatch, transactionId: payInfo.transactionId || '', updatedAt: t } })
-    await transaction.collection('batchStations').doc(order.batchStationId).update({ data: { ...decision.batchStationPatch, updatedAt: t } })
-    for (const patch of decision.inventoryPatches) await transaction.collection('batchInventory').doc(patch._id).update({ data: { availableQty: patch.availableQty, soldQty: patch.soldQty, status: patch.status, updatedAt: t } })
-    if (decision.triggeredGroupSuccess) {
-      await transaction.collection('orders').where({ batchStationId: order.batchStationId, status: '待成团' }).update({ data: { status: deliveryWindow ? '待自提' : '已成团待截单', updatedAt: t } })
-      shouldPushPickupNotice = Boolean(deliveryWindow)
-    }
-    if (decision.batchPatch) await transaction.collection('batches').doc(order.batchId).update({ data: { ...decision.batchPatch, updatedAt: t } })
-    await transaction.commit()
-    if (shouldPushPickupNotice) await pushPickupNoticeIfConfigured(order.batchStationId)
-    return ok({ msg: '支付成功', orderId, formed: decision.triggeredGroupSuccess, autoCutoff: decision.shouldAutoCutoffBatch })
-  } catch (err) {
-    try { await transaction.rollback() } catch (rollbackErr) { /* ignore */ }
-    throw err
-  }
-}
-
 // PRD 5.8：我的订单。
 async function myOrders(openid) {
   const orders = (await db.collection('orders').where({ userOpenid: openid }).orderBy('createdAt', 'desc').limit(100).get()).data
@@ -705,40 +431,6 @@ async function getOrderDetail(event, openid) {
   const station = await getDoc('stations', order.stationId)
   const deliveryWindow = (await db.collection('deliveryWindows').where({ batchStationId: order.batchStationId }).limit(1).get()).data[0] || null
   return ok({ order, batchStation, station, deliveryWindow })
-}
-
-// PRD 9.2 / 10：成团前退出，回退进度与库存。
-async function cancelOrder(event, openid) {
-  assertText(event.orderId, 'orderId')
-  const order = await getDoc('orders', event.orderId)
-  if (!order || order.userOpenid !== openid) return fail('订单不存在或无权操作')
-  const batch = await getDoc('batches', order.batchId)
-  const decision = canSelfCancelOrder({ order, batch, now: now() })
-  if (!decision.ok) return fail(decision.reason)
-  return await refundOrder(order._id, '用户取货日10点前自助退款', openid)
-}
-
-async function refundOrder(orderId, reason, operatorOpenid) {
-  const transaction = await db.startTransaction()
-  try {
-    const order = (await transaction.collection('orders').doc(orderId).get()).data
-    const batchStation = (await transaction.collection('batchStations').doc(order.batchStationId).get()).data
-    const inventoryBySkuId = {}
-    const skuIds = [...new Set((order.items || []).map((item) => item.skuId).filter(Boolean))]
-    const inventoryRows = skuIds.length ? (await transaction.collection('batchInventory').where({ batchId: order.batchId, skuId: _.in(skuIds) }).get()).data : []
-    for (const inventory of inventoryRows) inventoryBySkuId[inventory.skuId] = inventory
-    const decision = applyRefundToSnapshots({ now: now(), order, batchStation, inventoryBySkuId })
-    await transaction.collection('orders').doc(orderId).update({ data: { ...decision.orderPatch, refundReason: reason, updatedAt: now() } })
-    await transaction.collection('batchStations').doc(order.batchStationId).update({ data: { ...decision.batchStationPatch, updatedAt: now() } })
-    for (const patch of decision.inventoryPatches) await transaction.collection('batchInventory').doc(patch._id).update({ data: { availableQty: patch.availableQty, soldQty: patch.soldQty, status: patch.status, updatedAt: now() } })
-    await transaction.collection('refunds').add({ data: { orderId, refundNo: 'RF' + Date.now() + Math.floor(Math.random() * 1000), amount: order.amount, reason, status: MOCK_PAY ? '已退款' : '待退款', requestedAt: now(), completedAt: MOCK_PAY ? now() : null, retryCount: 0, operatorOpenid, createdAt: now(), updatedAt: now() } })
-    await transaction.commit()
-    if (!MOCK_PAY) await cloud.cloudPay.refund({ outTradeNo: order.outTradeNo, outRefundNo: 'RF' + orderId, totalFee: order.amount, refundFee: order.amount })
-    return ok({ msg: MOCK_PAY ? '已模拟退款' : '退款已提交', orderId })
-  } catch (err) {
-    try { await transaction.rollback() } catch (rollbackErr) { /* ignore */ }
-    throw err
-  }
 }
 
 // PRD 5.7：支付成功页读取唯一订阅模板ID，未配置时前端跳过不报错。
@@ -828,28 +520,6 @@ async function checkAdmin(openid) {
   return ok({ isAdmin: Boolean(admin), role: admin ? admin.role : 'user' })
 }
 
-// PRD 7.1：商家工作台聚合。
-async function adminDashboard() {
-  const batches = (await db.collection('batches').orderBy('createdAt', 'desc').limit(20).get()).data
-  const batchStations = (await db.collection('batchStations').orderBy('createdAt', 'desc').limit(100).get()).data
-  const [stationRows, deliveryWindows] = await Promise.all([
-    listDocsByIds('stations', batchStations.map((item) => item.stationId)),
-    listDocsWhereIn('deliveryWindows', 'batchStationId', batchStations.map((item) => item._id))
-  ])
-  const stationById = keyById(stationRows)
-  const windowByBatchStationId = {}
-  for (const deliveryWindow of deliveryWindows) windowByBatchStationId[deliveryWindow.batchStationId] = deliveryWindow
-  for (const item of batchStations) {
-    const station = stationById[item.stationId] || null
-    const deliveryWindow = windowByBatchStationId[item._id] || null
-    item.stationName = station ? station.name : ''
-    item.deliveryWindow = deliveryWindow
-  }
-  const refunds = (await db.collection('refunds').where({ status: _.in(['待审核', '待退款', '退款失败']) }).limit(50).get()).data
-  const noShows = (await db.collection('orders').where({ status: '未取货待处理' }).limit(50).get()).data
-  return ok({ batches, batchStations, pending: { refunds, noShows } })
-}
-
 // PRD 7.9：商品与SKU管理。
 async function listProducts() {
   const products = (await db.collection('products').orderBy('sort', 'asc').get()).data
@@ -890,57 +560,6 @@ async function saveStation(event, openid) {
   return ok({ stationId: id })
 }
 
-// PRD 7.3 / 13.2：创建批次并自动生成站点团、共享库存。
-async function createBatch(event, openid) {
-  const input = event.batch || {}
-  assertText(input.name, '批次名称')
-  if (!Array.isArray(input.stations) || input.stations.length === 0) throw new Error('至少选择一个站点')
-  if (!Array.isArray(input.inventory) || input.inventory.length === 0) throw new Error('至少选择一个SKU库存')
-  const batchId = input._id || 'batch-' + Date.now()
-  const pickupDate = input.pickupDate || currentSaleDates().pickupDate
-  const deadlineAt = Number(input.deadlineAt || beijingTimestamp(addDaysToBeijingDate(pickupDate, -1), '22:00'))
-  await setDoc('batches', batchId, { name: input.name, pickupDate, status: '接单中', deadlineAt, createdBy: openid, closedAt: null, closedBy: '', closeReason: '', createdAt: now(), updatedAt: now() })
-  for (const station of input.stations) {
-    const batchStationId = 'bs-' + batchId + '-' + station.stationId
-    await setDoc('batchStations', batchStationId, { batchId, stationId: station.stationId, leaderOpenid: '', thresholdN: Number(station.thresholdN || 5), status: '拼团中', paidOrderCount: 0, paidItemCount: 0, createdAt: now(), updatedAt: now() })
-    const window = station.window || {}
-    await setDoc('deliveryWindows', 'dw-' + batchStationId, { batchStationId, pickupDate, arriveAt: window.arriveAt || '', leaveAt: window.leaveAt || '', waitMinutes: Number(window.waitMinutes || 0), locationNote: window.locationNote || '', locationImages: window.locationImages || [], arrivedAt: null, createdBy: openid, createdAt: now(), updatedAt: now() })
-  }
-  for (const inventory of input.inventory) await setDoc('batchInventory', 'inv-' + batchId + '-' + inventory.skuId, { batchId, skuId: inventory.skuId, availableQty: Number(inventory.availableQty || 0), soldQty: 0, isUnlimited: Boolean(inventory.isUnlimited), status: '上架', createdAt: now(), updatedAt: now() })
-  return ok({ batchId })
-}
-
-// PRD 7.6：商家手动成团。
-async function manualFormGroup(event, openid) {
-  assertText(event.batchStationId, 'batchStationId')
-  await db.collection('batchStations').doc(event.batchStationId).update({ data: { status: '已成团继续接单', formedAt: now(), manualFormedBy: openid, updatedAt: now() } })
-  await db.collection('orders').where({ batchStationId: event.batchStationId, status: '待成团' }).update({ data: { status: '已成团待截单', updatedAt: now() } })
-  return ok({ msg: '已手动成团' })
-}
-
-// PRD 7.5 / 13.5：手动截单，迟到支付回调自动退款。
-async function manualCutoff(event, openid) {
-  assertText(event.batchId, 'batchId')
-  return await advanceBatchById(event.batchId, openid, true)
-}
-
-// PRD 7.6 / 9.1：关团退款。
-async function closeGroupRefund(event, openid, defaultReason) {
-  assertText(event.batchStationId, 'batchStationId')
-  const reason = event.reason || defaultReason
-  const orders = (await db.collection('orders').where({ batchStationId: event.batchStationId, status: _.in(['待成团', '已成团待截单', '待自提']) }).get()).data
-  for (const order of orders) await refundOrder(order._id, reason, openid)
-  await db.collection('batchStations').doc(event.batchStationId).update({ data: { status: '已关闭', closeReason: reason, closedAt: now(), updatedAt: now() } })
-  return ok({ msg: '已关团退款', refunded: orders.length })
-}
-
-// PRD 7.6：延长截止时间。
-async function extendDeadline(event, openid) {
-  assertText(event.batchId, 'batchId')
-  await db.collection('batches').doc(event.batchId).update({ data: { deadlineAt: Number(event.deadlineAt), extendedBy: openid, updatedAt: now() } })
-  return ok({ msg: '已延长截止时间' })
-}
-
 // PRD 5.7 / 7.7：修改自提窗口，不触发订阅消息。
 async function setDeliveryWindow(event, openid) {
   const input = event.deliveryWindow || {}
@@ -970,37 +589,6 @@ async function markPickupSubscribed(event, openid) {
   if (!order || order.userOpenid !== openid) return fail('订单不存在或无权操作')
   await db.collection('orders').doc(order._id).update({ data: { subscribePickupNotice: true, updatedAt: now() } })
   return ok({ msg: '已开启自提通知' })
-}
-
-async function pushPickupNoticeIfConfigured(batchStationId) {
-  const cfg = await getDoc('config', 'system')
-  if (!cfg || !cfg.pickupTemplateId) return { skipped: true }
-  const deliveryWindow = (await db.collection('deliveryWindows').where({ batchStationId }).limit(1).get()).data[0] || null
-  const orders = (await db.collection('orders').where({ batchStationId, status: '待自提', subscribePickupNotice: true }).get()).data
-  let sent = 0
-  for (const order of orders) {
-    try {
-      await cloud.openapi.subscribeMessage.send({
-      touser: order.userOpenid,
-      templateId: cfg.pickupTemplateId,
-      page: 'pages/orderDetail/orderDetail?orderId=' + order._id,
-      data: {
-        thing1: { value: (deliveryWindow && deliveryWindow.locationNote) || '自提点' },
-        time2: { value: deliveryWindow ? (deliveryWindow.pickupDate + ' ' + deliveryWindow.arriveAt + '-' + deliveryWindow.leaveAt) : '自提窗口见取货券' },
-        thing3: { value: '请携带核销码取货' }
-      }
-      })
-      sent++
-    } catch (err) { /* 单个用户未订阅或超额，跳过 */ }
-  }
-  return { sent }
-}
-
-// PRD 7.7：商家标记我已到达。
-async function markArrived(event, openid) {
-  assertText(event.deliveryWindowId, 'deliveryWindowId')
-  await db.collection('deliveryWindows').doc(event.deliveryWindowId).update({ data: { arrivedAt: now(), arrivedBy: openid, updatedAt: now() } })
-  return ok({ msg: '已标记到达' })
 }
 
 // PRD 10：退款重试，失败单可反复触发。
