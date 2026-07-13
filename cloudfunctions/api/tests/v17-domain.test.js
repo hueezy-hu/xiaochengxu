@@ -3,9 +3,14 @@ const assert = require('node:assert/strict')
 
 const {
   createReservation,
+  evaluatePaidOrder,
   confirmReservationPayment,
   releaseReservation,
   inventoryBalance,
+  confirmPickupDayStations,
+  applyV16Refund,
+  applyRefundToSnapshots,
+  advanceBatchLifecycle,
   recalculateStationCounts,
   lockStationAtCutoff,
   decideStationAtNoon,
@@ -202,4 +207,78 @@ test('V1.7 order transitions separate self-refund, delivery and post-delivery re
   assert.equal(place.orderPatch.status, '已放置待自取')
   assert.equal(request.orderPatch.status, '退款申请待处理')
   assert.equal(request.orderPatch.refundRequest.originalOrderStatus, '已完成')
+})
+
+test('compatibility lifecycle entry uses paid people instead of paid items', () => {
+  const result = confirmPickupDayStations({
+    now: 6000,
+    batchStations: [
+      { _id: 'many-items', status: '未成团待处理', paidUserCount: 1, paidItemCount: 20 },
+      { _id: 'five-people', status: '已成团待确认', paidUserCount: 5, paidItemCount: 5 }
+    ]
+  })
+
+  assert.equal(result.stationPatches[0].status, '关闭退款中')
+  assert.equal(result.stationPatches[0].shouldRefund, true)
+  assert.equal(result.stationPatches[1].status, '已确认配送')
+  assert.equal(result.stationPatches[1].shouldRefund, false)
+})
+
+test('legacy paid-order entry delegates to V1.7 reservation confirmation', () => {
+  const result = evaluatePaidOrder({
+    now: 6500,
+    batch: { status: '接单中', deadlineAt: 7000 },
+    order: { userOpenid: 'buyer-a', status: '预占中', expiresAt: 6800, items: [{ skuId: 'sku1', quantity: 5 }] },
+    batchStation: { status: '拼团中', thresholdN: 5, paidUserCount: 0, paidItemCount: 0, paidOrderCount: 0 },
+    inventoryBySkuId: { sku1: { ...inventory(10), availableQty: 5, reservedQty: 5 } }
+  })
+
+  assert.equal(result.ok, true)
+  assert.equal(result.batchStationPatch.paidUserCount, 1)
+  assert.equal(result.batchStationPatch.status, '拼团中')
+  assert.equal(result.orderPatch.status, '待配送确认')
+})
+
+test('compatibility refund entry derives people from remaining active orders', () => {
+  const result = applyV16Refund({
+    now: 7000,
+    order: { _id: 'o1', userOpenid: 'buyer-a', status: '待自提', items: [{ skuId: 'sku1', quantity: 2 }] },
+    batchStation: { _id: 'bs1', status: '已确认配送', paidUserCount: 2, paidItemCount: 4, paidOrderCount: 3 },
+    inventoryBySkuId: { sku1: { ...inventory(10), availableQty: 6, soldQty: 4 } },
+    remainingActiveOrders: [
+      { _id: 'o2', userOpenid: 'buyer-a', items: [{ skuId: 'sku1', quantity: 1 }] },
+      { _id: 'o3', userOpenid: 'buyer-b', items: [{ skuId: 'sku1', quantity: 1 }] }
+    ]
+  })
+
+  assert.equal(result.batchStationPatch.paidUserCount, 2)
+  assert.equal(result.batchStationPatch.paidItemCount, 2)
+  assert.equal(result.batchStationPatch.paidOrderCount, 2)
+  assert.equal(result.batchStationPatch.status, '已确认配送')
+})
+
+test('legacy snapshot refund preserves cumulative sold and V1.7 people counters', () => {
+  const result = applyRefundToSnapshots({
+    now: 8000,
+    order: { _id: 'o1', userOpenid: 'buyer-a', status: '待自提', items: [{ skuId: 'sku1', quantity: 2 }] },
+    batchStation: { _id: 'bs1', status: '拼团中', paidUserCount: 2, paidItemCount: 3, paidOrderCount: 2 },
+    inventoryBySkuId: { sku1: { ...inventory(10), availableQty: 7, soldQty: 3 } },
+    remainingActiveOrders: [{ _id: 'o2', userOpenid: 'buyer-b', items: [{ skuId: 'sku1', quantity: 1 }] }]
+  })
+
+  assert.equal(result.inventoryPatches[0].soldQty, 3)
+  assert.equal(result.inventoryPatches[0].refundedQty, 2)
+  assert.equal(result.batchStationPatch.paidUserCount, 1)
+})
+
+test('legacy lifecycle entry only closes sales at cutoff and does not decide delivery', () => {
+  const result = advanceBatchLifecycle({
+    now: 9000,
+    batch: { status: '接单中', deadlineAt: 9000 },
+    batchStations: [{ _id: 'bs1', paidUserCount: 1, paidItemCount: 20 }]
+  })
+
+  assert.equal(result.shouldClose, true)
+  assert.equal(result.batchPatch.status, '已截单待配送确认')
+  assert.deepEqual(result.stationPatches, [])
 })

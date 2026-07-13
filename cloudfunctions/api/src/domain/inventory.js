@@ -37,8 +37,8 @@ function applyV17Refund({
   remainingActiveOrders = [],
   now = Date.now()
 } = {}) {
+  if (order && (order.refundAccountingApplied || order.refundedAt)) return { ok: false, reason: '退款库存已处理', inventoryPatches: [] }
   if (!order || !SELF_REFUNDABLE.has(order.status)) return { ok: false, reason: '当前状态不可自助退款', inventoryPatches: [] }
-  if (order.refundAccountingApplied || order.refundedAt) return { ok: false, reason: '退款库存已处理', inventoryPatches: [] }
   const quantities = quantitiesBySku(order.items)
   if (!quantities) return { ok: false, reason: '订单商品无效', inventoryPatches: [] }
 

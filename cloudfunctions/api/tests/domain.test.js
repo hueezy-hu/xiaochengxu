@@ -187,14 +187,14 @@ test('pickup-day 12:00 confirms stations at five and closes/refunds stations bel
   const result = confirmPickupDayStations({
     now: beijingTimestamp('2026-07-08', '12:00'),
     batchStations: [
-      { _id: 'enough', status: '已达门槛待确认', paidItemCount: 5 },
-      { _id: 'low', status: '拼团中', paidItemCount: 4 }
+      { _id: 'enough', status: '已成团待确认', paidUserCount: 5, paidItemCount: 5 },
+      { _id: 'low', status: '未成团待处理', paidUserCount: 4, paidItemCount: 20 }
     ]
   })
 
   assert.equal(result.stationPatches[0].status, '已确认配送')
   assert.equal(result.stationPatches[0].shouldRefund, false)
-  assert.equal(result.stationPatches[1].status, '已关闭退款中')
+  assert.equal(result.stationPatches[1].status, '关闭退款中')
   assert.equal(result.stationPatches[1].shouldRefund, true)
   assert.equal(Object.hasOwn(result, 'orderPatches'), false)
 })
@@ -231,7 +231,8 @@ test('refunds keep sold cumulative, increase refunded and available, and keep co
     now: 3000,
     order: { status: '待自提', items: [{ skuId: 'sku-a', quantity: 2 }] },
     batchStation: { status: '已确认配送', paidItemCount: 5, paidOrderCount: 3 },
-    inventoryBySkuId: { 'sku-a': inventory({ availableQty: 4, reservedQty: 0, soldQty: 6, refundedQty: 0 }) }
+    inventoryBySkuId: { 'sku-a': inventory({ availableQty: 4, reservedQty: 0, soldQty: 6, refundedQty: 0 }) },
+    remainingActiveOrders: [{ userOpenid: 'buyer-b', items: [{ skuId: 'sku-a', quantity: 3 }] }]
   })
 
   assert.equal(result.inventoryPatches[0].availableQty, 6)
@@ -265,7 +266,8 @@ test('refunds return an unconfirmed station to grouping even when its count reac
   })
   const belowThreshold = applyV16Refund({
     ...input,
-    batchStation: { status: '已达门槛待确认', paidItemCount: 5, paidOrderCount: 2 }
+    batchStation: { status: '已成团待确认', paidItemCount: 5, paidOrderCount: 2 },
+    remainingActiveOrders: [{ userOpenid: 'buyer-b', items: [{ skuId: 'sku-a', quantity: 3 }] }]
   })
   assert.equal(zero.batchStationPatch.paidItemCount, 0)
   assert.equal(zero.batchStationPatch.status, '拼团中')

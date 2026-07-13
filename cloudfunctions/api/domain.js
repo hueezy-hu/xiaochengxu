@@ -56,183 +56,32 @@ function cloneInventoryMap(inventoryBySkuId) {
   return next
 }
 
-function isBatchAccepting(batch, now) {
-  return batch && batch.status === '接单中' && !batch.closedAt && Number(batch.deadlineAt || 0) > now
-}
-
-function isStationAccepting(batchStation) {
-  return batchStation && ['拼团中', '已成团继续接单', '待自提'].includes(batchStation.status)
-}
-
-function validateInventory(items, inventoryBySkuId) {
-  for (const item of items || []) {
-    const skuId = item.skuId
-    const qty = Number(item.quantity || item.count || 0)
-    const inventory = inventoryBySkuId[skuId]
-    if (!inventory || inventory.status !== '上架') return { ok: false, reason: 'SKU未在本批次上架' }
-    if (!inventory.isUnlimited && Number(inventory.availableQty || 0) < qty) {
-      return { ok: false, reason: '库存不足，整单退款' }
-    }
-  }
-  return { ok: true }
-}
-
 function evaluatePaidOrder(snapshots) {
-  const now = snapshots.now || Date.now()
-  const { batch, batchStation, order } = snapshots
-  const inventoryBySkuId = cloneInventoryMap(snapshots.inventoryBySkuId)
-  const items = order.items || []
-  const totalQty = sumItems(items)
-
-  if (!isBatchAccepting(batch, now)) return refundDecision('批次未接单', now)
-  if (!isStationAccepting(batchStation)) return refundDecision('站点不可下单', now)
-  const inventoryCheck = validateInventory(items, inventoryBySkuId)
-  if (!inventoryCheck.ok) return refundDecision(inventoryCheck.reason, now)
-
-  const inventoryPatches = []
-  for (const item of items) {
-    const inventory = inventoryBySkuId[item.skuId]
-    const qty = Number(item.quantity || item.count || 0)
-    if (!inventory.isUnlimited) {
-      inventory.availableQty = Number(inventory.availableQty || 0) - qty
-      inventory.soldQty = Number(inventory.soldQty || 0) + qty
-    }
-    inventoryPatches.push({
-      _id: inventory._id,
-      skuId: item.skuId,
-      availableQty: inventory.availableQty,
-      soldQty: inventory.soldQty,
-      status: inventory.availableQty <= 0 && !inventory.isUnlimited ? '售罄' : inventory.status
-    })
-  }
-
-  const previousPaid = Number(batchStation.paidItemCount || 0)
-  const paidItemCount = previousPaid + totalQty
-  const paidOrderCount = Number(batchStation.paidOrderCount || 0) + 1
-  const wasFormed = previousPaid >= Number(batchStation.thresholdN || 0) || ['已成团继续接单', '待自提'].includes(batchStation.status)
-  const isFormed = paidItemCount >= Number(batchStation.thresholdN || 0)
-  const triggeredGroupSuccess = !wasFormed && isFormed
-  const stationStatus = isFormed ? '已成团继续接单' : '拼团中'
-  const allFiniteInventorySoldOut = Object.values(inventoryBySkuId).every((inventory) => {
-    if (inventory.isUnlimited || inventory.status !== '上架') return false
-    return Number(inventory.availableQty || 0) <= 0
+  return confirmReservationPayment({
+    order: snapshots.order,
+    batch: snapshots.batch,
+    batchStation: snapshots.batchStation,
+    inventoryBySkuId: cloneInventoryMap(snapshots.inventoryBySkuId),
+    now: snapshots.now || Date.now()
   })
-
-  return {
-    ok: true,
-    orderPatch: {
-      status: isFormed && snapshots.deliveryWindow ? '待自提' : (isFormed ? '已成团待截单' : '待成团'),
-      paidAt: now
-    },
-    batchStationPatch: {
-      paidItemCount,
-      paidOrderCount,
-      status: stationStatus,
-      leaderOpenid: batchStation.leaderOpenid || order.userOpenid,
-      formedAt: triggeredGroupSuccess ? now : batchStation.formedAt || null
-    },
-    inventoryPatches,
-    batchPatch: allFiniteInventorySoldOut ? { status: '已截单', closedAt: now, closeReason: '库存售罄自动截单' } : null,
-    triggeredGroupSuccess,
-    shouldAutoCutoffBatch: allFiniteInventorySoldOut
-  }
-}
-
-function refundDecision(reason, now) {
-  return {
-    ok: false,
-    reason,
-    refundPatch: {
-      status: '支付后退款中',
-      refundReason: reason,
-      refundRequestedAt: now
-    },
-    inventoryPatches: []
-  }
 }
 
 function canSelfCancelOrder({ order }) {
   return canRefundOrder(order)
 }
 
-function stationWasFormed(batchStation) {
-  const threshold = Number(batchStation.thresholdN || 0)
-  return Boolean(
-    batchStation.formedAt ||
-    ['已成团继续接单', '待自提'].includes(batchStation.status) ||
-    (threshold > 0 && Number(batchStation.paidItemCount || 0) >= threshold)
-  )
-}
-
 function applyRefundToSnapshots(snapshots) {
-  const now = snapshots.now || Date.now()
-  const { order, batchStation } = snapshots
-  const inventoryBySkuId = cloneInventoryMap(snapshots.inventoryBySkuId)
-  const totalQty = sumItems(order.items || [])
-  const inventoryPatches = []
-
-  for (const item of order.items || []) {
-    const inventory = inventoryBySkuId[item.skuId]
-    if (!inventory || inventory.isUnlimited) continue
-    const qty = Number(item.quantity || item.count || 0)
-    inventory.availableQty = Number(inventory.availableQty || 0) + qty
-    inventory.soldQty = Math.max(0, Number(inventory.soldQty || 0) - qty)
-    inventoryPatches.push({
-      _id: inventory._id,
-      skuId: item.skuId,
-      availableQty: inventory.availableQty,
-      soldQty: inventory.soldQty,
-      status: '上架'
-    })
-  }
-
-  const paidItemCount = Math.max(0, Number(batchStation.paidItemCount || 0) - totalQty)
-  const paidOrderCount = Math.max(0, Number(batchStation.paidOrderCount || 0) - 1)
-  let status = batchStation.status
-  if (!stationWasFormed(batchStation)) {
-    if (paidItemCount === 0) status = '已关闭'
-    else if (paidItemCount < Number(batchStation.thresholdN || 0)) status = '拼团中'
-  }
-
-  return {
-    orderPatch: {
-      status: '已退款',
-      refundedAt: now
-    },
-    batchStationPatch: {
-      paidItemCount,
-      paidOrderCount,
-      status
-    },
-    inventoryPatches
-  }
+  return applyV17Refund({
+    order: snapshots.order,
+    batchStation: snapshots.batchStation,
+    inventoryBySkuId: cloneInventoryMap(snapshots.inventoryBySkuId),
+    remainingActiveOrders: snapshots.remainingActiveOrders || [],
+    now: snapshots.now || Date.now()
+  })
 }
 
-function advanceBatchLifecycle({ batch, batchStations = [], now = Date.now(), operatorOpenid = 'timer' }) {
-  if (!batch || batch.status !== '接单中' || Number(batch.deadlineAt || 0) > Number(now)) {
-    return { shouldClose: false, batchPatch: null, stationPatches: [] }
-  }
-  const stationPatches = batchStations.map((station) => {
-    const formed = stationWasFormed(station)
-    return {
-      _id: station._id,
-      status: formed ? '待自提' : '已关闭',
-      shouldRefund: !formed,
-      refundReason: formed ? '' : '到期未成团',
-      closedAt: formed ? null : now,
-      updatedAt: now
-    }
-  })
-  return {
-    shouldClose: true,
-    batchPatch: {
-      status: '已截单',
-      closedAt: now,
-      closedBy: operatorOpenid,
-      closeReason: '截止时间到达'
-    },
-    stationPatches
-  }
+function advanceBatchLifecycle({ batch, now = Date.now(), operatorOpenid = 'timer' }) {
+  return closeSalesAt22({ batch, now, operatorOpenid })
 }
 
 function itemQuantitiesBySku(items) {
@@ -438,59 +287,13 @@ function confirmPickupDayStations({ batchStations = [], now = Date.now() } = {})
       skippedStationIds.push(station._id)
       continue
     }
-    const delivers = Number(station.paidItemCount || 0) >= V16_STATION_THRESHOLD
-    stationPatches.push({
-      _id: station._id,
-      status: delivers ? '已确认配送' : '已关闭退款中',
-      shouldRefund: !delivers,
-      confirmedAt: delivers ? Number(now) : null,
-      closedAt: delivers ? null : Number(now)
-    })
+    stationPatches.push(decideStationAtNoon(station, now))
   }
   return { stationPatches, skippedStationIds }
 }
 
-function applyV16Refund({ order, batchStation, inventoryBySkuId = {}, now = Date.now() } = {}) {
-  if (order && (order.refundAccountingApplied || order.refundedAt)) {
-    return { ok: false, reason: '退款库存已处理', inventoryPatches: [] }
-  }
-  const eligibility = canRefundOrder(order)
-  if (!eligibility.ok) return { ok: false, reason: eligibility.reason, inventoryPatches: [] }
-  const grouped = itemQuantitiesBySku(order && order.items)
-  if (!grouped.ok) return { ok: false, reason: grouped.reason, inventoryPatches: [] }
-  const inventoryPatches = []
-
-  for (const [skuId, quantity] of Object.entries(grouped.quantities)) {
-    const inventory = inventoryBySkuId[skuId]
-    if (!inventory) return { ok: false, reason: '退款库存不存在', inventoryPatches: [] }
-    if (inventory.isUnlimited) continue
-    inventoryPatches.push(v16InventoryPatch(inventory, skuId, {
-      ...inventory,
-      availableQty: Number(inventory.availableQty || 0) + quantity,
-      soldQty: Number(inventory.soldQty || 0),
-      refundedQty: Number(inventory.refundedQty || 0) + quantity,
-      status: '上架'
-    }))
-  }
-
-  const paidItemCount = Math.max(0, Number(batchStation && batchStation.paidItemCount || 0) - sumItems(order.items))
-  let status = batchStation && batchStation.status
-  if (status === '已确认配送') {
-    status = paidItemCount === 0 ? '已关闭' : '已确认配送'
-  } else {
-    status = paidItemCount >= V16_STATION_THRESHOLD ? '已达门槛待确认' : '拼团中'
-  }
-
-  return {
-    ok: true,
-    orderPatch: { status: '已退款', refundedAt: Number(now), refundAccountingApplied: true },
-    batchStationPatch: {
-      paidItemCount,
-      paidOrderCount: Math.max(0, Number(batchStation && batchStation.paidOrderCount || 0) - 1),
-      status
-    },
-    inventoryPatches
-  }
+function applyV16Refund({ order, batchStation, inventoryBySkuId = {}, remainingActiveOrders = [], now = Date.now() } = {}) {
+  return applyV17Refund({ order, batchStation, inventoryBySkuId, remainingActiveOrders, now })
 }
 
 function canRefundOrder(order) {
