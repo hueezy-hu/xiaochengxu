@@ -104,6 +104,8 @@ test('unattended placement is batch-scoped, photo-required, and rejects staffed 
 
 test('staffed mode can finish no-show orders only with delivery photos', async () => {
   const repository = createRepository(seed())
+  const during = createFulfillmentActions({ repository, now: () => 1200 })
+  assert.equal((await during.finishNoShow({ actor: verifier, batchStationId: 'bs1', orderIds: ['o1'], images: ['cloud://end.jpg'] })).ok, false)
   const actions = createFulfillmentActions({ repository, now: () => 1400 })
   assert.equal((await actions.finishNoShow({ actor: verifier, batchStationId: 'bs1', orderIds: ['o1'], images: [] })).ok, false)
   const result = await actions.finishNoShow({ actor: verifier, batchStationId: 'bs1', orderIds: ['o1'], images: ['cloud://end.jpg'] })

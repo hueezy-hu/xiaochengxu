@@ -1,45 +1,37 @@
 # 泰斓 TAILAN 拼团自提小程序
 
-这是一个微信小程序云开发项目，目标业务规则以 `banlan-cake-prd-v1.6.md` 为准：今天拼、明天取，每站累计5件成团，订单完成交付前支持整单退款。
+微信原生小程序 + 微信云开发单入口云函数。当前业务真源为 `banlan-cake-prd-v1.7.md`，代码已完成 V1.7 内部演示版改造；真实微信支付、订阅消息发送和云端真机联调仍是正式上线前置条件。
 
-> V1.6 的 MOCK 交易、批次生命周期、C端主路径、商家/核销主路径已实现并有本地测试；真实微信支付与云端真机联调仍未完成。
+## V1.7 已实现
 
-## 核心规则
-- 批次按取货日组织，`batches.pickupDate` 为取货日期。
-- 批次由超级管理员确认库存后手动发布；销售日只能发布次日取货批次。
-- 北京时间22:00停止新下单和支付，不自动销售后天取批次。
-- 成团进度按站点所有 SKU 的已付款商品总件数计算，默认门槛 `thresholdN=5`。
-- 待支付订单预占共享库存15分钟，支付成功后才计入成团。
-- 取货日12:00逐站确认配送；不足5件退款，手动确认配送的站点除外。
-- 12:00确认配送后即使退款跌破5件仍配送；有效订单归零时可以取消配送。
-- 完成交付前支持用户整单退款；不支持部分退款和顺延。
-- 后台维护站点、取货时间、地点说明和图片；首页只保留品牌展示与“立即去拼”。
-- 用户创建订单前必须手动填写手机号。
+- 首页营业三态：开团中 / 今日休息 / 未开团，支持按 openid 当日去重催开团。
+- 购物车不占库存；发起支付才一次性预占多 SKU，严格 3 分钟。
+- 每站按不同付款用户 openid 去重，默认满 5 人成团；商品库存和备料继续按份统计。
+- 22:00 只截单并锁定人数；取货日 12:00 才确认配送或关闭退款。
+- 交付前自助整单退款；交付后提交人工退款申请。
+- 手机尾号后 4 位 + 随机二维码核销；同场尾号重复返回候选。
+- 有人核销 / 无人放置双模式；核销、放置和未取收尾均要求 1–3 张交付照片。
+- 批次发布只勾 SKU、填库存、勾启用站点；窗口、地点、图片和交付模式来自站点固定资料。
+- 商品、SKU、分类和站点引用删除保护；SKU 改价即时生效，历史订单价格快照不变。
 
-## 主要入口
-- C 端首页：`miniprogram/pages/home`
-- 商品分类：`miniprogram/pages/catalog`
-- 商品详情：`miniprogram/pages/product`
-- 选站点：`miniprogram/pages/pickStation`
-- 取货券：`miniprogram/pages/orderDetail`
-- 云函数入口：`cloudfunctions/api/index.js`
-- 业务纯函数：`cloudfunctions/api/domain.js`
+## 页面主线
 
-## 首个超级管理员
+`首页 → 分类 → 商品详情 → 购物车/立即购买 → 选站 → 结算 → 发起支付 → 支付成功 → 我的订单 → 取货券`
 
-在云函数环境变量中配置 `SUPER_ADMIN_OPENID=<商家微信openid>`。该用户首次调用 `checkAdmin` 时才会被安全初始化为 `superAdmin`；未匹配该环境变量的普通用户不能自绑定管理员。
+商家端包含工作台、商品管理、批次发布、站点资料和现场履约。
+
+## 环境状态
+
+- `MOCK_PAY=true`：仅内部演示，不等于真实支付上线。
+- 首个超级管理员：云函数环境变量 `SUPER_ADMIN_OPENID=<openid>`。
+- 订阅消息：在 `config/system` 配置 `groupResultTemplateId` 和 `pickupTemplateId`。
+- 真实支付接入时必须保持 `time_expire=3min`，补齐回调验签、迟到成功兜底、真实退款和对账。
 
 ## 本地验证
-核心命令：
 
-```bash
-node cloudfunctions/api/tests/domain.test.js
-node cloudfunctions/api/tests/v16-order-actions.test.js
-node cloudfunctions/api/tests/v16-batch-lifecycle.test.js
-node cloudfunctions/api/tests/v16-fulfillment-actions.test.js
-node scripts/tests/v16-frontend-flow.test.js
-node scripts/tests/v16-admin-flow.test.js
+```powershell
 node scripts/check-integrity.js
+node --test cloudfunctions/api/tests/*.test.js scripts/tests/*.test.js
 ```
 
-完整交付验证见《验收方法.md》。
+完整发布顺序与回滚条件见 `V1.7-上线验收.md`；接口契约见 `cloudfunctions/api/ACTIONS.md`。

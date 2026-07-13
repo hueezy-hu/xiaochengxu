@@ -4,7 +4,6 @@
 // ============================================================
 const cloud = require('wx-server-sdk')
 const {
-  buildVerifyCode,
   beijingTime,
   beijingTimestamp
 } = require('./domain')
@@ -281,21 +280,13 @@ function publicBatchStation(row) {
     status: row.status,
     paidOrderCount: row.paidOrderCount || 0,
     paidItemCount: row.paidItemCount || 0,
+    paidUserCount: row.paidUserCount || 0,
+    verifyMode: row.verifyMode || '有人核销',
     formedAt: row.formedAt || null
   }
 }
 
-async function generateVerifyCode(seed, demo) {
-  if (demo) return '638274'
-  for (let i = 0; i < 20; i += 1) {
-    const code = buildVerifyCode({ seed: seed + '-' + i + '-' + Math.random() })
-    const exists = (await db.collection('orders').where({ verifyCode: code }).limit(1).get()).data.length > 0
-    if (!exists) return code
-  }
-  throw new Error('生成核销码失败，请重试')
-}
-
-// PRD 12 / 目标补充：初始化全部集合，写入3站点、3SKU、7月8日批次、14/20与21/20、638274。
+// PRD V1.7：初始化按人/按件分离、双交付模式和同尾号预警演示数据。
 async function initDemo(openid) {
   await ensureCollections()
   // 安全锁：仅数据库为空（首次引导）或超级管理员可执行，防止线上数据被覆盖。
@@ -333,21 +324,29 @@ async function initDemo(openid) {
   ]
   for (let i = 0; i < MENU.length; i++) {
     const m = MENU[i]
-    await setDoc('products', P[i], { name: m.name, thaiName: m.thai, category: m.category, description: m.desc, tags: m.tags, images: ['/assets/products/p0' + (i + 1) + '.jpg'], status: '上架', sort: i + 1, createdAt: t, updatedAt: t })
+    const categoryId = 'demo-category-' + (m.category === '糯香经典' ? 'classic' : m.category === '斑斓软糕' ? 'soft' : 'cool')
+    await setDoc('categories', categoryId, { name: m.category, status: '启用', sort: i + 1, createdAt: t, updatedAt: t })
+    await setDoc('products', P[i], { name: m.name, thaiName: m.thai, categoryId, category: m.category, description: m.desc, tags: m.tags, images: ['/assets/products/p0' + (i + 1) + '.jpg'], status: '上架', sort: i + 1, createdAt: t, updatedAt: t })
     await setDoc('skus', K[i], { productId: P[i], name: m.name, spec: m.spec, price: m.price, status: '上架', sort: 1, createdAt: t, updatedAt: t })
   }
-  await setDoc('stations', stationA, { name: '布吉站', line: '3/14号线', exit: 'A口', pickupNote: '出站口直行20米，认准斑斓绿摊布', status: 'active', createdAt: t, updatedAt: t })
-  await setDoc('stations', stationB, { name: '大学城站', line: '5号线', exit: 'A口', pickupNote: '出站天桥下，认准斑斓绿摊布', status: 'active', createdAt: t, updatedAt: t })
+  await setDoc('stations', stationA, { name: '布吉站', line: '3/14号线', exit: 'A口', pickupNote: '出站口直行20米，认准斑斓绿摊布', arriveAt: '18:30', leaveAt: '19:10', defaultLocationImages: ['/assets/hero.jpg'], locationImages: ['/assets/hero.jpg'], verifyMode: '有人核销', status: 'active', createdAt: t, updatedAt: t })
+  await setDoc('stations', stationB, { name: '大学城站', line: '5号线', exit: 'A口', pickupNote: '出站天桥下，认准斑斓绿摊布', arriveAt: '19:45', leaveAt: '20:25', defaultLocationImages: ['/assets/hero.jpg'], locationImages: ['/assets/hero.jpg'], verifyMode: '无人放置', status: 'active', createdAt: t, updatedAt: t })
   await setDoc('batches', batchId, { name: '泰斓 TAILAN ' + dates.pickupDate + ' 自提批次', pickupDate: dates.pickupDate, status: '接单中', deadlineAt: dates.deadlineAt, createdBy: openid, closedAt: null, closedBy: '', closeReason: '', createdAt: t, updatedAt: t })
-  await setDoc('batchStations', bsA, { batchId, stationId: stationA, leaderOpenid: 'demo-leader-a', thresholdN: 5, status: '拼团中', paidOrderCount: 3, paidItemCount: 3, createdAt: t, updatedAt: t })
-  await setDoc('batchStations', bsB, { batchId, stationId: stationB, leaderOpenid: '', thresholdN: 5, status: '拼团中', paidOrderCount: 0, paidItemCount: 0, createdAt: t, updatedAt: t })
-  await setDoc('deliveryWindows', 'dw-' + bsA, { batchStationId: bsA, pickupDate: dates.pickupDate, arriveAt: '18:30', leaveAt: '19:10', waitMinutes: 40, locationNote: '布吉站A口 出站直行20米 斑斓绿摊布', locationImages: [], arrivedAt: null, createdBy: openid, createdAt: t, updatedAt: t })
-  await setDoc('deliveryWindows', 'dw-' + bsB, { batchStationId: bsB, pickupDate: dates.pickupDate, arriveAt: '19:45', leaveAt: '20:25', waitMinutes: 40, locationNote: '大学城站A口 天桥下 斑斓绿摊布', locationImages: [], arrivedAt: null, createdBy: openid, createdAt: t, updatedAt: t })
+  await setDoc('batchStations', bsA, { batchId, stationId: stationA, stationName: '布吉站', leaderOpenid: 'demo-buyer-a', thresholdN: 5, verifyMode: '有人核销', status: '已确认配送', paidOrderCount: 3, paidItemCount: 6, paidUserCount: 3, createdAt: t, updatedAt: t })
+  await setDoc('batchStations', bsB, { batchId, stationId: stationB, stationName: '大学城站', leaderOpenid: '', thresholdN: 5, verifyMode: '无人放置', status: '拼团中', paidOrderCount: 0, paidItemCount: 0, paidUserCount: 0, createdAt: t, updatedAt: t })
+  await setDoc('deliveryWindows', 'dw-' + bsA, { batchId, batchStationId: bsA, pickupDate: dates.pickupDate, arriveAt: '18:30', leaveAt: '19:10', waitMinutes: 40, locationNote: '布吉站A口 出站直行20米 斑斓绿摊布', locationImages: ['/assets/hero.jpg'], arrivedAt: null, createdBy: openid, createdAt: t, updatedAt: t })
+  await setDoc('deliveryWindows', 'dw-' + bsB, { batchId, batchStationId: bsB, pickupDate: dates.pickupDate, arriveAt: '19:45', leaveAt: '20:25', waitMinutes: 40, locationNote: '大学城站A口 天桥下 斑斓绿摊布', locationImages: ['/assets/hero.jpg'], arrivedAt: null, createdBy: openid, createdAt: t, updatedAt: t })
   for (let i = 0; i < MENU.length; i++) {
-    await setDoc('batchInventory', 'inv-' + batchId + '-' + K[i], { batchId, skuId: K[i], availableQty: MENU[i].qty, soldQty: 0, isUnlimited: false, status: '上架', createdAt: t, updatedAt: t })
+    const soldQty = i === 0 ? 6 : 0
+    await setDoc('batchInventory', 'inv-' + batchId + '-' + K[i], { batchId, skuId: K[i], totalQty: MENU[i].qty, availableQty: MENU[i].qty - soldQty, reservedQty: 0, soldQty, refundedQty: 0, isUnlimited: false, status: '上架', createdAt: t, updatedAt: t })
   }
-  await setDoc('orders', 'demo-order-638274', { batchId, batchStationId: bsA, stationId: stationA, userOpenid: 'demo-leader-b', items: [{ skuId: K[0], name: '蝶糯桑卡雅', spec: '1个', quantity: 2, unitPrice: 600, subtotal: 1200 }], amount: 1200, status: '待自提', phone: '13800000000', verifyCode: '638274', paidAt: t, refundedAt: null, verifiedAt: null, createdAt: t, updatedAt: t })
-  return ok({ msg: 'initDemo完成', collections: COLLECTIONS, demo: { batchId, pickupDate: dates.pickupDate, deadlineAt: dates.deadlineAt, batchStations: [bsA, bsB], verifyCode: '638274' } })
+  const demoOrders = [
+    { id: 'demo-order-a', userOpenid: 'demo-buyer-a', phone: '13800138000', phoneTail: '8000', quantity: 2, pickupQrToken: 'demo-qr-a-91f3d2' },
+    { id: 'demo-order-b', userOpenid: 'demo-buyer-b', phone: '13900138000', phoneTail: '8000', quantity: 1, pickupQrToken: 'demo-qr-b-72ac49' },
+    { id: 'demo-order-c', userOpenid: 'demo-buyer-c', phone: '13700131111', phoneTail: '1111', quantity: 3, pickupQrToken: 'demo-qr-c-5be821' }
+  ]
+  for (const row of demoOrders) await setDoc('orders', row.id, { batchId, batchStationId: bsA, stationId: stationA, stationName: '布吉站', verifyMode: '有人核销', userOpenid: row.userOpenid, contactName: row.userOpenid, items: [{ skuId: K[0], productId: P[0], name: '蝶糯桑卡雅', spec: '1个', quantity: row.quantity, unitPrice: 600, subtotal: row.quantity * 600 }], amount: row.quantity * 600, status: '待自提', phone: row.phone, phoneTail: row.phoneTail, pickupQrToken: row.pickupQrToken, paidAt: t, refundedAt: null, verifiedAt: null, createdAt: t, updatedAt: t })
+  return ok({ msg: 'initDemo完成', collections: COLLECTIONS, demo: { batchId, pickupDate: dates.pickupDate, deadlineAt: dates.deadlineAt, batchStations: [bsA, bsB], duplicatePhoneTail: '8000' } })
 }
 
 // PRD 5.2 / 第五轮：首页和分类页共用聚合数据，首屏只调一次云函数。

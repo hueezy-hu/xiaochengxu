@@ -215,6 +215,8 @@ function createFulfillmentActions({ repository, now = Date.now } = {}) {
       const station = await tx.getBatchStation(input.batchStationId)
       if (!canAccessStation(input.actor, station)) return { error: [ERROR_CODES.FORBIDDEN, '站点不存在或无站点权限'] }
       if (station.verifyMode !== '有人核销') return { error: [ERROR_CODES.ORDER_STATE_CONFLICT, '仅有人核销站点可处理未取订单'] }
+      const window = await tx.getDeliveryWindowByStation(station._id)
+      if (!window || !Number.isFinite(windowLeaveAt(window)) || t < windowLeaveAt(window)) return { error: [ERROR_CODES.ORDER_STATE_CONFLICT, '自提窗口结束后才能处理未取订单'] }
       const orders = []
       for (const orderId of orderIds) {
         const order = await tx.getOrder(orderId)

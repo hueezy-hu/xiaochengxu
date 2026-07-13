@@ -4,13 +4,13 @@
 
 1. `CLAUDE.md`：技术约束、环境红线和维护协议。
 2. `banlan-cake-prd-v1.7.md`：当前业务规则唯一真源（v1.6 仅历史）。
-3. `cloudfunctions/api/ACTIONS.md`：现有接口与目标契约的差异（仍为 V1.6，待重修到 V1.7）。
+3. `cloudfunctions/api/ACTIONS.md`：V1.7 当前实现接口契约。
 
 ## 当前状态
 
 - PRD 已更新到 V1.7。
-- `AGENTS.md`、`CLAUDE.md` 已同步 V1.7 目标规则；`ACTIONS.md`、`README.md` 待同步。
-- 现有代码仍是 V1.5/V1.6 行为，尚未按 V1.7 改造；云端部署、真机和真实支付仍不能视为完成。
+- 代码、接口契约、用户端、商家端和本地测试已同步 V1.7 内部演示版。
+- 云端部署、微信开发者工具真机冒烟、真实支付和订阅消息发送仍不能视为完成。
 - 当前为内部 `MOCK_PAY=true` 演示模式，正式微信支付和退款必须在上线前接入并联调。
 
 ## 不得重新引入的旧规则
@@ -28,5 +28,5 @@
 - 改业务规则：先改 PRD，再改接口契约、代码和测试。
 - 改接口：同步更新 `cloudfunctions/api/ACTIONS.md`。
 - 文档中的“待实现”不等于代码已完成，交付前必须核对真实代码和测试结果。
-- 每次交付前运行 `node scripts/check-integrity.js` 以及 `cloudfunctions/api/tests`、`scripts/tests` 下的 V1.6 测试。
+- 每次交付前运行 `node scripts/check-integrity.js` 以及 `cloudfunctions/api/tests`、`scripts/tests` 下全部测试。
 - 只处理当前需求范围，避免无关重构。
