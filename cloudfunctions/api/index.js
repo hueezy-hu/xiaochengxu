@@ -21,6 +21,8 @@ const { createBatchRepository } = require('./src/repositories/batch-repository')
 const { createFulfillmentRepository } = require('./src/repositories/fulfillment-repository')
 const { createCloudDbHelpers } = require('./src/repositories/cloud-db')
 const { createShoppingRepository } = require('./src/repositories/shopping-repository')
+const { createAdminCatalogRepository } = require('./src/repositories/admin-catalog-repository')
+const { createAdminCatalogActions } = require('./src/services/admin-catalog-actions')
 const { ERROR_CODES: V16_ERROR_CODES, failure: v16Failure } = require('./src/shared/response')
 const { resolveEntryContext } = require('./src/shared/entry-context')
 
@@ -55,12 +57,13 @@ const catalogActions = createCatalogActions({ repository: shoppingRepository, no
 const cartActions = createCartActions({ repository: shoppingRepository, now })
 const profileActions = createProfileActions({ repository: shoppingRepository, now })
 const refundActions = createRefundActions({ repository: cloudOrderRepository, systemRefundOrder: v16OrderActions.systemRefundOrder, now })
+const adminCatalogActions = createAdminCatalogActions({ repository: createAdminCatalogRepository({ db, command: _ }), now })
 
 const COLLECTIONS = [
   'products', 'skus', 'stations', 'batches', 'batchStations', 'batchInventory',
   'orders', 'admins', 'users', 'refunds', 'verificationLogs', 'deliveryWindows', 'config',
   'placementLogs', 'contactLogs', 'operationLogs', 'notificationOutbox', 'paymentEvents', 'runtimeLocks',
-  'carts', 'openGroupNudges', 'businessDays', 'refundRequests'
+  'carts', 'openGroupNudges', 'businessDays', 'refundRequests', 'categories'
 ]
 let collectionsReadyPromise = null
 
@@ -102,11 +105,17 @@ exports.main = async (event = {}, context = {}) => {
       case 'decodePhoneNumber': return await decodePhoneNumber(event, openid)
       case 'adminDashboard': return await adminOnly(openid, ['superAdmin', 'verifier'], (admin) => invokeV16FulfillmentAction('getWorkspace', event, admin))
       case 'getVerifierWorkspace': return await adminOnly(openid, ['superAdmin', 'verifier'], (admin) => invokeV16FulfillmentAction('getWorkspace', event, admin))
-      case 'listProducts': return await adminOnly(openid, ['superAdmin'], () => listProducts())
-      case 'saveProduct': return await adminOnly(openid, ['superAdmin'], () => saveProduct(event, openid))
-      case 'saveSku': return await adminOnly(openid, ['superAdmin'], () => saveSku(event, openid))
-      case 'listStations': return await adminOnly(openid, ['superAdmin'], () => listStations())
-      case 'saveStation': return await adminOnly(openid, ['superAdmin'], () => saveStation(event, openid))
+      case 'listProducts': return await adminOnly(openid, ['superAdmin'], () => invokeUserAction(adminCatalogActions, 'listProducts', event, openid))
+      case 'saveProduct': return await adminOnly(openid, ['superAdmin'], () => invokeUserAction(adminCatalogActions, 'saveProduct', event, openid))
+      case 'deleteProduct': return await adminOnly(openid, ['superAdmin'], () => invokeUserAction(adminCatalogActions, 'deleteProduct', event, openid))
+      case 'saveSku': return await adminOnly(openid, ['superAdmin'], () => invokeUserAction(adminCatalogActions, 'saveSku', event, openid))
+      case 'deleteSku': return await adminOnly(openid, ['superAdmin'], () => invokeUserAction(adminCatalogActions, 'deleteSku', event, openid))
+      case 'listCategories': return await adminOnly(openid, ['superAdmin'], () => invokeUserAction(adminCatalogActions, 'listCategories', event, openid))
+      case 'saveCategory': return await adminOnly(openid, ['superAdmin'], () => invokeUserAction(adminCatalogActions, 'saveCategory', event, openid))
+      case 'deleteCategory': return await adminOnly(openid, ['superAdmin'], () => invokeUserAction(adminCatalogActions, 'deleteCategory', event, openid))
+      case 'listStations': return await adminOnly(openid, ['superAdmin'], () => invokeUserAction(adminCatalogActions, 'listStations', event, openid))
+      case 'saveStation': return await adminOnly(openid, ['superAdmin'], () => invokeUserAction(adminCatalogActions, 'saveStation', event, openid))
+      case 'deleteStation': return await adminOnly(openid, ['superAdmin'], () => invokeUserAction(adminCatalogActions, 'deleteStation', event, openid))
       case 'saveBatchDraft': return await adminOnly(openid, ['superAdmin'], () => invokeV16BatchAction('saveBatchDraft', event, openid))
       case 'getBatchDraft': return await adminOnly(openid, ['superAdmin'], () => invokeV16BatchAction('getBatchDraft', event, openid))
       case 'publishBatch': return await adminOnly(openid, ['superAdmin'], () => invokeV16BatchAction('publishBatch', event, openid))
@@ -552,46 +561,6 @@ async function checkAdmin(openid) {
   await ensureCollections()
   const admin = await getAdmin(openid) || await provisionConfiguredSuperAdmin(openid)
   return ok({ isAdmin: Boolean(admin), role: admin ? admin.role : 'user' })
-}
-
-// PRD 7.9：商品与SKU管理。
-async function listProducts() {
-  const products = (await db.collection('products').orderBy('sort', 'asc').get()).data
-  const skus = (await db.collection('skus').orderBy('sort', 'asc').get()).data
-  return ok({ products, skus })
-}
-
-// PRD 7.9：商品图片由前端wx.chooseImage + wx.cloud.uploadFile上传后传fileID。
-async function saveProduct(event, openid) {
-  const product = event.product || {}
-  assertText(product.name, '商品名')
-  const id = product._id || 'product-' + Date.now()
-  await setDoc('products', id, { name: product.name, thaiName: product.thaiName || '', category: product.category || '本周甜品', tags: product.tags || [], description: product.description || '', images: product.images || [], status: product.status || '上架', sort: Number(product.sort || 1), updatedBy: openid, createdAt: product.createdAt || now(), updatedAt: now() })
-  return ok({ productId: id })
-}
-
-// PRD 7.9 / 13.3：改价只影响新订单。
-async function saveSku(event, openid) {
-  const sku = event.sku || {}
-  assertText(sku.productId, 'productId')
-  assertText(sku.name, 'SKU名')
-  const id = sku._id || 'sku-' + Date.now()
-  await setDoc('skus', id, { productId: sku.productId, name: sku.name, spec: sku.spec || '', price: Number(sku.price || 0), status: sku.status || '上架', sort: Number(sku.sort || 1), updatedBy: openid, createdAt: sku.createdAt || now(), updatedAt: now() })
-  return ok({ skuId: id })
-}
-
-// PRD 7.2：站点池管理。
-async function listStations() {
-  return ok({ stations: (await db.collection('stations').orderBy('createdAt', 'asc').get()).data })
-}
-
-// PRD 7.2：新增/编辑站点。
-async function saveStation(event, openid) {
-  const station = event.station || {}
-  assertText(station.name, '站点名')
-  const id = station._id || 'station-' + Date.now()
-  await setDoc('stations', id, { name: station.name, line: station.line || '', exit: station.exit || '', pickupNote: station.pickupNote || '', locationImages: (station.locationImages || []).slice(0, 3), status: station.status || 'active', updatedBy: openid, createdAt: station.createdAt || now(), updatedAt: now() })
-  return ok({ stationId: id })
 }
 
 // PRD 5.7 / 7.7：修改自提窗口，不触发订阅消息。
