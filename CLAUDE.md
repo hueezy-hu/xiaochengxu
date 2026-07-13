@@ -124,6 +124,7 @@
 
 ## 9. 变更日志（每轮交付追加一行，格式：日期 | 改了什么 | 动了哪些文件）
 
+- 2026-07-13 | Open Design 提取 v3 设计系统并增量产出 V1.7 版 16 屏高保真可交互设计稿，补齐购物车/结算/3分钟预占及商家端交付流程 | 设计稿v4-V1.7.html、TAILAN-DESIGN.md、docs/open-design、scripts/tests/v17-design-prototype.test.js
 - 2026-07-13 | 需求对齐产出 PRD V1.7（3分钟预占/5人成团按人/22:00锁定/尾号核销+重复预警/双交付模式+拍照/两段制退款/发布只选SKU+勾站/10点软截止+休息态+催开团/权限多站/2订阅模板/手机号双逻辑）；同步修 CLAUDE.md，ACTIONS.md 待重修 | banlan-cake-prd-v1.7.md、CLAUDE.md
 - 2026-07-12 | V1.6落地：日批次/5件门槛/交付前退款/品牌泰斓 | 全站
 - 2026-07-06 | 真实菜单5产品+图片进包 | initDemo、assets/products

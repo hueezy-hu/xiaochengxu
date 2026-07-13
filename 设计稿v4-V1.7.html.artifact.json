@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "设计稿v4-V1.7.html",
+  "entry": "设计稿v4-V1.7.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-07-13T10:18:54.988Z",
+  "updatedAt": "2026-07-13T10:18:54.988Z",
+  "metadata": {
+    "inferred": true,
+    "reconciled": true
+  }
+}

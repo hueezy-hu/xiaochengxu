@@ -5,3 +5,4 @@ project.private.config.json
 .DS_Store
 Thumbs.db
 .worktrees/
+.od-skills/
