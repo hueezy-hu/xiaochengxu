@@ -8,7 +8,7 @@
         <view class="between"><view class="row gap-sm"><text class="tag">{{item.status}}</text><text wx:if="{{item.isLeader}}" class="tag">你发起的</text></view><text class="small">手机尾号 {{item.phoneTail}}</text></view>
         <view class="list-item" bindtap="goDetail" data-id="{{item._id}}">
           <view class="thumb"><view class="cake"></view></view>
-          <view class="column gap-xs" style="flex: 1;"><text class="card-title">{{item.firstItem.name}} · {{item.firstItem.spec}}</text><text class="text">{{item.stationName || ''}} · {{item.firstItem.quantity}} 份</text><text class="price">{{item.amountText}}</text><text wx:if="{{item.refundText}}" class="tag orange">{{item.refundText}}</text><text class="small">点击查看取货券</text></view>
+          <view class="column gap-xs" style="flex: 1;"><text class="card-title">{{item.firstItem.name}} · {{item.firstItem.spec}}</text><text class="text">{{item.stationName || ''}} · {{item.firstItem.quantity}} 份</text><text class="small">取货时间：{{item.pickupTimeText}}</text><text class="price">{{item.amountText}}</text><text wx:if="{{item.refundText}}" class="tag orange">{{item.refundText}}</text><text wx:if="{{item.showPickupTicket}}" class="small">点击查看取货券</text><text wx:else class="small">点击查看订单详情</text></view>
         </view>
         <view class="row gap-sm">
           <view wx:if="{{item.canRefund}}" class="btn secondary" style="flex: 1;" catchtap="requestRefund" data-id="{{item._id}}">整单退款</view>

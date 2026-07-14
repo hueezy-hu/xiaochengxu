@@ -1,4 +1,5 @@
 const app = getApp()
+const { formatPickupTime } = require('../../utils/pickup-time')
 const AVATAR_POOL = ['🍰', '🥥', '🍃', '😋', '🧋', '🌿']
 
 Page({
@@ -14,7 +15,8 @@ Page({
     memberInitials: [],
     skus: [],
     invMap: {},
-    canBuy: false
+    canBuy: false,
+    pickupTimeText: '取货时间待确认'
   },
 
   onLoad(options) {
@@ -62,6 +64,7 @@ Page({
       loading: false,
       batchStation: bs,
       station: group.station || {},
+      pickupTimeText: formatPickupTime(group.deliveryWindow || {}),
       isLeader: Boolean(group.isLeader),
       progressText: app.progressText(bs),
       leftText: left > 0 ? '还差 ' + left + ' 人成团' : '已满5人，取货日12:00确认配送',

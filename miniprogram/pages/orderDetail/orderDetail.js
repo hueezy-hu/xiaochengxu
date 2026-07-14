@@ -1,5 +1,7 @@
 const app = getApp()
 const QRCode = require('../../libs/weapp-qrcode')
+const { showsPickupTicket } = require('../../utils/status')
+const { formatPickupTime } = require('../../utils/pickup-time')
 
 function refundText(order) {
   if (!order) return ''
@@ -9,7 +11,7 @@ function refundText(order) {
 }
 
 Page({
-  data: { loading: true, order: null, station: {}, deliveryWindow: {}, locationImages: [], canSelfRefund: false, canApplyRefund: false, refundText: '' },
+  data: { loading: true, order: null, station: {}, deliveryWindow: {}, pickupTimeText: '取货时间待确认', locationImages: [], showPickupTicket: false, canSelfRefund: false, canApplyRefund: false, refundText: '' },
   onLoad(options) { this.options = options || {}; this.load() },
   async load() {
     const orderId = this.options.orderId || this.options.id
@@ -19,8 +21,10 @@ Page({
     const order = { ...res.order, verifyMode: res.order.verifyMode || (res.batchStation && res.batchStation.verifyMode) || '有人核销', amountText: app.money(res.order.amount), firstItem: (res.order.items && res.order.items[0]) || {} }
     const deliveryWindow = res.deliveryWindow || {}
     const locationImages = order.deliveryImages || order.placementImages || deliveryWindow.locationImages || []
-    this.setData({ loading: false, order, station: res.station || {}, deliveryWindow, locationImages, canSelfRefund: ['待配送确认', '待自提'].includes(order.status), canApplyRefund: ['已完成', '已放置待自取', '已完成未取'].includes(order.status), refundText: refundText(order) })
-    this.drawQr()
+    const showPickupTicket = showsPickupTicket(order.status)
+    this.setData({ loading: false, order, station: res.station || {}, deliveryWindow, pickupTimeText: formatPickupTime(deliveryWindow), locationImages, showPickupTicket, canSelfRefund: ['待配送确认', '待自提'].includes(order.status), canApplyRefund: ['已完成', '已放置待自取', '已完成未取'].includes(order.status), refundText: refundText(order) }, () => {
+      if (showPickupTicket) this.drawQr()
+    })
   },
   drawQr() {
     if (!this.data.order || !this.data.order.pickupQrToken) return

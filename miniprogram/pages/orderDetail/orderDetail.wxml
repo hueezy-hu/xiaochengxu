@@ -1,14 +1,14 @@
 <view class="screen">
-  <view class="topbar"><view class="back" bindtap="goBack"></view><text class="nav-title">取货券</text><view class="menu-pill">•••</view></view>
+  <view class="topbar"><view class="back" bindtap="goBack"></view><text class="nav-title">{{showPickupTicket ? '取货券' : '订单详情'}}</text><view class="menu-pill">•••</view></view>
   <view wx:if="{{loading}}" class="card column gap-sm" style="margin-top:24rpx"><text class="tag muted">加载中</text><text class="text">正在读取取货券…</text></view>
-  <view wx:elif="{{order}}" class="ticket">
+  <view wx:elif="{{order && showPickupTicket}}" class="ticket">
     <view class="ticket-head column gap-xs"><text class="small">泰斓 TAILAN · 自提凭证</text><text class="section-title">{{station.name || order.stationName}}</text><text>{{station.exit || 'A口'}} · {{order.verifyMode || '有人核销'}}</text></view>
     <view class="ticket-body column gap-md">
       <text wx:if="{{refundText}}" class="tag orange">{{refundText}}</text>
       <text class="small" style="text-align: center;">手机尾号后 4 位</text>
       <text class="verify-code">{{order.phoneTail}}</text>
       <view class="dash"></view>
-      <view class="column gap-xs"><text class="card-title">{{order.firstItem.name}} · {{order.firstItem.spec}}</text><text class="text">数量 {{order.firstItem.quantity}} 份 · {{order.amountText}}</text><text class="small">自提窗口：{{deliveryWindow.pickupDate || '明天'}} {{deliveryWindow.arriveAt || ''}}-{{deliveryWindow.leaveAt || ''}}</text></view>
+      <view class="column gap-xs"><text class="card-title">{{order.firstItem.name}} · {{order.firstItem.spec}}</text><text class="text">数量 {{order.firstItem.quantity}} 份 · {{order.amountText}}</text><text class="card-title">取货时间：{{pickupTimeText}}</text></view>
       <view class="pickup-guide column gap-sm">
         <text class="card-title">{{order.status === '已放置待自取' ? '商品已放置' : '取货点指引'}}</text>
         <text class="text">{{order.placementLocationNote || deliveryWindow.locationNote || station.pickupNote || '到站后按商家通知位置取货'}}</text>
@@ -19,6 +19,13 @@
       </view>
       <canvas canvas-id="ticketQr" class="qr-canvas"></canvas>
     </view>
+  </view>
+
+  <view wx:elif="{{order}}" class="card column gap-md" style="margin-top:24rpx">
+    <view class="between"><text class="section-title">订单详情</text><text class="tag">{{order.status}}</text></view>
+    <text wx:if="{{refundText}}" class="tag orange">{{refundText}}</text>
+    <view class="dash"></view>
+    <view class="column gap-xs"><text class="card-title">{{order.firstItem.name}} · {{order.firstItem.spec}}</text><text class="text">数量 {{order.firstItem.quantity}} 份 · {{order.amountText}}</text><text class="small">自提站点：{{station.name || order.stationName}}</text><text class="card-title">取货时间：{{pickupTimeText}}</text><text class="small">该订单当前状态不提供取货凭证</text></view>
   </view>
 
   <block wx:if="{{order}}">

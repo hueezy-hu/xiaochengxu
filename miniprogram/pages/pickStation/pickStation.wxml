@@ -5,7 +5,8 @@
     <view wx:for="{{stations}}" wx:key="_id" class="station-card {{selectedId === item._id ? 'active' : ''}}" bindtap="selectStation" data-id="{{item._id}}">
       <view class="between"><view class="column gap-xs"><text class="card-title">{{item.stationName}}</text><text class="small">{{item.line}} · {{item.exit}}</text></view><text class="tag">{{item.verifyMode}}</text></view>
       <view class="between"><text class="text">已拼 {{item.paid}}/{{item.threshold}} 人</text><text class="small">{{item.leftText}}</text></view><view class="progress"><view class="progress-inner" style="width:{{item.percent}}%"></view></view>
-      <text class="small">{{item.windowText}} · {{item.locationNote}}</text>
+      <text class="text">取货时间：{{item.pickupTimeText}}</text>
+      <text class="small">取货地点：{{item.locationNote}}</text>
     </view>
   </view>
   <view class="fixed-bottom between"><text class="small">{{summaryText}}</text><view class="btn {{selectedId ? '' : 'disabled'}}" style="width:240rpx" bindtap="next">下一步</view></view>

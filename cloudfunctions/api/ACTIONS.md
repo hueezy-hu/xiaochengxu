@@ -15,7 +15,7 @@
 | `cancelPendingOrder` | `orderId` | 取消隐藏预占并释放库存；用户端没有待支付订单列表。 |
 | `requestRefund` | `orderId,reason?` | 交付前自助整单退款。 |
 | `applyRefundRequest` | `orderId,reason` | 交付后进入人工退款申请。 |
-| `myOrders` / `getOrderDetail` | `orderId?` | 返回订单、尾号凭证、随机二维码 token、交付模式与现场照片。 |
+| `myOrders` / `getOrderDetail` | `orderId?` | 返回订单、尾号凭证、随机二维码 token、交付模式、明确取货时间与现场照片。 |
 | `getUserProfile` / `getMinePage` / `saveUserProfile` / `updateProfile` | profile | 头像昵称、手机号、身份和订单摘要。 |
 | `getPickupNoticeConfig` / `markPickupSubscribed` | `orderId` + 两个选择 | 成团结果和取货提醒两条模板分别回写。 |
 
@@ -58,6 +58,12 @@
 - 已禁用旧规则 action：`bindAdmin`、`createBatch`、`manualFormGroup`、`manualCutoff`、`extendDeadline`、`markNoShowOrders`、`markOrderPostponed`、`reviewRefund`。
 
 ## 正式上线前置
+
+### 演示环境商家入口
+
+- `MOCK_PAY=true` 时默认开启演示管理访问：任意测试微信均按临时 `superAdmin` 身份访问商家工作台、商品、站点、批次和核销页面，不写入 `admins` 集合。
+- 如需在 MOCK 支付下恢复权限校验，可设置 `DEMO_OPEN_ADMIN=false`。
+- `MOCK_PAY=false` 时演示管理访问强制关闭，即使误设 `DEMO_OPEN_ADMIN=true` 也不会绕过正式管理员权限。
 
 当前 `MOCK_PAY` 默认 true（环境变量可配，未显式关闭前保持演示）。已具备：`time_expire` 对齐辅助函数、回调事件分类、成团结果/自提提醒 notificationOutbox、本地失败重试与逐订单去重（无模板 ID 跳过但配置后可继续处理）。
 

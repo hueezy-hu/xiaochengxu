@@ -2,7 +2,7 @@ const test = require('node:test')
 const assert = require('node:assert/strict')
 const fs = require('node:fs')
 const path = require('node:path')
-const { resolveMockPay, resolveManualPhone, parseBooleanEnv } = require('../src/shared/runtime-config')
+const { resolveMockPay, resolveManualPhone, resolveDemoAdminAccess, parseBooleanEnv } = require('../src/shared/runtime-config')
 const {
   toWechatTimeExpire,
   reservationAlignedTimeExpire,
@@ -21,6 +21,13 @@ test('MOCK_PAY defaults true and only flips false on explicit env values', () =>
   assert.equal(resolveMockPay({ MOCK_PAY: 'maybe' }), true)
   assert.equal(resolveManualPhone({}), true)
   assert.equal(parseBooleanEnv('off', true), false)
+})
+
+test('demo admin access follows mock mode without persisting phone-specific permissions', () => {
+  assert.equal(resolveDemoAdminAccess({ MOCK_PAY: 'true' }), true)
+  assert.equal(resolveDemoAdminAccess({ MOCK_PAY: 'false' }), false)
+  assert.equal(resolveDemoAdminAccess({ MOCK_PAY: 'true', DEMO_OPEN_ADMIN: 'false' }), false)
+  assert.equal(resolveDemoAdminAccess({ MOCK_PAY: 'false', DEMO_OPEN_ADMIN: 'true' }), false)
 })
 
 test('time_expire strictly aligns with remaining 3-minute reservation', () => {

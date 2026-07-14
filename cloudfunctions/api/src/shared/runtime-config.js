@@ -15,8 +15,14 @@ function resolveManualPhone(env = process.env) {
   return parseBooleanEnv(env.MANUAL_PHONE, true)
 }
 
+function resolveDemoAdminAccess(env = process.env) {
+  const mockPay = resolveMockPay(env)
+  return mockPay && parseBooleanEnv(env.DEMO_OPEN_ADMIN, true)
+}
+
 module.exports = {
   parseBooleanEnv,
   resolveMockPay,
-  resolveManualPhone
+  resolveManualPhone,
+  resolveDemoAdminAccess
 }

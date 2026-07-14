@@ -1,4 +1,6 @@
 const app = getApp()
+const { showsPickupTicket } = require('../../utils/status')
+const { formatPickupTime } = require('../../utils/pickup-time')
 const CACHE_KEY = 'tailanOrdersCache'
 const TABS = [
   { key: 'all', name: '全部', statuses: null },
@@ -35,7 +37,7 @@ Page({
     this.renderOrders(res.orders || [])
   },
   renderOrders(rawOrders) {
-    const orders = (rawOrders || []).filter((o) => o.status !== '预占中' && o.status !== '待支付').map((o) => ({ ...o, firstItem: (o.items && o.items[0]) || {}, amountText: app.money(o.amount), refundText: refundText(o), canRefund: ['待配送确认', '待自提'].includes(o.status), canApplyRefund: ['已完成', '已放置待自取', '已完成未取'].includes(o.status) }))
+    const orders = (rawOrders || []).filter((o) => o.status !== '预占中' && o.status !== '待支付').map((o) => ({ ...o, firstItem: (o.items && o.items[0]) || {}, amountText: app.money(o.amount), pickupTimeText: formatPickupTime(o.deliveryWindow || {}), refundText: refundText(o), showPickupTicket: showsPickupTicket(o.status), canRefund: ['待配送确认', '待自提'].includes(o.status), canApplyRefund: ['已完成', '已放置待自取', '已完成未取'].includes(o.status) }))
     const badge = orders.filter((o) => ['待配送确认', '待自提'].includes(o.status)).length
     app.updateOrderBadge(badge)
     this.setData({ loading: false, orders }, () => this.applyFilter())

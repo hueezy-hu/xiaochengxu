@@ -1,4 +1,5 @@
 const app = getApp()
+const { formatPickupTime } = require('../../utils/pickup-time')
 
 function buildProgress(batchStation) {
   if (!batchStation) return { paid: 0, threshold: 0, leftCount: 0, percent: 0 }
@@ -32,7 +33,8 @@ Page({
     percent: 0,
     shareLine: '',
     groupResultTemplateId: '',
-    pickupTemplateId: ''
+    pickupTemplateId: '',
+    pickupTimeText: '取货时间待确认'
   },
 
   onLoad(options) {
@@ -56,6 +58,7 @@ Page({
       order: detail.ok ? detail.order : null,
       refunded: Boolean(detail.ok && detail.order && ['支付后退款中', '已退款'].includes(detail.order.status)),
       station: station,
+      pickupTimeText: formatPickupTime(group.ok ? (group.deliveryWindow || {}) : {}),
       batchStation: batchStation,
       isLeader: isLeader,
       successTitle: isLeader ? '团开起来了，你是发起人！' : '支付成功！',

@@ -1,4 +1,5 @@
 const app = getApp()
+const { formatPickupTime } = require('../../utils/pickup-time')
 Page({
   data: { loading: true, stations: [], selectedId: '', batchId: '', items: [], summaryText: '' },
   onLoad(options = {}) { const items = wx.getStorageSync('checkoutItems') || []; this.setData({ batchId: options.batchId || '', items, summaryText: items.map((row) => `${row.name}×${row.quantity}`).join('、') }); this.load() },
@@ -10,7 +11,7 @@ Page({
     const stations = (res.batchStations || []).map((bs) => {
       const station = stationById[bs.stationId] || {}; const window = windowById[bs._id] || {}
       const paid = Number(bs.paidUserCount || 0); const threshold = Number(bs.thresholdN || 5)
-      return { ...bs, stationName: station.name || bs.stationName, line: station.line || '', exit: station.exit || '', verifyMode: bs.verifyMode || station.verifyMode || '有人核销', paid, threshold, percent: Math.min(100, Math.round(paid / threshold * 100)), leftText: paid >= threshold ? '已成团' : `还差 ${threshold - paid} 人`, windowText: window.arriveAt && window.leaveAt ? `${window.arriveAt}-${window.leaveAt}` : '窗口待确认', locationNote: window.locationNote || station.pickupNote || '' }
+      return { ...bs, stationName: station.name || bs.stationName, line: station.line || '', exit: station.exit || '', verifyMode: bs.verifyMode || station.verifyMode || '有人核销', paid, threshold, percent: Math.min(100, Math.round(paid / threshold * 100)), leftText: paid >= threshold ? '已成团' : `还差 ${threshold - paid} 人`, pickupTimeText: formatPickupTime(window), locationNote: window.locationNote || station.pickupNote || '' }
     })
     this.setData({ loading: false, stations })
   },

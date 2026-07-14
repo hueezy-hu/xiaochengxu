@@ -24,7 +24,7 @@ const { createAdminCatalogRepository } = require('./src/repositories/admin-catal
 const { createAdminCatalogActions } = require('./src/services/admin-catalog-actions')
 const { ERROR_CODES: V16_ERROR_CODES, failure: v16Failure } = require('./src/shared/response')
 const { resolveEntryContext } = require('./src/shared/entry-context')
-const { resolveMockPay } = require('./src/shared/runtime-config')
+const { resolveMockPay, resolveDemoAdminAccess } = require('./src/shared/runtime-config')
 const { createNotificationOutbox } = require('./src/services/notification-outbox')
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
@@ -34,6 +34,7 @@ const { transactionDoc } = createCloudDbHelpers({ db, command: _ })
 
 // PRD 8：MOCK_PAY 由云函数环境变量控制，默认 true。禁止在代码里写死生产 false。
 const MOCK_PAY = resolveMockPay(process.env)
+const DEMO_OPEN_ADMIN = resolveDemoAdminAccess(process.env)
 
 const cloudOrderRepository = createOrderRepository({ db, command: _ })
 const v16OrderActions = createOrderActions({
@@ -305,6 +306,24 @@ async function getAdmin(openid) {
   return (await db.collection('admins').where({ openid, status: 'active' }).limit(1).get()).data[0] || null
 }
 
+function demoAdminActor(openid) {
+  return {
+    openid,
+    role: 'superAdmin',
+    status: 'active',
+    stationIds: [],
+    batchIds: [],
+    authorizationScopes: [],
+    demoAccess: true
+  }
+}
+
+async function getEffectiveAdmin(openid) {
+  const admin = await getAdmin(openid)
+  if (admin) return admin
+  return DEMO_OPEN_ADMIN ? demoAdminActor(openid) : null
+}
+
 async function provisionConfiguredSuperAdmin(openid) {
   const configuredOpenid = String(process.env.SUPER_ADMIN_OPENID || '').trim()
   if (!configuredOpenid || configuredOpenid !== openid) return null
@@ -315,7 +334,7 @@ async function provisionConfiguredSuperAdmin(openid) {
 }
 
 async function adminOnly(openid, roles, fn) {
-  const admin = await getAdmin(openid)
+  const admin = await getEffectiveAdmin(openid)
   if (!admin) return fail('你不是管理员')
   if (!roles.includes(admin.role)) return fail('当前角色无权执行该操作')
   return await fn(admin)
@@ -387,20 +406,22 @@ async function initDemo(openid) {
   await setDoc('stations', stationA, { name: '布吉站', line: '3/14号线', exit: 'A口', pickupNote: '出站口直行20米，认准斑斓绿摊布', arriveAt: '18:30', leaveAt: '19:10', defaultLocationImages: ['/assets/hero.jpg'], locationImages: ['/assets/hero.jpg'], verifyMode: '有人核销', status: 'active', createdAt: t, updatedAt: t })
   await setDoc('stations', stationB, { name: '大学城站', line: '5号线', exit: 'A口', pickupNote: '出站天桥下，认准斑斓绿摊布', arriveAt: '19:45', leaveAt: '20:25', defaultLocationImages: ['/assets/hero.jpg'], locationImages: ['/assets/hero.jpg'], verifyMode: '无人放置', status: 'active', createdAt: t, updatedAt: t })
   await setDoc('batches', batchId, { name: '泰斓 TAILAN ' + dates.pickupDate + ' 自提批次', pickupDate: dates.pickupDate, status: '接单中', deadlineAt: dates.deadlineAt, createdBy: openid, closedAt: null, closedBy: '', closeReason: '', createdAt: t, updatedAt: t })
-  await setDoc('batchStations', bsA, { batchId, stationId: stationA, stationName: '布吉站', leaderOpenid: 'demo-buyer-a', thresholdN: 5, verifyMode: '有人核销', status: '已确认配送', paidOrderCount: 3, paidItemCount: 6, paidUserCount: 3, createdAt: t, updatedAt: t })
-  await setDoc('batchStations', bsB, { batchId, stationId: stationB, stationName: '大学城站', leaderOpenid: '', thresholdN: 5, verifyMode: '无人放置', status: '拼团中', paidOrderCount: 0, paidItemCount: 0, paidUserCount: 0, createdAt: t, updatedAt: t })
+  await setDoc('batchStations', bsA, { batchId, stationId: stationA, stationName: '布吉站', leaderOpenid: 'demo-buyer-a', thresholdN: 5, verifyMode: '有人核销', status: '拼团中', paidOrderCount: 3, paidItemCount: 6, paidUserCount: 3, createdAt: t, updatedAt: t })
+  await setDoc('batchStations', bsB, { batchId, stationId: stationB, stationName: '大学城站', leaderOpenid: 'demo-buyer-d', thresholdN: 5, verifyMode: '无人放置', status: '拼团中', paidOrderCount: 2, paidItemCount: 2, paidUserCount: 2, createdAt: t, updatedAt: t })
   await setDoc('deliveryWindows', 'dw-' + bsA, { batchId, batchStationId: bsA, pickupDate: dates.pickupDate, arriveAt: '18:30', leaveAt: '19:10', waitMinutes: 40, locationNote: '布吉站A口 出站直行20米 斑斓绿摊布', locationImages: ['/assets/hero.jpg'], arrivedAt: null, createdBy: openid, createdAt: t, updatedAt: t })
   await setDoc('deliveryWindows', 'dw-' + bsB, { batchId, batchStationId: bsB, pickupDate: dates.pickupDate, arriveAt: '19:45', leaveAt: '20:25', waitMinutes: 40, locationNote: '大学城站A口 天桥下 斑斓绿摊布', locationImages: ['/assets/hero.jpg'], arrivedAt: null, createdBy: openid, createdAt: t, updatedAt: t })
   for (let i = 0; i < MENU.length; i++) {
-    const soldQty = i === 0 ? 6 : 0
+    const soldQty = i === 0 ? 8 : 0
     await setDoc('batchInventory', 'inv-' + batchId + '-' + K[i], { batchId, skuId: K[i], totalQty: MENU[i].qty, availableQty: MENU[i].qty - soldQty, reservedQty: 0, soldQty, refundedQty: 0, isUnlimited: false, status: '上架', createdAt: t, updatedAt: t })
   }
   const demoOrders = [
-    { id: 'demo-order-a', userOpenid: 'demo-buyer-a', phone: '13800138000', phoneTail: '8000', quantity: 2, pickupQrToken: 'demo-qr-a-91f3d2' },
-    { id: 'demo-order-b', userOpenid: 'demo-buyer-b', phone: '13900138000', phoneTail: '8000', quantity: 1, pickupQrToken: 'demo-qr-b-72ac49' },
-    { id: 'demo-order-c', userOpenid: 'demo-buyer-c', phone: '13700131111', phoneTail: '1111', quantity: 3, pickupQrToken: 'demo-qr-c-5be821' }
+    { id: 'demo-order-a', batchStationId: bsA, stationId: stationA, stationName: '布吉站', verifyMode: '有人核销', userOpenid: 'demo-buyer-a', phone: '13800138000', phoneTail: '8000', quantity: 2, pickupQrToken: 'demo-qr-a-91f3d2' },
+    { id: 'demo-order-b', batchStationId: bsA, stationId: stationA, stationName: '布吉站', verifyMode: '有人核销', userOpenid: 'demo-buyer-b', phone: '13900138000', phoneTail: '8000', quantity: 1, pickupQrToken: 'demo-qr-b-72ac49' },
+    { id: 'demo-order-c', batchStationId: bsA, stationId: stationA, stationName: '布吉站', verifyMode: '有人核销', userOpenid: 'demo-buyer-c', phone: '13700131111', phoneTail: '1111', quantity: 3, pickupQrToken: 'demo-qr-c-5be821' },
+    { id: 'demo-order-d', batchStationId: bsB, stationId: stationB, stationName: '大学城站', verifyMode: '无人放置', userOpenid: 'demo-buyer-d', phone: '13600132222', phoneTail: '2222', quantity: 1, pickupQrToken: 'demo-qr-d-48c127' },
+    { id: 'demo-order-e', batchStationId: bsB, stationId: stationB, stationName: '大学城站', verifyMode: '无人放置', userOpenid: 'demo-buyer-e', phone: '13500133333', phoneTail: '3333', quantity: 1, pickupQrToken: 'demo-qr-e-6f4b95' }
   ]
-  for (const row of demoOrders) await setDoc('orders', row.id, { batchId, batchStationId: bsA, stationId: stationA, stationName: '布吉站', verifyMode: '有人核销', userOpenid: row.userOpenid, contactName: row.userOpenid, items: [{ skuId: K[0], productId: P[0], name: '蝶糯桑卡雅', spec: '1个', quantity: row.quantity, unitPrice: 600, subtotal: row.quantity * 600 }], amount: row.quantity * 600, status: '待自提', phone: row.phone, phoneTail: row.phoneTail, pickupQrToken: row.pickupQrToken, paidAt: t, refundedAt: null, verifiedAt: null, createdAt: t, updatedAt: t })
+  for (const row of demoOrders) await setDoc('orders', row.id, { batchId, batchStationId: row.batchStationId, stationId: row.stationId, stationName: row.stationName, verifyMode: row.verifyMode, userOpenid: row.userOpenid, contactName: row.userOpenid, items: [{ skuId: K[0], productId: P[0], name: '蝶糯桑卡雅', spec: '1个', quantity: row.quantity, unitPrice: 600, subtotal: row.quantity * 600 }], amount: row.quantity * 600, status: '待自提', phone: row.phone, phoneTail: row.phoneTail, pickupQrToken: row.pickupQrToken, paidAt: t, refundedAt: null, verifiedAt: null, createdAt: t, updatedAt: t })
   return ok({ msg: 'initDemo完成', collections: COLLECTIONS, demo: { batchId, pickupDate: dates.pickupDate, deadlineAt: dates.deadlineAt, batchStations: [bsA, bsB], duplicatePhoneTail: '8000' } })
 }
 
@@ -504,16 +525,20 @@ async function myOrders(openid) {
   const orders = (await db.collection('orders').where({ userOpenid: openid }).orderBy('createdAt', 'desc').limit(100).get()).data
   const stationIds = [...new Set(orders.map((o) => o.stationId).filter(Boolean))]
   const batchStationIds = [...new Set(orders.map((o) => o.batchStationId).filter(Boolean))]
-  const [stationRows, batchStationRows] = await Promise.all([
+  const [stationRows, batchStationRows, deliveryWindowRows] = await Promise.all([
     listDocsByIds('stations', stationIds),
-    listDocsByIds('batchStations', batchStationIds)
+    listDocsByIds('batchStations', batchStationIds),
+    listDocsWhereIn('deliveryWindows', 'batchStationId', batchStationIds)
   ])
   const stationById = keyById(stationRows)
   const batchStationById = keyById(batchStationRows)
+  const deliveryWindowByBatchStationId = {}
+  for (const row of deliveryWindowRows) deliveryWindowByBatchStationId[row.batchStationId] = row
   for (const o of orders) {
     const station = stationById[o.stationId] || null
     const batchStation = batchStationById[o.batchStationId] || null
     o.stationName = station ? station.name : ''
+    o.deliveryWindow = deliveryWindowByBatchStationId[o.batchStationId] || null
     o.isLeader = Boolean(batchStation && batchStation.leaderOpenid && batchStation.leaderOpenid === openid)
   }
   return ok({ orders })
@@ -542,7 +567,7 @@ async function buildMinePayload(openid) {
     db.collection('users').where({ openid }).limit(1).get(),
     getDoc('config', 'system'),
     db.collection('orders').where({ userOpenid: openid }).limit(100).get(),
-    getAdmin(openid)
+    getEffectiveAdmin(openid)
   ])
   const user = userRows.data[0] || null
   const orders = ordersRes.data
@@ -613,7 +638,7 @@ async function decodePhoneNumber(event, openid) {
 // PRD 6.1 / 11：查询管理员角色，前端据此隐藏入口。
 async function checkAdmin(openid) {
   await ensureCollections()
-  const admin = await getAdmin(openid) || await provisionConfiguredSuperAdmin(openid)
+  const admin = await getEffectiveAdmin(openid) || await provisionConfiguredSuperAdmin(openid)
   return ok({ isAdmin: Boolean(admin), role: admin ? admin.role : 'user' })
 }
 

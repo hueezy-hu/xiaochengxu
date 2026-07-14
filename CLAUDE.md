@@ -122,6 +122,8 @@
 
 ## 9. 变更日志（每轮交付追加一行，格式：日期 | 改了什么 | 动了哪些文件）
 
+- 2026-07-14 | 用户端统一明确取货时间，按“月日（星期）开始–结束”展示于选站、结算、支付成功、团页、订单列表和取货券 | pickup-time、用户端页面、myOrders、接口文档、测试
+- 2026-07-14 | MOCK 演示环境开放全部商家入口：所有测试微信获得不落库的临时超管身份；正式支付模式强制恢复权限校验 | runtime-config、云函数入口、接口文档、测试
 - 2026-07-14 | 修复本地验收问题：统一预占状态、服务端时钟倒计时、取消反馈、商品引用快照、过期预占筛选、多站授权、两类通知入队及逐订单重试 | miniprogram、order/fulfillment/lifecycle/notification services、repositories、tests、docs
 - 2026-07-13 | 第三阶段本地准备：MOCK_PAY 环境开关（默认 true）、payment-helpers（time_expire/回调分类）、notificationOutbox 发送器骨架与单测；产出审计/迁移/冒烟文档；不部署不改云数据 | runtime-config、payment-helpers、notification-outbox、index.js、tests、docs/
 - 2026-07-13 | 完成 V1.7 内部演示版全栈改造：3分钟多SKU预占、按人成团、双时点生命周期、两段制退款、尾号/二维码核销、照片交付、双交付模式、营业三态、菜单库与商家端；同步契约与上线验收 | cloudfunctions/api、miniprogram、README.md、ACTIONS.md、V1.7-上线验收.md、tests

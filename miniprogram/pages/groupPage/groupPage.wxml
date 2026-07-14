@@ -11,6 +11,7 @@
           <text wx:if="{{isLeader}}" class="tag">★ 你发起的团</text>
           <text class="section-title">{{station.name}} 的团</text>
           <text class="text">{{station.line}} · {{station.exit}}</text>
+          <text class="card-title">取货时间：{{pickupTimeText}}</text>
         </view>
         <view class="cake"></view>
       </view>

@@ -16,6 +16,7 @@
       <text class="tag">已支付成功</text>
       <text class="section-title" style="text-align: center;">{{successTitle}}</text>
       <text class="text">{{station.name || ''}} · {{progressText}}</text>
+      <text class="card-title">取货时间：{{pickupTimeText}}</text>
       <view class="progress" style="width: 100%;"><view class="progress-inner" style="width: {{percent}}%;"></view></view>
       <text class="price">{{leftText}}</text>
     </view>
