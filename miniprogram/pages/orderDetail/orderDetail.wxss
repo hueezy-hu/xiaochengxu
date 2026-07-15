@@ -2,3 +2,5 @@
 .pickup-guide { border-radius: 24rpx; background: #FAF7EE; padding: 22rpx; }
 .guide-swiper { width: 100%; height: 260rpx; border-radius: 20rpx; overflow: hidden; }
 .guide-image { width: 100%; height: 100%; border-radius: 20rpx; }
+.contact-tail { border-radius: 24rpx; background: #EDF7EC; padding: 24rpx; }
+.contact-tail-code { color: #3E8E5E; font-size: 48rpx; font-weight: 900; letter-spacing: 6rpx; }

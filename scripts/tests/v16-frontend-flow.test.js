@@ -43,8 +43,9 @@ test('orders and order detail use direct V1.6 refund without review, postpone, o
 test('share and payment-success exits cannot return to a locked station or duplicate payment', () => {
   const group = read('miniprogram/pages/groupPage/groupPage.js')
   const success = read('miniprogram/pages/paySuccess/paySuccess.js')
-  assert.match(group, /pages\/catalog\/catalog/)
-  assert.doesNotMatch(group, /batchStationId=/)
+  assert.match(group, /pages\/groupPage\/groupPage\?batchStationId=/)
+  assert.match(group, /wx\.switchTab\(\{ url: '\/pages\/catalog\/catalog' \}\)/)
+  assert.match(success, /pages\/groupPage\/groupPage\?batchStationId=/)
   assert.match(success, /redirectTo|switchTab/)
 })
 

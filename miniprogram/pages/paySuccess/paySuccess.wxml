@@ -8,7 +8,7 @@
     <view wx:if="{{refunded}}" class="card column gap-md" style="margin-top: 30rpx; align-items: center;">
       <text class="tag orange">本单已自动退款</text>
       <text class="section-title" style="text-align: center;">这一批已截单啦</text>
-      <text class="text" style="text-align: center;">款项已原路退回。明晚 22:00 前下单，后天到站取～</text>
+      <text class="text" style="text-align: center;">款项已原路退回。请等商家重新发布下一批后再下单。</text>
       <view class="btn" style="width: 100%;" bindtap="goHome">回首页看看</view>
     </view>
 

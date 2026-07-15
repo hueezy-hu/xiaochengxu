@@ -110,10 +110,11 @@ Page({
   },
 
   onShareAppMessage() {
+    const batchStationId = this.options.batchStationId || (this.data.batchStation && this.data.batchStation._id)
     return {
       title: this.data.shareLine || '泰斓 TAILAN · 地铁站拼团自提',
       imageUrl: '/assets/hero.jpg',
-      path: '/pages/catalog/catalog'
+      path: batchStationId ? `/pages/groupPage/groupPage?batchStationId=${encodeURIComponent(batchStationId)}` : '/pages/catalog/catalog'
     }
   },
     onShareTimeline() { return { title: '泰斓 TAILAN · 地铁站拼团自提' } }

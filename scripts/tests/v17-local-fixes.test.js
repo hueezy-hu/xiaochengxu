@@ -49,7 +49,10 @@ test('only pickup-ready orders expose the pickup ticket UI', () => {
   assert.match(ordersWxml, /查看订单详情/)
   assert.match(detailJs, /showsPickupTicket/)
   assert.match(detailJs, /showPickupTicket/)
+  assert.match(detailJs, /showContactPhoneTail/)
   assert.match(detailWxml, /order && showPickupTicket/)
+  assert.match(detailWxml, /订单联系手机号尾号/)
+  assert.match(detailWxml, /成团并进入待自提后才开放二维码取货券/)
   assert.match(detailWxml, /订单详情/)
 })
 

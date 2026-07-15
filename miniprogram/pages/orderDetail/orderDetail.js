@@ -10,19 +10,28 @@ function refundText(order) {
   return ''
 }
 
+function phoneTailOf(order) {
+  return String(order.phoneTail || String(order.phone || '').slice(-4))
+}
+
+function showContactPhoneTail(order, showPickupTicket) {
+  if (!order || showPickupTicket || !phoneTailOf(order)) return false
+  return !['已取消', '已超时', '退款处理中', '已退款'].includes(order.status)
+}
+
 Page({
-  data: { loading: true, order: null, station: {}, deliveryWindow: {}, pickupTimeText: '取货时间待确认', locationImages: [], showPickupTicket: false, canSelfRefund: false, canApplyRefund: false, refundText: '' },
+  data: { loading: true, order: null, station: {}, deliveryWindow: {}, pickupTimeText: '取货时间待确认', locationImages: [], showPickupTicket: false, showContactPhoneTail: false, canSelfRefund: false, canApplyRefund: false, refundText: '' },
   onLoad(options) { this.options = options || {}; this.load() },
   async load() {
     const orderId = this.options.orderId || this.options.id
     if (!orderId) { this.setData({ loading: false }); return }
     const res = await app.call('getOrderDetail', { orderId })
     if (!res.ok) { wx.showToast({ title: res.msg || '订单不存在', icon: 'none' }); this.setData({ loading: false }); return }
-    const order = { ...res.order, verifyMode: res.order.verifyMode || (res.batchStation && res.batchStation.verifyMode) || '有人核销', amountText: app.money(res.order.amount), firstItem: (res.order.items && res.order.items[0]) || {} }
+    const order = { ...res.order, phoneTail: phoneTailOf(res.order), verifyMode: res.order.verifyMode || (res.batchStation && res.batchStation.verifyMode) || '有人核销', amountText: app.money(res.order.amount), firstItem: (res.order.items && res.order.items[0]) || {} }
     const deliveryWindow = res.deliveryWindow || {}
     const locationImages = order.deliveryImages || order.placementImages || deliveryWindow.locationImages || []
     const showPickupTicket = showsPickupTicket(order.status)
-    this.setData({ loading: false, order, station: res.station || {}, deliveryWindow, pickupTimeText: formatPickupTime(deliveryWindow), locationImages, showPickupTicket, canSelfRefund: ['待配送确认', '待自提'].includes(order.status), canApplyRefund: ['已完成', '已放置待自取', '已完成未取'].includes(order.status), refundText: refundText(order) }, () => {
+    this.setData({ loading: false, order, station: res.station || {}, deliveryWindow, pickupTimeText: formatPickupTime(deliveryWindow), locationImages, showPickupTicket, showContactPhoneTail: showContactPhoneTail(order, showPickupTicket), canSelfRefund: ['待配送确认', '待自提'].includes(order.status), canApplyRefund: ['已完成', '已放置待自取', '已完成未取'].includes(order.status), refundText: refundText(order) }, () => {
       if (showPickupTicket) this.drawQr()
     })
   },
@@ -45,6 +54,9 @@ Page({
     if (res.ok) this.load()
   },
   goBack() { wx.navigateBack() },
-  onShareAppMessage() { return { title: '泰斓 TAILAN · 去点单', path: '/pages/catalog/catalog' } },
+  onShareAppMessage() {
+    const batchStationId = this.data.order && this.data.order.batchStationId
+    return { title: '泰斓 TAILAN · 地铁站拼团自提', path: batchStationId ? `/pages/groupPage/groupPage?batchStationId=${encodeURIComponent(batchStationId)}` : '/pages/catalog/catalog' }
+  },
   onShareTimeline() { return { title: '泰斓 TAILAN · 泰式斑斓甜品' } }
 })

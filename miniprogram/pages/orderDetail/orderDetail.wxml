@@ -26,6 +26,11 @@
     <text wx:if="{{refundText}}" class="tag orange">{{refundText}}</text>
     <view class="dash"></view>
     <view class="column gap-xs"><text class="card-title">{{order.firstItem.name}} · {{order.firstItem.spec}}</text><text class="text">数量 {{order.firstItem.quantity}} 份 · {{order.amountText}}</text><text class="small">自提站点：{{station.name || order.stationName}}</text><text class="card-title">取货时间：{{pickupTimeText}}</text><text class="small">该订单当前状态不提供取货凭证</text></view>
+    <view wx:if="{{showContactPhoneTail}}" class="contact-tail column gap-xs">
+      <text class="small">订单联系手机号尾号</text>
+      <text class="contact-tail-code">{{order.phoneTail}}</text>
+      <text class="small">成团并进入待自提后才开放二维码取货券。</text>
+    </view>
   </view>
 
   <block wx:if="{{order}}">

@@ -29,3 +29,22 @@ test('fulfillment UI supports QR tail photos unattended placement and no-show fi
   assert.match(body, /qrToken/); assert.match(body, /phoneTail/); assert.match(body, /chooseMedia/); assert.match(body, /placeOrderAtLocation/); assert.match(body, /finishNoShow/)
   assert.doesNotMatch(body, /输入6位码|verifyCode/)
 })
+
+test('admin UI follows the dark theme design tokens and safer action hierarchy', () => {
+  const tokens = read('miniprogram/styles/tokens.wxss')
+  const common = read('miniprogram/styles/common.wxss')
+  const home = read('miniprogram/pages/adminHome/adminHome.wxml')
+  const verify = read('miniprogram/pages/adminVerify/adminVerify.wxml')
+
+  assert.match(tokens, /--c-admin-bg:\s*#161D18/)
+  assert.match(tokens, /--c-admin-card:\s*#202A22/)
+  assert.match(tokens, /--c-admin-text:\s*#E9F2EA/)
+  assert.match(common, /\.admin-input[\s\S]*background:\s*var\(--c-admin-bg\)/)
+  assert.match(common, /\.admin-btn[\s\S]*background:\s*var\(--c-leaf\)[\s\S]*color:\s*var\(--c-admin-bg\)/)
+  assert.match(common, /\.admin-danger-zone/)
+  assert.doesNotMatch(common, /\.admin-input[\s\S]*background:\s*#FFFFFF/)
+  assert.match(home, /admin-danger-zone/)
+  assert.match(home, /危险操作/)
+  assert.match(verify, /admin-danger-zone/)
+  assert.match(verify, /先上传到点\/放置照片/)
+})

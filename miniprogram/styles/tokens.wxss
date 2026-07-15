@@ -13,9 +13,13 @@ page {
   --c-card: #FFFFFF;
   --c-disabled: #F5F1E6;
   --c-disabled-text: #B9B29F;
-  --c-admin-bg: #F6F3EA;
-  --c-admin-card: #FFFFFF;
-  --c-admin-text: #243329;
+  --c-admin-bg: #161D18;
+  --c-admin-card: #202A22;
+  --c-admin-text: #E9F2EA;
+  --c-admin-text-soft: #D8E8CF;
+  --c-admin-body: #B9C8BB;
+  --c-admin-muted: #8FA491;
+  --c-admin-price: #F0A85C;
   --r-card: 40rpx;
   --r-block: 28rpx;
   --r-btn: 999rpx;

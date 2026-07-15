@@ -88,10 +88,12 @@ Page({
   onShareAppMessage() {
     const left = this.data.batchStation ? Math.max(0, Number(this.data.batchStation.thresholdN || 0) - Number(this.data.batchStation.paidUserCount || 0)) : 0
     const name = this.data.station.name || ''
+    const batchStationId = this.options.batchStationId || (this.data.batchStation && this.data.batchStation._id)
     return {
       title: left > 0 ? name + ' 泰斓还差 ' + left + ' 人成团' : name + ' 泰斓已满5人，仍可继续下单',
-      imageUrl: '/assets/hero.jpg', path: '/pages/catalog/catalog'
+      imageUrl: '/assets/hero.jpg',
+      path: batchStationId ? `/pages/groupPage/groupPage?batchStationId=${encodeURIComponent(batchStationId)}` : '/pages/catalog/catalog'
     }
   },
-  oonShareTimeline() { return { title: '泰斓 TAILAN · 地铁站拼团自提' } }
+  onShareTimeline() { return { title: '泰斓 TAILAN · 地铁站拼团自提' } }
 })
